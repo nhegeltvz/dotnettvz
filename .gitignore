@@ -24,3 +24,5 @@ Thumbs.db
 
 # Claude
 .claude/
+.github/hooks/agent_log.txt
+.github/hooks/log_writer.py
