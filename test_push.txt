@@ -1,3 +1,0 @@
-This is a test file for verifying push functionality.
-
-If you see this file in your remote repository, your push was successful!

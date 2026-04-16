@@ -1,0 +1,155 @@
+@model Data.Models.Party
+
+@{
+    ViewData["Title"] = "Detalji Partije";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/"),
+        new("Parties", "/Parties"),
+        new(Model.PartyDescription)
+    };
+
+    string GetImageMimeType(byte[] bytes)
+    {
+        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+        {
+            return "image/jpeg";
+        }
+
+        if (bytes.Length >= 8 &&
+            bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 &&
+            bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
+        {
+            return "image/png";
+        }
+
+        if (bytes.Length >= 4 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
+        {
+            return "image/gif";
+        }
+
+        if (bytes.Length > 0 && bytes[0] == 0x3C)
+        {
+            return "image/svg+xml";
+        }
+
+        return "application/octet-stream";
+    }
+
+    string? GetAvatarDataUri(byte[] bytes)
+        => bytes.Length > 0
+            ? $"data:{GetImageMimeType(bytes)};base64,{Convert.ToBase64String(bytes)}"
+            : null;
+
+    string GetInitials(string username)
+    {
+        var parts = username
+            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(part => !string.IsNullOrWhiteSpace(part))
+            .Take(2)
+            .ToArray();
+
+        if (parts.Length == 0)
+        {
+            return "P";
+        }
+
+        return string.Concat(parts.Select(part => char.ToUpperInvariant(part[0])));
+    }
+
+    string GetPositionIconClass(Data.Data.Position position)
+        => position switch
+        {
+            Data.Data.Position.Goalkeeper => "fa-solid fa-hand",
+            Data.Data.Position.Defender => "fa-solid fa-shield-halved",
+            Data.Data.Position.Midfielder => "fa-solid fa-wand-magic-sparkles",
+            Data.Data.Position.Forward => "fa-solid fa-shoe-prints",
+            _ => "fa-solid fa-user"
+        };
+}
+
+<div class="party-details-page">
+    <a asp-controller="Parties" asp-action="Index" class="party-details-back">
+        <span class="party-details-back-icon" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+        Natrag na sve partije.
+    </a>
+
+    <div class="party-details-card">
+        <div class="party-details-header">
+            <h1>@Model.PartyDescription</h1>
+        </div>
+
+        <div class="party-details-sections">
+            <section class="party-details-section">
+                <h2 class="party-section-title"><i class="fa-solid fa-medal" aria-hidden="true"></i> Organizator</h2>
+                <div class="party-person">
+                    @{
+                        var organizerAvatar = GetAvatarDataUri(Model.PlayerCreated.ProfilePicture);
+                    }
+                    @if (!string.IsNullOrWhiteSpace(organizerAvatar))
+                    {
+                        <img class="party-avatar" src="@organizerAvatar" alt="@Model.PlayerCreated.Username avatar" loading="lazy" />
+                    }
+                    else
+                    {
+                        <div class="party-avatar" aria-hidden="true">@GetInitials(Model.PlayerCreated.Username)</div>
+                    }
+                    <div class="party-person-meta">
+                        <span class="party-person-name">@Model.PlayerCreated.Username</span>
+                        <span class="party-person-role"><i class="fa-solid fa-award" aria-hidden="true"></i> Organizator</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="party-details-section">
+                <h2 class="party-section-title"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Lokacije</h2>
+                <div class="party-tags">
+                    @foreach (var location in Model.PreferredLocations.Split(','))
+                    {
+                        <span class="party-tag"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> @location.Trim()</span>
+                    }
+                </div>
+            </section>
+
+            <section class="party-details-section">
+                <h2 class="party-section-title"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Preferirani termini</h2>
+                <ul class="party-details-list">
+                    @foreach (var date in Model.PreferredPlayingDates.OrderBy(d => d.Date))
+                    {
+                        var localDate = date.Date.ToLocalTime();
+                        var dayLabel = localDate.ToString("dddd, dd.MM.", new System.Globalization.CultureInfo("hr-HR")).ToUpperInvariant();
+                        <li>
+                            <span class="party-date-primary"><i class="fa-regular fa-clock" aria-hidden="true"></i> @localDate.ToString("dd.MM.yyyy. HH:mm")</span>
+                            <span class="party-date-day">@dayLabel</span>
+                        </li>
+                    }
+                </ul>
+            </section>
+
+            <section class="party-details-section">
+                <h2 class="party-section-title"><i class="fa-solid fa-users" aria-hidden="true"></i> Clanovi</h2>
+                <ul class="party-members-list">
+                    @foreach (var member in Model.Members)
+                    {
+                        var avatar = GetAvatarDataUri(member.ProfilePicture);
+                        var positionClass = member.PreferredPosition.ToString().ToLowerInvariant();
+                        <li>
+                            @if (!string.IsNullOrWhiteSpace(avatar))
+                            {
+                                <img class="party-avatar" src="@avatar" alt="@member.Username avatar" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="party-avatar" aria-hidden="true">@GetInitials(member.Username)</div>
+                            }
+                            <div class="party-member-meta">
+                                <span class="party-member-name">@member.Username</span>
+                                <span class="party-member-position @positionClass">@member.PreferredPosition <i class="@GetPositionIconClass(member.PreferredPosition)" aria-hidden="true"></i></span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </section>
+        </div>
+    </div>
+</div>

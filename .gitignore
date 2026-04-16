@@ -22,7 +22,5 @@ packages/
 .DS_Store
 Thumbs.db
 
-# Claude
-.claude/
+# GitHub Copilot hooks - agent logs from grading
 .github/hooks/agent_log.txt
-.github/hooks/log_writer.py

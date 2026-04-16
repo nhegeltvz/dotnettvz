@@ -1,0 +1,26 @@
+@model Data.Models.MatchRecord
+
+<div class="match-card" tabindex="0">
+    <div class="match-card-header">
+        <span class="match-time">@Model.MatchHeld.ToString("HH:mm")</span>
+    </div>
+    <div class="match-card-body">
+        <div class="team-row">
+            <span class="team-name">Team A</span>
+            <span class="team-score">@Model.GoalsTeamA</span>
+        </div>
+        <div class="team-row">
+            <span class="team-name">Team B</span>
+            <span class="team-score">@Model.GoalsTeamB</span>
+        </div>
+    </div>
+    <div class="match-card-footer">
+        <span class="field-name">@Model.PlayingField.Name</span>
+        <a asp-controller="Matches"
+           asp-action="Details"
+           asp-route-id="@Model.Id"
+           asp-route-matchDate="@Model.MatchHeld.ToString("yyyy-MM-dd")"
+           asp-route-fieldName="@Model.PlayingField.Name"
+           class="match-details-button">Detalji</a>
+    </div>
+</div>

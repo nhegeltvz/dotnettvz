@@ -1,0 +1,28 @@
+@using Web.Helpers
+
+@if (ViewData["Breadcrumbs"] is List<BreadcrumbItem> crumbs && crumbs.Count > 0)
+{
+    <nav class="breadcrumb-bar" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+            @for (int i = 0; i < crumbs.Count; i++)
+            {
+                var crumb = crumbs[i];
+                var isLast = i == crumbs.Count - 1;
+                <li class="breadcrumb-item @(isLast ? "breadcrumb-item--active" : "")">
+                    @if (!isLast && crumb.Url != null)
+                    {
+                        <a href="@crumb.Url" class="breadcrumb-link">@crumb.Label</a>
+                    }
+                    else
+                    {
+                        <span>@crumb.Label</span>
+                    }
+                    @if (!isLast)
+                    {
+                        <span class="breadcrumb-sep" aria-hidden="true">/</span>
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+}

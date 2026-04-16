@@ -1,48 +1,83 @@
-﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+﻿body {
+  margin: 0;
+  background-color: var(--mt-body-background);
 }
 
-a {
-  color: #0077cc;
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  min-height: 76px;
+  padding: 0 1.25rem;
+  background-color: var(--mt-bg-medium);
+  border-bottom: 2px solid var(--mt-highlight);
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+.header-side {
+  display: flex;
+  align-items: center;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+.header-left {
+  justify-content: flex-start;
 }
 
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+.header-right {
+  justify-content: flex-end;
 }
 
-.box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+.brand-link {
+  color: var(--mt-text);
+  font-size: 1.45rem;
+  font-weight: 800;
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
+.header-center {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+.header-link {
+  color: var(--mt-text);
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.header-link:hover,
+.header-link:focus {
+  color: var(--mt-text);
+  border-color: var(--mt-highlight);
+  background-color: var(--mt-highlight-soft);
+}
+
+.main-content {
+  padding: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .top-header {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    padding: 0.75rem;
+  }
+
+  .header-side,
+  .header-left,
+  .header-right {
+    justify-content: center;
+  }
 }

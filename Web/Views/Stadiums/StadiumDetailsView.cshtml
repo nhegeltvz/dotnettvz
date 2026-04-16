@@ -1,0 +1,114 @@
+@model Web.Models.StadiumDetailsViewModel
+
+@{
+    ViewData["Title"] = "Detalji Stadiona";
+    var field = Model.Field;
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/"),
+        new("Stadiums", "/Stadiums"),
+        new(field.Name)
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="" />
+}
+
+<div class="stadium-details-page">
+    <a asp-controller="Stadiums" asp-action="Index" class="stadium-details-back">Natrag na stadione</a>
+
+    <div class="stadium-details-card">
+        <div class="stadium-floating-badge" aria-label="Broj odigranih utakmica">
+            <span class="stadium-floating-badge__count">@Model.PlayedMatchesCount <i class="fa-solid fa-futbol" aria-hidden="true"></i></span>
+            <span class="stadium-floating-badge__label">Match Played</span>
+        </div>
+
+        <div class="stadium-details-first-row">
+            <div class="stadium-first-row-left">
+                <div class="stadium-details-header">
+                    <h1>@field.Name</h1>
+                </div>
+
+                <div class="stadium-image-panel">
+                    @if (field.Image != null && field.Image.Length > 0)
+                    {
+                        var base64 = Convert.ToBase64String(field.Image);
+                        var imgSrc = $"data:image/jpeg;base64,{base64}";
+                        <img src="@imgSrc" alt="@field.Name" class="stadium-details-image" />
+                    }
+                    else
+                    {
+                        <div class="stadium-details-image-placeholder">Nema slike</div>
+                    }
+                </div>
+            </div>
+
+            <div class="stadium-first-row-right">
+                <section class="stadium-info-card">
+                    <h2><i class="fa-solid fa-circle-info"></i> Karakteristike</h2>
+                    <ul>
+                        <li><i class="fa-solid fa-sun"></i> <strong>Tip:</strong> @(field.IsOutdoor ? "Outdoor" : "Indoor")</li>
+                        <li><i class="fa-solid fa-futbol"></i> <strong>Podloga:</strong> @field.SurfaceType</li>
+                    </ul>
+                </section>
+
+                <section class="stadium-info-card stadium-info-card--status">
+                    <h2>Status</h2>
+                    <p class="stadium-status-text">
+                        <i class="fa-solid fa-check"></i>
+                        @field.Status
+                    </p>
+                </section>
+            </div>
+        </div>
+        <div class="stadium-details-second-row">
+            <div class="stadium-second-row-left">
+                <section class="stadium-info-card">
+                    <h2><i class="fa-solid fa-file-lines"></i> Opis</h2>
+                    <p>@field.Description</p>
+                </section>
+
+                <section class="stadium-info-card">
+                    <h2><i class="fa-solid fa-phone"></i> Kontakt</h2>
+                    <ul>
+                        <li><strong>Telefon:</strong> @field.ContactNumber</li>
+                        <li><strong>Match records:</strong> @field.MatchRecords.Count</li>
+                    </ul>
+                </section>
+            </div>
+
+            <div class="stadium-second-row-right">
+                <div class="map-container">
+                    <div id="stadium-map" aria-label="Mapa lokacije stadiona"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script>
+        (function () {
+            const lat = parseFloat("@field.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)");
+            const lng = parseFloat("@field.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)");
+            const stadiumName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(field.Name));
+
+            const map = L.map("stadium-map", {
+                scrollWheelZoom: false
+            }).setView([lat, lng], 15);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(map);
+
+            L.marker([lat, lng]).addTo(map).bindPopup(stadiumName).openPopup();
+        })();
+    </script>
+}

@@ -10,4 +10,5 @@ public interface IPlayer
     string Bio { get; }
     Position PreferredPosition { get; }
     int? Age { get; }
+    byte[] ProfilePicture { set; } 
 }

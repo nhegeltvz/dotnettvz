@@ -1,0 +1,144 @@
+/* partyCard.css */
+.party-card {
+  background-color: var(--mt-primary);
+  border-radius: 12px;
+  padding: 1rem;
+  color: var(--mt-text);
+  border: 1px solid var(--mt-border-brand);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.party-card.highlight {
+  border-color: var(--mt-highlight);
+  box-shadow: 0 0 15px var(--mt-highlight-glow);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.creator-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.creator-info .avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--mt-placeholder-bg);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--mt-text);
+}
+
+.creator-info .avatar--image {
+  display: block;
+  object-fit: cover;
+}
+
+.creator-name {
+  font-weight: 600;
+}
+
+.party-id {
+  font-size: 0.8rem;
+  color: var(--mt-text-faint);
+}
+
+.card-body .description {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.members-progress {
+  width: 100%;
+  background-color: var(--mt-accent-blue-dark);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--mt-highlight);
+  border-radius: 999px;
+}
+
+.members-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.card-footer {
+  margin-top: auto;
+}
+
+.locations {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.location-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.join-button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--mt-secondary);
+  color: var(--mt-text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.join-button.highlight {
+  background-color: var(--mt-highlight);
+  color: var(--mt-primary);
+}
+
+.join-button:hover {
+  filter: brightness(1.1);
+}
+
+.card-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.details-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--mt-secondary);
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--mt-text);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.details-button:hover {
+  background-color: var(--mt-secondary);
+}

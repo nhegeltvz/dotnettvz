@@ -1,0 +1,36 @@
+@model List<Data.Models.MatchRecord>
+
+@{
+    ViewData["Title"] = "Matches";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/"),
+        new("Matches")
+    };
+}
+
+<div class="matches-container">
+    <div class="matches-filter-bar">
+        <div class="filter-top-row">
+            <div class="filter-links status-links">
+                <a href="#" class="filter-link active">All</a>
+                <a href="#" class="filter-link">Finished</a>
+                <a href="#" class="filter-link">Upcoming</a>
+            </div>
+            <div class="date-selector">
+                <button class="date-arrow">&lt;</button>
+                <span class="date-text">Today</span>
+                <button class="date-arrow">&gt;</button>
+            </div>
+        </div>
+
+        <div class="filter-bottom-row match-cards-row">
+            <div class="matches-grid">
+                @foreach (var match in Model)
+                {
+                    <partial name="_MatchCard" model="match" />
+                }
+            </div>
+        </div>
+    </div>
+</div>

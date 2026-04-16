@@ -1,0 +1,260 @@
+body .party-details-page {
+  max-width: none;
+  margin: -20px;
+  padding: 20px;
+  width: auto;
+  min-height: calc(100vh - 76px);
+  position: relative;
+  isolation: isolate;
+  color: #e7f2fc;
+  background-image: url("/images/background_images/background_1.avif");
+  background-size: cover;
+  background-position: center;
+}
+
+.party-details-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 14, 24, 0.46);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.party-details-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.party-details-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  color: #d9e8f7;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.party-details-back-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(96, 166, 240, 0.5);
+  background: rgba(20, 46, 74, 0.45);
+}
+
+.party-details-back-icon i {
+  font-size: 0.78rem;
+}
+
+.party-details-back:hover {
+  color: #ffffff;
+}
+
+.party-details-card {
+  max-width: 980px;
+  margin: 0 auto;
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid var(--mt-gold);
+  background: rgba(8, 25, 44, 0.62);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--mt-gold) 30%, transparent) inset,
+    0 0 18px color-mix(in srgb, var(--mt-gold) 28%, transparent),
+    0 18px 50px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.party-details-header {
+  margin-bottom: 0.9rem;
+  padding: 0.3rem 0.2rem 0.8rem;
+  border-bottom: 1px solid rgba(126, 201, 255, 0.35);
+}
+
+.party-details-header h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.7rem, 2.2vw, 2.5rem);
+  color: #f2f8ff;
+  letter-spacing: 0.02em;
+}
+
+.party-details-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.party-details-section {
+  border-radius: 12px;
+  padding: 0.9rem;
+  border: 1px solid rgba(126, 201, 255, 0.26);
+  background: rgba(17, 39, 66, 0.7);
+}
+
+.party-details-section h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.06rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #dceeff;
+}
+
+.party-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.party-section-title i {
+  color: #8ecfff;
+}
+
+.party-person {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.party-person-meta,
+.party-member-meta {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.party-person-name,
+.party-member-name {
+  font-weight: 700;
+  color: #f2f8ff;
+}
+
+.party-person-role {
+  font-size: 0.85rem;
+  color: #a9c8e4;
+}
+
+.party-person-role i {
+  margin-right: 0.28rem;
+}
+
+.party-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f1f8ff;
+  border: 1px solid rgba(139, 210, 255, 0.5);
+  background: rgba(57, 89, 120, 0.55);
+}
+
+.party-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.party-tag {
+  background: rgba(80, 110, 142, 0.5);
+  border: 1px solid rgba(128, 189, 238, 0.5);
+  border-radius: 999px;
+  padding: 0.34rem 0.78rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #8ce8ff;
+}
+
+.party-tag i {
+  margin-right: 0.38rem;
+  color: #9fd8ff;
+}
+
+.party-details-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.party-details-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+  font-weight: 700;
+  color: #f1f8ff;
+}
+
+.party-date-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+}
+
+.party-date-primary i {
+  color: #9ab4c9;
+}
+
+.party-date-day {
+  color: #61de6f;
+  font-weight: 700;
+}
+
+.party-members-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 0.8rem;
+}
+
+.party-members-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgba(126, 201, 255, 0.2);
+}
+
+.party-member-position {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.party-member-position i {
+  margin-left: 0.3rem;
+  font-size: 0.8em;
+}
+
+.party-member-position.goalkeeper {
+  color: #f4d04d;
+}
+
+.party-member-position.defender {
+  color: #7fd8ff;
+}
+
+.party-member-position.midfielder {
+  color: #7adf78;
+}
+
+.party-member-position.forward {
+  color: #ff8b8b;
+}
+
+@media (max-width: 900px) {
+  .party-details-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .party-members-list {
+    grid-template-columns: 1fr;
+  }
+}

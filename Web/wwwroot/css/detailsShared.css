@@ -1,0 +1,36 @@
+.party-details-page,
+.stadium-details-page,
+.player-details-page,
+.match-details-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.party-details-back,
+.stadium-details-back,
+.player-details-back,
+.match-details-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--mt-text-link-muted);
+  transition: var(--transition);
+}
+
+.party-details-back:hover,
+.stadium-details-back:hover,
+.player-details-back:hover,
+.match-details-back:hover {
+  color: var(--mt-highlight-active);
+}
+
+.party-details-card,
+.stadium-details-card,
+.player-details-card,
+.match-details-card {
+  border-radius: 14px;
+  border: 1px solid var(--mt-border-strong);
+  box-shadow: 0 12px 28px var(--mt-shadow-elevated);
+}

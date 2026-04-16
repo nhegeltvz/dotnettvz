@@ -1,0 +1,20 @@
+@model List<Data.Models.PlayingField>
+
+@{
+    ViewData["Title"] = "Stadiums";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/"),
+        new("Stadiums")
+    };
+}
+
+<div class="stadiums-container">
+    <h1 class="page-title">Tereni</h1>
+    <div class="stadiums-grid">
+        @foreach (var field in Model)
+        {
+            <partial name="_StadiumCard" model="field" />
+        }
+    </div>
+</div>

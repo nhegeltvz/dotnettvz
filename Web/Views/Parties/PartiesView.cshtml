@@ -1,0 +1,37 @@
+@model List<Data.Models.Party>
+
+@{
+    ViewData["Title"] = "Pronađi Meč";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/"),
+        new("Parties")
+    };
+}
+
+<div class="parties-container">
+    <div class="parties-filter-bar">
+        <div class="top-row">
+            <div class="filter-container">
+                <button class="filter-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                    <span>Filter</span>
+                </button>
+                <input type="text" class="search-bar" placeholder="Upiši lokaciju, ime igrača..." />
+            </div>
+            <div class="create-party-container small">
+                <img src="~/images/createParty.png" alt="Create a party" class="create-party-image"/>
+                <div class="overlay">
+                    <span class="create-party-text">Otvori svoj meč!</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="parties-grid">
+            @foreach (var party in Model)
+            {
+                <partial name="_PartyCard" model="party" />
+            }
+        </div>
+    </div>
+</div>

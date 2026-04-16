@@ -11,6 +11,7 @@ public class Player : IPlayer
     public string Bio { get; set; } = string.Empty;
     public Position PreferredPosition { get; set; }
     public int? Age { get; set; }
+    public byte[] ProfilePicture { get; set; } = [];
 
     //EF navigation properties
     public List<Party> CreatedParties { get; set; } = new();

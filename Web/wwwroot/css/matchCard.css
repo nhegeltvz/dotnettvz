@@ -1,0 +1,71 @@
+/* matchCard.css */
+.match-card {
+  background-color: var(--mt-surface-soft);
+  border-radius: 8px;
+  padding: 1rem;
+  color: var(--mt-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  border: 1px solid var(--mt-border-strong);
+}
+
+.match-card:hover,
+.match-card:focus {
+  background-color: var(--mt-surface-strong);
+}
+
+.match-card-header {
+  font-size: 0.9rem;
+  color: var(--mt-text-link-muted);
+  margin-bottom: 1rem;
+}
+
+.match-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.team-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.team-name {
+  font-weight: 500;
+}
+
+.team-score {
+  font-weight: 700;
+}
+
+.match-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--mt-text-subtle);
+  border-top: 1px solid var(--mt-border-strong);
+  padding-top: 0.5rem;
+  margin-top: 1rem;
+}
+
+.match-details-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--mt-border-accent);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  color: var(--mt-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.match-details-button:hover {
+  background-color: var(--mt-surface-hover);
+}

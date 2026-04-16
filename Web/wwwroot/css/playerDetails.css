@@ -1,0 +1,128 @@
+.player-details-page {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.player-details-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--mt-text-soft);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.player-details-back:hover {
+  color: var(--mt-highlight);
+}
+
+.player-details-card {
+  background: linear-gradient(
+    145deg,
+    var(--mt-surface) 0%,
+    var(--mt-surface-deep) 100%
+  );
+  border: 1px solid var(--mt-border-strong);
+  border-radius: 14px;
+  padding: 1.2rem;
+  display: grid;
+  gap: 1.25rem;
+  box-shadow: 0 12px 30px var(--mt-shadow-elevated);
+}
+
+.player-details-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.player-details-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  letter-spacing: 0.08rem;
+  color: var(--mt-text);
+  background: var(--mt-surface-soft);
+  border: 1px solid var(--mt-border-accent);
+}
+
+.player-details-avatar--image {
+  object-fit: cover;
+}
+
+.player-details-identity h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  letter-spacing: 0.07rem;
+  text-transform: uppercase;
+}
+
+.player-details-identity p {
+  margin: 0.25rem 0 0;
+  color: var(--mt-text-muted);
+}
+
+.player-details-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.player-details-stat {
+  border: 1px solid var(--mt-border-strong);
+  border-radius: 10px;
+  padding: 0.8rem;
+  background: var(--mt-overlay-black-16);
+  display: grid;
+  gap: 0.3rem;
+}
+
+.player-details-stat-label {
+  font-size: 0.8rem;
+  color: var(--mt-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+}
+
+.player-details-stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--mt-text-on-tint);
+}
+
+.player-details-section h2 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06rem;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+}
+
+.player-details-section p {
+  margin: 0;
+  color: var(--mt-text-soft);
+}
+
+@media (max-width: 900px) {
+  .player-details-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .player-details-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .player-details-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

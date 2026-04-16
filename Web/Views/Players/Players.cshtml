@@ -1,0 +1,319 @@
+@model List<Data.Models.Player>
+@using Data.Data
+
+@{
+    ViewData["Title"] = "Players";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/"),
+        new("Players")
+    };
+
+    string GetImageMimeType(byte[] bytes)
+    {
+        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+        {
+            return "image/jpeg";
+        }
+
+        if (bytes.Length >= 8
+            && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47
+            && bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
+        {
+            return "image/png";
+        }
+
+        if (bytes.Length >= 4 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
+        {
+            return "image/gif";
+        }
+
+        if (bytes.Length > 0 && bytes[0] == 0x3C)
+        {
+            return "image/svg+xml";
+        }
+
+        return "application/octet-stream";
+    }
+
+    string? GetAvatarDataUri(byte[] bytes)
+        => bytes.Length > 0
+            ? $"data:{GetImageMimeType(bytes)};base64,{Convert.ToBase64String(bytes)}"
+            : null;
+
+    string GetInitials(string username)
+    {
+        var parts = username
+            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(part => !string.IsNullOrWhiteSpace(part))
+            .Take(2)
+            .ToArray();
+
+        if (parts.Length == 0)
+        {
+            return "P";
+        }
+
+        return string.Concat(parts.Select(part => char.ToUpperInvariant(part[0])));
+    }
+
+    var strikers = Model
+        .Where(player => player.PreferredPosition == Position.Forward);
+
+    var featuredStrikers = strikers
+        .OrderByDescending(player => player.MatchPlayers.Sum(match => match.Goals))
+        .ThenByDescending(player => player.MatchPlayers.Count)
+        .Take(3)
+        .ToList();
+
+    var midfielders = Model
+        .Where(player => player.PreferredPosition == Position.Midfielder);
+
+    var featuredMidfielders = midfielders
+        .OrderByDescending(player => player.MatchPlayers.Sum(match => match.Assists))
+        .ThenByDescending(player => player.MatchPlayers.Count)
+        .Take(3)
+        .ToList();
+
+
+
+    var defenders = Model
+        .Where(player => player.PreferredPosition == Position.Defender);
+
+    var featuredDefenders = defenders
+        .OrderByDescending(player => player.RatingsReceived.Count == 0
+            ? 0
+            : player.RatingsReceived.Average(rating => rating.Rating))
+        .ThenByDescending(player => player.MatchPlayers.Count)
+        .Take(2)
+        .ToList();
+
+    var goalkeepers = Model
+        .Where(player => player.PreferredPosition == Position.Goalkeeper);
+
+    var featuredGoalkeepers = goalkeepers
+        .OrderByDescending(player => player.RatingsReceived.Count == 0
+            ? 0
+            : player.RatingsReceived.Average(rating => rating.Rating))
+        .ThenByDescending(player => player.MatchPlayers.Count)
+        .Take(1)
+        .ToList();
+
+}
+
+<header class="players-stars-header" aria-label="Featured players section">
+    <p class="players-stars-kicker">Monthly Spotlight</p>
+    <h1 class="players-stars-title">Stars of the month</h1>
+</header>
+
+<div class="player-positions-grid">
+    <div class="position-container strikers-container" data-jump-position="forward" role="button" tabindex="0" aria-label="Show forwards in player list">
+        <img class="hero-image hero-square hero-strikers" src="~/images/budimirHero.png" alt="" />
+        <div class="featured-panel featured-strikers">
+            <span class="featured-title">Golgeteri</span>
+            <div class="featured-cards">
+                @foreach (var player in featuredStrikers)
+                {
+                    if(!String.IsNullOrEmpty(player.Username))
+                    {
+                        <partial name="_PlayerCard" model="player" />
+                    }
+                }
+            </div>
+        </div>
+        <h2 class="position-title">Strikers</h2>
+    </div>
+    <div class="position-container midfielders-container" data-jump-position="midfielder" role="button" tabindex="0" aria-label="Show midfielders in player list">
+        <img class="hero-image hero-portrait hero-midfielders" src="~/images/baturinaHero.png" alt="" />
+        <div class="featured-panel featured-midfielders">
+            <span class="featured-title">Playmakeri</span>
+            <div class="featured-cards featured-cards--stacked">
+                @foreach (var player in featuredMidfielders)
+                {
+                    <partial name="_PlayerCard" model="player" />
+                }
+            </div>
+        </div>
+        <h2 class="position-title">Midfielders</h2>
+
+    </div>
+    <div class="position-container defenders-container" data-jump-position="defender" role="button" tabindex="0" aria-label="Show defenders in player list">
+        <img class="hero-image hero-square hero-defenders" src="~/images/vuskovicHero.png" alt="" />
+        <div class="featured-panel featured-defenders">
+            <span class="featured-title">Najpouzdaniji</span>
+            <div class="featured-cards">
+                @foreach (var player in featuredDefenders)
+                {
+                    <partial name="_PlayerCard" model="player" />
+                }
+            </div>
+        </div>
+        <h2 class="position-title">Centrebacks</h2>
+    </div>
+    <div class="position-container goalkeepers-container" data-jump-position="goalkeeper" role="button" tabindex="0" aria-label="Show goalkeepers in player list">
+        <img class="hero-image hero-square hero-goalkeepers" src="~/images/livakovicHero.png" alt="" />
+        <div class="featured-panel featured-goalkeepers">
+            <span class="featured-title">Zidari mreze</span>
+            <div class="featured-cards">
+                @foreach (var player in featuredGoalkeepers)
+                {
+                    <partial name="_PlayerCard" model="player" />
+                }
+            </div>
+        </div>
+        <h2 class="position-title">Vratari</h2>
+    </div>
+</div>
+
+<div class="players-list-container">
+    <h3 class="players-list-title">Svi igrači</h3>
+
+    <div class="players-filters" aria-label="Filter players">
+        <div class="players-position-filters" role="group" aria-label="Filter by position">
+            <button type="button" class="players-filter-button is-active" data-position="all">Svi</button>
+            <button type="button" class="players-filter-button" data-position="goalkeeper">Vratari</button>
+            <button type="button" class="players-filter-button" data-position="defender">Defenderi</button>
+            <button type="button" class="players-filter-button" data-position="midfielder">Vezni</button>
+            <button type="button" class="players-filter-button" data-position="forward">Napadaci</button>
+        </div>
+
+        <div class="players-search-wrap">
+            <label for="playersSearch" class="players-search-label">Trazi po username-u</label>
+            <input
+                id="playersSearch"
+                class="players-search-input"
+                type="search"
+                placeholder="Upisi username..."
+                autocomplete="off" />
+        </div>
+    </div>
+
+    <div class="player-list">
+        @foreach (var player in Model)
+        {
+            var matches = player.MatchPlayers.Count;
+            var goals = player.MatchPlayers.Sum(match => match.Goals);
+            var assists = player.MatchPlayers.Sum(match => match.Assists);
+            var avgRating = player.RatingsReceived.Count == 0
+                ? 0
+                : player.RatingsReceived.Average(rating => rating.Rating);
+            var ageLabel = player.Age.HasValue ? player.Age.Value.ToString() : "-";
+            var avatarSrc = GetAvatarDataUri(player.ProfilePicture);
+
+            <a
+                class="player-list-link"
+                asp-controller="Players"
+                asp-action="Details"
+                asp-route-id="@player.Id"
+                asp-route-username="@player.Username">
+                <article
+                    class="player-list-row"
+                    data-position="@player.PreferredPosition.ToString().ToLowerInvariant()"
+                    data-username="@player.Username.ToLowerInvariant()">
+                    <div class="player-list-main">
+                        @if (!string.IsNullOrWhiteSpace(avatarSrc))
+                        {
+                            <img class="player-row-avatar player-row-avatar--image" src="@avatarSrc" alt="@player.Username avatar" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="player-row-avatar" aria-hidden="true">@GetInitials(player.Username)</div>
+                        }
+
+                        <div class="player-row-identity">
+                            <span class="player-row-username">@player.Username</span>
+                            <span class="player-row-meta">@player.PreferredPosition • @ageLabel god</span>
+                        </div>
+                    </div>
+
+                    <div class="player-row-stats" aria-label="Player stats">
+                        <span class="player-row-pill">M @matches</span>
+                        <span class="player-row-pill">G @goals</span>
+                        <span class="player-row-pill">A @assists</span>
+                        <span class="player-row-pill">R @avgRating.ToString("0.0")</span>
+                    </div>
+                </article>
+            </a>
+        }
+    </div>
+
+    <p id="playersNoResults" class="players-no-results" hidden>Nema igraca za odabrani filter.</p>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const listRows = Array.from(document.querySelectorAll('.player-list-row'));
+            const filterButtons = Array.from(document.querySelectorAll('.players-filter-button'));
+            const featuredContainers = Array.from(document.querySelectorAll('.position-container[data-jump-position]'));
+            const searchInput = document.getElementById('playersSearch');
+            const noResults = document.getElementById('playersNoResults');
+            const listContainer = document.querySelector('.players-list-container');
+
+            let activePosition = 'all';
+
+            function applyFilters() {
+                const usernameFilter = (searchInput?.value || '').trim().toLowerCase();
+                let visibleCount = 0;
+
+                listRows.forEach((row) => {
+                    const rowPosition = row.dataset.position || '';
+                    const rowUsername = row.dataset.username || '';
+
+                    const matchesPosition = activePosition === 'all' || rowPosition === activePosition;
+                    const matchesUsername = usernameFilter.length === 0 || rowUsername.includes(usernameFilter);
+
+                    const shouldShow = matchesPosition && matchesUsername;
+                    row.parentElement.hidden = !shouldShow;
+
+                    if (shouldShow) {
+                        visibleCount += 1;
+                    }
+                });
+
+                noResults.hidden = visibleCount > 0;
+            }
+
+            function activatePositionFilter(position) {
+                activePosition = position;
+
+                filterButtons.forEach((button) => {
+                    const isActive = (button.dataset.position || 'all') === position;
+                    button.classList.toggle('is-active', isActive);
+                });
+
+                applyFilters();
+            }
+
+            filterButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    activatePositionFilter(button.dataset.position || 'all');
+                });
+            });
+
+            featuredContainers.forEach((container) => {
+                const jump = () => {
+                    const selectedPosition = container.dataset.jumpPosition || 'all';
+
+                    activatePositionFilter(selectedPosition);
+
+                    if (listContainer) {
+                        listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                };
+
+                container.addEventListener('click', jump);
+                container.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        jump();
+                    }
+                });
+            });
+
+            searchInput?.addEventListener('input', applyFilters);
+
+            applyFilters();
+        })();
+    </script>
+}

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": "powershell.exe -ExecutionPolicy Bypass -Command \"`$input | Add-Content -Path 'C:\\Users\\nikol\\Code\\dotnettvz\\.github\\hooks\\agent_log.txt'\""
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "powershell.exe -ExecutionPolicy Bypass -Command \"`$input | Add-Content -Path 'C:\\Users\\nikol\\Code\\dotnettvz\\.github\\hooks\\agent_log.txt'\""
+      }
+    ]
+  }
+}
