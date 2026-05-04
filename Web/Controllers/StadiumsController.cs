@@ -1,47 +1,49 @@
 using Data.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Web.Models;
 
 namespace Web.Controllers;
 
 public class StadiumsController : Controller
 {
-    private readonly MockRepository _mockRepository;
+    private readonly MatchTrackerDbContext _dbContext;
 
-    public StadiumsController(MockRepository mockRepository)
+    public StadiumsController(MatchTrackerDbContext dbContext)
     {
-        _mockRepository = mockRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<IActionResult> Index()
     {
-        var fields = await _mockRepository.GetPlayingFields();
+        var fields = await _dbContext.PlayingFields
+            .AsNoTracking()
+            .ToListAsync();
         return View("StadiumsView", fields);
     }
 
     public async Task<IActionResult> Details(Guid id, string? name)
     {
-        var fields = await _mockRepository.GetPlayingFields();
+        var query = _dbContext.PlayingFields
+            .Include(field => field.MatchRecords)
+            .AsNoTracking();
 
         Data.Models.PlayingField? field = null;
 
         if (!string.IsNullOrWhiteSpace(name))
         {
-            field = fields.FirstOrDefault(f =>
+            field = await query.FirstOrDefaultAsync(f =>
                 string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        field ??= fields.FirstOrDefault(f => f.Id == id);
+        field ??= await query.FirstOrDefaultAsync(f => f.Id == id);
 
         if (field is null)
         {
             return NotFound();
         }
 
-        var matchRecords = await _mockRepository.GetMatchRecords();
-        var playedMatchesCount = matchRecords.Count(m =>
-            string.Equals(m.PlayingField.Name, field.Name, StringComparison.OrdinalIgnoreCase)
-            && m.WasMatchHeld);
+        var playedMatchesCount = field.MatchRecords.Count(match => match.WasMatchHeld);
 
         var model = new StadiumDetailsViewModel
         {

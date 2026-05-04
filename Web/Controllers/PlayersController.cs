@@ -1,36 +1,44 @@
 using Data.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Web.Controllers;
 
 public class PlayersController : Controller
 {
-    private readonly MockRepository _mockRepository;
+    private readonly MatchTrackerDbContext _dbContext;
 
-    public PlayersController(MockRepository mockRepository)
+    public PlayersController(MatchTrackerDbContext dbContext)
     {
-        _mockRepository = mockRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<IActionResult> Index()
     {
-        var players = await _mockRepository.GetPlayers();
+        var players = await _dbContext.Players
+            .Include(player => player.MatchPlayers)
+            .Include(player => player.RatingsReceived)
+            .AsNoTracking()
+            .ToListAsync();
         return View("Players", players);
     }
 
     public async Task<IActionResult> Details(Guid id, string? username)
     {
-        var players = await _mockRepository.GetPlayers();
+        var query = _dbContext.Players
+            .Include(player => player.MatchPlayers)
+            .Include(player => player.RatingsReceived)
+            .AsNoTracking();
 
         Data.Models.Player? player = null;
 
         if (!string.IsNullOrWhiteSpace(username))
         {
-            player = players.FirstOrDefault(p =>
+            player = await query.FirstOrDefaultAsync(p =>
                 string.Equals(p.Username, username, StringComparison.OrdinalIgnoreCase));
         }
 
-        player ??= players.FirstOrDefault(p => p.Id == id);
+        player ??= await query.FirstOrDefaultAsync(p => p.Id == id);
 
         if (player is null)
         {

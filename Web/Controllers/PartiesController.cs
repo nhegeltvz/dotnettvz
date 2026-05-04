@@ -1,27 +1,36 @@
 using Data.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
 namespace Web.Controllers;
 
 public class PartiesController : Controller
 {
-    private readonly MockRepository _mockRepository;
+    private readonly MatchTrackerDbContext _dbContext;
 
-    public PartiesController(MockRepository mockRepository)
+    public PartiesController(MatchTrackerDbContext dbContext)
     {
-        _mockRepository = mockRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<IActionResult> Index()
     {
-        var parties = await _mockRepository.GetParties();
+        var parties = await _dbContext.Parties
+            .Include(party => party.PlayerCreated)
+            .Include(party => party.Members)
+            .AsNoTracking()
+            .ToListAsync();
         return View("PartiesView", parties);
     }
 
     public async Task<IActionResult> Details(Guid id, string? createdAt)
     {
-        var parties = await _mockRepository.GetParties();
+        var query = _dbContext.Parties
+            .Include(party => party.PlayerCreated)
+            .Include(party => party.Members)
+            .Include(party => party.PreferredPlayingDates)
+            .AsNoTracking();
 
         Data.Models.Party? party = null;
 
@@ -32,11 +41,13 @@ public class PartiesController : Controller
                 DateTimeStyles.RoundtripKind,
                 out var createdAtValue))
         {
-            // Mock data IDs are regenerated on every fetch, so we match by createdAt.
-            party = parties.FirstOrDefault(p => p.DateCreated.Date == createdAtValue.Date);
+            var dayStart = createdAtValue.Date;
+            var dayEnd = dayStart.AddDays(1);
+            party = await query.FirstOrDefaultAsync(p =>
+                p.DateCreated >= dayStart && p.DateCreated < dayEnd);
         }
 
-        party ??= parties.FirstOrDefault(p => p.Id == id);
+        party ??= await query.FirstOrDefaultAsync(p => p.Id == id);
 
         if (party is null)
         {

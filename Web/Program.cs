@@ -1,10 +1,11 @@
+using Data;
 using Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services
-    .AddMockRepository()
+    .AddCoreServices(builder.Configuration)
     .BundleAndMinify()
     .AddControllersWithViews();
 
