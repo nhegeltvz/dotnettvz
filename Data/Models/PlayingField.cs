@@ -19,5 +19,5 @@ public class PlayingField : IPlayingField
     public int CountOfPlayedMatches { get; set; }
 
     //EF navigation properties
-    public List<MatchRecord> MatchRecords { get; set; } = new();
+    public virtual ICollection<MatchRecord> MatchRecords { get; set; } = new List<MatchRecord>();
 }

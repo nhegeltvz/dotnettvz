@@ -11,7 +11,7 @@ public class PlayerRating : IPlayerRating
     public int Rating { get; set; }
 
     //EF navigation properties
-    public MatchPlayer MatchPlayer { get; set; } = null!;
-    public Player PlayerGivingRating { get; set; } = null!;
-    public Player PlayerReceivingRating { get; set; } = null!;
+    public virtual MatchPlayer MatchPlayer { get; set; } = null!;
+    public virtual Player PlayerGivingRating { get; set; } = null!;
+    public virtual Player PlayerReceivingRating { get; set; } = null!;
 }

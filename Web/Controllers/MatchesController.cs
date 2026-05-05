@@ -5,6 +5,7 @@ using System.Globalization;
 
 namespace Web.Controllers;
 
+[Route("matches")]
 public class MatchesController : Controller
 {
     private readonly MatchTrackerDbContext _dbContext;
@@ -14,6 +15,8 @@ public class MatchesController : Controller
         _dbContext = dbContext;
     }
 
+    [HttpGet("")]
+    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var matches = await _dbContext.MatchRecords
@@ -23,6 +26,8 @@ public class MatchesController : Controller
         return View("MatchesView", matches);
     }
 
+    [HttpGet("details/{id:guid}")]
+    [HttpGet("details/by-date/{matchDate}/{fieldName}")]
     public async Task<IActionResult> Details(Guid id, string? matchDate, string? fieldName)
     {
         var query = _dbContext.MatchRecords
@@ -46,10 +51,11 @@ public class MatchesController : Controller
         {
             var dayStart = matchDateValue.Date;
             var dayEnd = dayStart.AddDays(1);
+            var fieldNameLower = fieldName.ToLower();
             match = await query.FirstOrDefaultAsync(m =>
                 m.MatchHeld >= dayStart
                 && m.MatchHeld < dayEnd
-                && string.Equals(m.PlayingField.Name, fieldName, StringComparison.OrdinalIgnoreCase));
+                && m.PlayingField.Name.ToLower() == fieldNameLower);
         }
 
         match ??= await query.FirstOrDefaultAsync(m => m.Id == id);

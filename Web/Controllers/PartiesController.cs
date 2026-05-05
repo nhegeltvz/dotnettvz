@@ -5,6 +5,7 @@ using System.Globalization;
 
 namespace Web.Controllers;
 
+[Route("parties")]
 public class PartiesController : Controller
 {
     private readonly MatchTrackerDbContext _dbContext;
@@ -14,6 +15,8 @@ public class PartiesController : Controller
         _dbContext = dbContext;
     }
 
+    [HttpGet("")]
+    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var parties = await _dbContext.Parties
@@ -24,6 +27,8 @@ public class PartiesController : Controller
         return View("PartiesView", parties);
     }
 
+    [HttpGet("details/{id:guid}")]
+    [HttpGet("details/by-date/{createdAt}")]
     public async Task<IActionResult> Details(Guid id, string? createdAt)
     {
         var query = _dbContext.Parties

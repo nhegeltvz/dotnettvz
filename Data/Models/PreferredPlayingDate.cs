@@ -9,5 +9,5 @@ public class PreferredPlayingDate : IPreferredPlayingDate
     public DateTime Date { get; set; }
 
     //EF navigation properties
-    public Party Party { get; set; } = null!;
+    public virtual Party Party { get; set; } = null!;
 }

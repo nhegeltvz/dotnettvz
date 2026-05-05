@@ -12,7 +12,7 @@ public class Party : IParty
     public string PreferredLocations { get; set; } = string.Empty;
 
     //EF navigation properties
-    public Player PlayerCreated { get; set; } = null!;
-    public List<PreferredPlayingDate> PreferredPlayingDates { get; set; } = new();
-    public List<Player> Members { get; set; } = new();
+    public virtual Player PlayerCreated { get; set; } = null!;
+    public virtual ICollection<PreferredPlayingDate> PreferredPlayingDates { get; set; } = new List<PreferredPlayingDate>();
+    public virtual ICollection<Player> Members { get; set; } = new List<Player>();
 }

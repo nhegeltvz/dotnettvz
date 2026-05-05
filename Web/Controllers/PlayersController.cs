@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Web.Controllers;
 
+[Route("players")]
 public class PlayersController : Controller
 {
     private readonly MatchTrackerDbContext _dbContext;
@@ -13,6 +14,8 @@ public class PlayersController : Controller
         _dbContext = dbContext;
     }
 
+    [HttpGet("")]
+    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var players = await _dbContext.Players
@@ -23,6 +26,8 @@ public class PlayersController : Controller
         return View("Players", players);
     }
 
+    [HttpGet("details/{id:guid}")]
+    [HttpGet("details/by-username/{username}")]
     public async Task<IActionResult> Details(Guid id, string? username)
     {
         var query = _dbContext.Players
@@ -34,8 +39,8 @@ public class PlayersController : Controller
 
         if (!string.IsNullOrWhiteSpace(username))
         {
-            player = await query.FirstOrDefaultAsync(p =>
-                string.Equals(p.Username, username, StringComparison.OrdinalIgnoreCase));
+            var usernameLower = username.ToLower();
+            player = await query.FirstOrDefaultAsync(p => p.Username.ToLower() == usernameLower);
         }
 
         player ??= await query.FirstOrDefaultAsync(p => p.Id == id);

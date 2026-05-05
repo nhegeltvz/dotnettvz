@@ -13,7 +13,7 @@ public class MatchPlayer : IMatchPlayer
     public int Assists { get; set; }
 
     //EF navigation properties
-    public Player Player { get; set; } = null!;
-    public MatchRecord MatchRecord { get; set; } = null!;
-    public PlayerRating? PlayerRating { get; set; }
+    public virtual Player Player { get; set; } = null!;
+    public virtual MatchRecord MatchRecord { get; set; } = null!;
+    public virtual PlayerRating? PlayerRating { get; set; }
 }

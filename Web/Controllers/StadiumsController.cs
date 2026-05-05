@@ -5,6 +5,7 @@ using Web.Models;
 
 namespace Web.Controllers;
 
+[Route("stadiums")]
 public class StadiumsController : Controller
 {
     private readonly MatchTrackerDbContext _dbContext;
@@ -14,6 +15,8 @@ public class StadiumsController : Controller
         _dbContext = dbContext;
     }
 
+    [HttpGet("")]
+    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var fields = await _dbContext.PlayingFields
@@ -22,6 +25,8 @@ public class StadiumsController : Controller
         return View("StadiumsView", fields);
     }
 
+    [HttpGet("details/{id:guid}")]
+    [HttpGet("details/by-name/{name}")]
     public async Task<IActionResult> Details(Guid id, string? name)
     {
         var query = _dbContext.PlayingFields
@@ -32,8 +37,8 @@ public class StadiumsController : Controller
 
         if (!string.IsNullOrWhiteSpace(name))
         {
-            field = await query.FirstOrDefaultAsync(f =>
-                string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+            var nameLower = name.ToLower();
+            field = await query.FirstOrDefaultAsync(f => f.Name.ToLower() == nameLower);
         }
 
         field ??= await query.FirstOrDefaultAsync(f => f.Id == id);

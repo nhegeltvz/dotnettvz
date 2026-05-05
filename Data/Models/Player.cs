@@ -14,10 +14,10 @@ public class Player : IPlayer
     public byte[] ProfilePicture { get; set; } = [];
 
     //EF navigation properties
-    public List<Party> CreatedParties { get; set; } = new();
-    public List<Party> JoinedParties { get; set; } = new();
-    public List<MatchPlayer> MatchPlayers { get; set; } = new();
-    public List<PlayerRating> RatingsGiven { get; set; } = new();
-    public List<PlayerRating> RatingsReceived { get; set; } = new();
-    public List<MatchVote> MatchVotes { get; set; } = new();
+    public virtual ICollection<Party> CreatedParties { get; set; } = new List<Party>();
+    public virtual ICollection<Party> JoinedParties { get; set; } = new List<Party>();
+    public virtual ICollection<MatchPlayer> MatchPlayers { get; set; } = new List<MatchPlayer>();
+    public virtual ICollection<PlayerRating> RatingsGiven { get; set; } = new List<PlayerRating>();
+    public virtual ICollection<PlayerRating> RatingsReceived { get; set; } = new List<PlayerRating>();
+    public virtual ICollection<MatchVote> MatchVotes { get; set; } = new List<MatchVote>();
 }

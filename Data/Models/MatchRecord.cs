@@ -13,7 +13,7 @@ public class MatchRecord : IMatchRecord
     public int GoalsTeamB { get; set; }
 
     //EF navigation properties
-    public PlayingField PlayingField { get; set; } = null!;
-    public List<MatchPlayer> MatchPlayers { get; set; } = new();
-    public List<MatchVote> MatchVotes { get; set; } = new();
+    public virtual PlayingField PlayingField { get; set; } = null!;
+    public virtual ICollection<MatchPlayer> MatchPlayers { get; set; } = new List<MatchPlayer>();
+    public virtual ICollection<MatchVote> MatchVotes { get; set; } = new List<MatchVote>();
 }

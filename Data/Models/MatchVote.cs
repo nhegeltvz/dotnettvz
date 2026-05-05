@@ -10,6 +10,6 @@ public class MatchVote : IMatchVote
     public bool VotedHeld { get; set; }
 
     //EF navigation properties
-    public MatchRecord MatchRecord { get; set; } = null!;
-    public Player Player { get; set; } = null!;
+    public virtual MatchRecord MatchRecord { get; set; } = null!;
+    public virtual Player Player { get; set; } = null!;
 }
