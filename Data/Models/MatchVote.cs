@@ -2,6 +2,7 @@ using Data.Models.Interfaces;
 
 namespace Data.Models;
 
+//After date of match ends, each player is asked wether or not the match was played.
 public class MatchVote : IMatchVote
 {
     public Guid Id { get; set; }

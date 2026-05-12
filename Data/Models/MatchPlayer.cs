@@ -13,7 +13,11 @@ public class MatchPlayer : IMatchPlayer
     public int Assists { get; set; }
 
     //EF navigation properties
+
+    //Player is essentially a user, so Match player is connected to a matcha and a Player
     public virtual Player Player { get; set; } = null!;
+    //If a match was played, it holds a match record, this player is connected to that match record
     public virtual MatchRecord MatchRecord { get; set; } = null!;
+    //Player gives rating to other players in the match
     public virtual PlayerRating? PlayerRating { get; set; }
 }

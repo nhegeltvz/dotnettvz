@@ -20,4 +20,5 @@ public class Player : IPlayer
     public virtual ICollection<PlayerRating> RatingsGiven { get; set; } = new List<PlayerRating>();
     public virtual ICollection<PlayerRating> RatingsReceived { get; set; } = new List<PlayerRating>();
     public virtual ICollection<MatchVote> MatchVotes { get; set; } = new List<MatchVote>();
+    public virtual ICollection<ScheduledMatchAttendance> ScheduledMatchAttendances { get; set; } = new List<ScheduledMatchAttendance>();
 }

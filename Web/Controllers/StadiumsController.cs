@@ -1,4 +1,6 @@
 using Data.Data;
+using Data.Models;
+using Data.Services.Stores;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Web.Models;
@@ -8,51 +10,36 @@ namespace Web.Controllers;
 [Route("stadiums")]
 public class StadiumsController : Controller
 {
-    private readonly MatchTrackerDbContext _dbContext;
-
-    public StadiumsController(MatchTrackerDbContext dbContext)
+    private readonly StadiumStore _store;
+    public StadiumsController(StadiumStore store)
     {
-        _dbContext = dbContext;
+        _store = store;
     }
 
     [HttpGet("")]
-    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
-        var fields = await _dbContext.PlayingFields
-            .AsNoTracking()
-            .ToListAsync();
+        var fields = await _store.GetAllStadiumsAsync();
         return View("StadiumsView", fields);
     }
 
     [HttpGet("details/{id:guid}")]
-    [HttpGet("details/by-name/{name}")]
-    public async Task<IActionResult> Details(Guid id, string? name)
+    public async Task<IActionResult> Details(Guid id)
     {
-        var query = _dbContext.PlayingFields
-            .Include(field => field.MatchRecords)
-            .AsNoTracking();
 
-        Data.Models.PlayingField? field = null;
 
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            var nameLower = name.ToLower();
-            field = await query.FirstOrDefaultAsync(f => f.Name.ToLower() == nameLower);
-        }
+        var playingField = await _store.FindByIdAsync(id);
 
-        field ??= await query.FirstOrDefaultAsync(f => f.Id == id);
-
-        if (field is null)
+        if (playingField is null)
         {
             return NotFound();
         }
 
-        var playedMatchesCount = field.MatchRecords.Count(match => match.WasMatchHeld);
+        var playedMatchesCount = playingField.MatchRecords.Count(match => match.WasMatchHeld);
 
         var model = new StadiumDetailsViewModel
         {
-            Field = field,
+            Field = playingField,
             PlayedMatchesCount = playedMatchesCount
         };
 

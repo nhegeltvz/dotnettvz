@@ -16,7 +16,6 @@ public class MatchesController : Controller
     }
 
     [HttpGet("")]
-    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var matches = await _dbContext.MatchRecords
@@ -27,7 +26,6 @@ public class MatchesController : Controller
     }
 
     [HttpGet("details/{id:guid}")]
-    [HttpGet("details/by-date/{matchDate}/{fieldName}")]
     public async Task<IActionResult> Details(Guid id, string? matchDate, string? fieldName)
     {
         var query = _dbContext.MatchRecords

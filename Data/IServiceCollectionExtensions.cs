@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Data.Data;
+using Data.Services.Stores;
 
 namespace Data
 {
@@ -12,7 +13,16 @@ namespace Data
             var connectionString = configuration.GetConnectionString("MatchTrackerSqlite");
             services.AddDbContext<MatchTrackerDbContext>(options => options.UseSqlite(connectionString));
 
+            services.AddStores();
+
             return services;
         }
+
+        private static IServiceCollection AddStores(this IServiceCollection services)
+            => services
+                .AddScoped<MatchStore>()
+                .AddScoped<PartyStore>()
+                .AddScoped<PlayerStore>()
+                .AddScoped<StadiumStore>();
     }
 }

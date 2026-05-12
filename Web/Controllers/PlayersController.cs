@@ -14,8 +14,6 @@ public class PlayersController : Controller
         _dbContext = dbContext;
     }
 
-    [HttpGet("")]
-    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var players = await _dbContext.Players
@@ -27,7 +25,6 @@ public class PlayersController : Controller
     }
 
     [HttpGet("details/{id:guid}")]
-    [HttpGet("details/by-username/{username}")]
     public async Task<IActionResult> Details(Guid id, string? username)
     {
         var query = _dbContext.Players

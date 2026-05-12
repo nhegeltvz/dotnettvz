@@ -15,8 +15,6 @@ public class PartiesController : Controller
         _dbContext = dbContext;
     }
 
-    [HttpGet("")]
-    [HttpGet("list")]
     public async Task<IActionResult> Index()
     {
         var parties = await _dbContext.Parties
@@ -28,7 +26,6 @@ public class PartiesController : Controller
     }
 
     [HttpGet("details/{id:guid}")]
-    [HttpGet("details/by-date/{createdAt}")]
     public async Task<IActionResult> Details(Guid id, string? createdAt)
     {
         var query = _dbContext.Parties

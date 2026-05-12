@@ -20,4 +20,5 @@ public class PlayingField : IPlayingField
 
     //EF navigation properties
     public virtual ICollection<MatchRecord> MatchRecords { get; set; } = new List<MatchRecord>();
+    public virtual ICollection<ScheduledMatch> ScheduledMatches { get; set; } = new List<ScheduledMatch>();
 }

@@ -15,4 +15,5 @@ public class Party : IParty
     public virtual Player PlayerCreated { get; set; } = null!;
     public virtual ICollection<PreferredPlayingDate> PreferredPlayingDates { get; set; } = new List<PreferredPlayingDate>();
     public virtual ICollection<Player> Members { get; set; } = new List<Player>();
+    public virtual ScheduledMatch? ScheduledMatch { get; set; }
 }
