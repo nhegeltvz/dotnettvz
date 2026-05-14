@@ -1,10 +1,12 @@
 using Data.Data;
 using Data.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Data.Models;
 
 public class PlayingField : IPlayingField
 {
+    [Key]
     public Guid Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
@@ -20,4 +22,5 @@ public class PlayingField : IPlayingField
 
     //EF navigation properties
     public virtual ICollection<MatchRecord> MatchRecords { get; set; } = new List<MatchRecord>();
+    public virtual ICollection<ScheduledMatch> ScheduledMatches { get; set; } = new List<ScheduledMatch>();
 }

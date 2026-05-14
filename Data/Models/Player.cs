@@ -1,10 +1,12 @@
 using Data.Data;
 using Data.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Data.Models;
 
 public class Player : IPlayer
 {
+    [Key]
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
@@ -20,4 +22,5 @@ public class Player : IPlayer
     public virtual ICollection<PlayerRating> RatingsGiven { get; set; } = new List<PlayerRating>();
     public virtual ICollection<PlayerRating> RatingsReceived { get; set; } = new List<PlayerRating>();
     public virtual ICollection<MatchVote> MatchVotes { get; set; } = new List<MatchVote>();
+    public virtual ICollection<ScheduledMatchAttendance> ScheduledMatchAttendances { get; set; } = new List<ScheduledMatchAttendance>();
 }

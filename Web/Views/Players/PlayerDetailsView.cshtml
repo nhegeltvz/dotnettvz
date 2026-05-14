@@ -4,60 +4,12 @@
     ViewData["Title"] = "Detalji igraca";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/"),
+        new("Home", "/home"),
         new("Players", "/Players"),
         new(Model.Username)
     };
 
-    string GetImageMimeType(byte[] bytes)
-    {
-        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-        {
-            return "image/jpeg";
-        }
 
-        if (bytes.Length >= 8
-            && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47
-            && bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
-        {
-            return "image/png";
-        }
-
-        if (bytes.Length >= 4 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
-        {
-            return "image/gif";
-        }
-
-        if (bytes.Length > 0 && bytes[0] == 0x3C)
-        {
-            return "image/svg+xml";
-        }
-
-        return "application/octet-stream";
-    }
-
-    string? GetAvatarDataUri(byte[] bytes)
-        => bytes.Length > 0
-            ? $"data:{GetImageMimeType(bytes)};base64,{Convert.ToBase64String(bytes)}"
-            : null;
-
-    string GetInitials(string username)
-    {
-        var parts = username
-            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
-            .Where(part => !string.IsNullOrWhiteSpace(part))
-            .Take(2)
-            .ToArray();
-
-        if (parts.Length == 0)
-        {
-            return "P";
-        }
-
-        return string.Concat(parts.Select(part => char.ToUpperInvariant(part[0])));
-    }
-
-    var avatarSrc = GetAvatarDataUri(Model.ProfilePicture);
     var matches = Model.MatchPlayers.Count;
     var goals = Model.MatchPlayers.Sum(match => match.Goals);
     var assists = Model.MatchPlayers.Sum(match => match.Assists);
@@ -75,14 +27,7 @@
 
     <article class="player-details-card">
         <div class="player-details-header">
-            @if (!string.IsNullOrWhiteSpace(avatarSrc))
-            {
-                <img class="player-details-avatar player-details-avatar--image" src="@avatarSrc" alt="@Model.Username avatar" loading="lazy" />
-            }
-            else
-            {
-                <div class="player-details-avatar" aria-hidden="true">@GetInitials(Model.Username)</div>
-            }
+            <div class="player-details-avatar" aria-hidden="true">@DataUtility.GetInitials(Model.Username,"P")</div>
 
             <div class="player-details-identity">
                 <h1>@Model.Username</h1>

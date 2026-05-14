@@ -1,104 +1,35 @@
 @model List<Data.Models.Player>
 @using Data.Data
+@using Data.Models
 
 @{
     ViewData["Title"] = "Players";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/"),
+        new("Home", "/home"),
         new("Players")
     };
 
-    string GetImageMimeType(byte[] bytes)
-    {
-        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-        {
-            return "image/jpeg";
-        }
+    List<Player> GetPositionedPlayers(Position prefferedPositon)
+    => Model.Where(player => player.PreferredPosition == prefferedPositon).ToList();
 
-        if (bytes.Length >= 8
-            && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47
-            && bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
-        {
-            return "image/png";
-        }
-
-        if (bytes.Length >= 4 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
-        {
-            return "image/gif";
-        }
-
-        if (bytes.Length > 0 && bytes[0] == 0x3C)
-        {
-            return "image/svg+xml";
-        }
-
-        return "application/octet-stream";
-    }
-
-    string? GetAvatarDataUri(byte[] bytes)
-        => bytes.Length > 0
-            ? $"data:{GetImageMimeType(bytes)};base64,{Convert.ToBase64String(bytes)}"
-            : null;
-
-    string GetInitials(string username)
-    {
-        var parts = username
-            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
-            .Where(part => !string.IsNullOrWhiteSpace(part))
-            .Take(2)
-            .ToArray();
-
-        if (parts.Length == 0)
-        {
-            return "P";
-        }
-
-        return string.Concat(parts.Select(part => char.ToUpperInvariant(part[0])));
-    }
-
-    var strikers = Model
-        .Where(player => player.PreferredPosition == Position.Forward);
-
-    var featuredStrikers = strikers
-        .OrderByDescending(player => player.MatchPlayers.Sum(match => match.Goals))
+    List<Player> GetFeaturedPlayers(List<Player> players, Func<Player,double> selector, int takeNumber)
+    => players
+        .OrderByDescending(selector)
         .ThenByDescending(player => player.MatchPlayers.Count)
-        .Take(3)
-        .ToList();
-
-    var midfielders = Model
-        .Where(player => player.PreferredPosition == Position.Midfielder);
-
-    var featuredMidfielders = midfielders
-        .OrderByDescending(player => player.MatchPlayers.Sum(match => match.Assists))
-        .ThenByDescending(player => player.MatchPlayers.Count)
-        .Take(3)
-        .ToList();
+        .Take(takeNumber).ToList();
 
 
+    var goalkeepers = GetPositionedPlayers(Position.Goalkeeper);
+    var defenders = GetPositionedPlayers(Position.Defender);
+    var midfielders = GetPositionedPlayers(Position.Midfielder);
+    var strikers = GetPositionedPlayers(Position.Forward);
 
-    var defenders = Model
-        .Where(player => player.PreferredPosition == Position.Defender);
 
-    var featuredDefenders = defenders
-        .OrderByDescending(player => player.RatingsReceived.Count == 0
-            ? 0
-            : player.RatingsReceived.Average(rating => rating.Rating))
-        .ThenByDescending(player => player.MatchPlayers.Count)
-        .Take(2)
-        .ToList();
-
-    var goalkeepers = Model
-        .Where(player => player.PreferredPosition == Position.Goalkeeper);
-
-    var featuredGoalkeepers = goalkeepers
-        .OrderByDescending(player => player.RatingsReceived.Count == 0
-            ? 0
-            : player.RatingsReceived.Average(rating => rating.Rating))
-        .ThenByDescending(player => player.MatchPlayers.Count)
-        .Take(1)
-        .ToList();
-
+    var featuredGoalkeepers = GetFeaturedPlayers(goalkeepers, player => player.RatingsReceived.Count == 0 ? 0: player.RatingsReceived.Average(rating => rating.Rating), 1);
+    var featuredDefenders = GetFeaturedPlayers(defenders, player => player.RatingsReceived.Count == 0? 0: player.RatingsReceived.Average(rating => rating.Rating), 2);
+    var featuredMidfielders = GetFeaturedPlayers(midfielders, player => player.MatchPlayers.Sum(match => match.Assists), 3);
+    var featuredStrikers = GetFeaturedPlayers(strikers, player => player.MatchPlayers.Sum(match => match.Goals), 3);
 }
 
 <header class="players-stars-header" aria-label="Featured players section">
@@ -114,7 +45,7 @@
             <div class="featured-cards">
                 @foreach (var player in featuredStrikers)
                 {
-                    if(!String.IsNullOrEmpty(player.Username))
+                    if(!string.IsNullOrEmpty(player.Username))
                     {
                         <partial name="_PlayerCard" model="player" />
                     }
@@ -198,27 +129,18 @@
                 ? 0
                 : player.RatingsReceived.Average(rating => rating.Rating);
             var ageLabel = player.Age.HasValue ? player.Age.Value.ToString() : "-";
-            var avatarSrc = GetAvatarDataUri(player.ProfilePicture);
 
             <a
                 class="player-list-link"
                 asp-controller="Players"
                 asp-action="Details"
-                asp-route-id="@player.Id"
-                asp-route-username="@player.Username">
+                asp-route-id="@player.Id">
                 <article
                     class="player-list-row"
                     data-position="@player.PreferredPosition.ToString().ToLowerInvariant()"
                     data-username="@player.Username.ToLowerInvariant()">
                     <div class="player-list-main">
-                        @if (!string.IsNullOrWhiteSpace(avatarSrc))
-                        {
-                            <img class="player-row-avatar player-row-avatar--image" src="@avatarSrc" alt="@player.Username avatar" loading="lazy" />
-                        }
-                        else
-                        {
-                            <div class="player-row-avatar" aria-hidden="true">@GetInitials(player.Username)</div>
-                        }
+                            <div class="player-row-avatar" aria-hidden="true">@DataUtility.GetInitials(player.Username, "P")</div>
 
                         <div class="player-row-identity">
                             <span class="player-row-username">@player.Username</span>
