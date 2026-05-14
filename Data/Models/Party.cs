@@ -1,10 +1,14 @@
 using Data.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Data.Models;
 
 public class Party : IParty
 {
+    [Key]
     public Guid Id { get; set; }
+    [ForeignKey(nameof(PlayerCreated))]
     public Guid PlayerCreatedId { get; set; }
     public DateTime DateCreated { get; set; }
     public int MaxMembers { get; set; }

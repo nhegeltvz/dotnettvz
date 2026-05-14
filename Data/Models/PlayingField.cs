@@ -1,10 +1,12 @@
 using Data.Data;
 using Data.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Data.Models;
 
 public class PlayingField : IPlayingField
 {
+    [Key]
     public Guid Id { get; set; }
 
     public string Name { get; set; } = string.Empty;

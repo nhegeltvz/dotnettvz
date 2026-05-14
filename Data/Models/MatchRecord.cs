@@ -1,13 +1,17 @@
 using Data.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Data.Models;
 
 public class MatchRecord : IMatchRecord
 {
+    [Key]
     public Guid Id { get; set; }
 
     public bool WasMatchHeld { get; set; }
     public DateTime MatchHeld { get; set; }
+    [ForeignKey(nameof(PlayingField))]
     public Guid PlayingFieldId { get; set; }
     public int GoalsTeamA { get; set; }
     public int GoalsTeamB { get; set; }

@@ -1,61 +1,27 @@
-using Data.Data;
+using Data.Services.Stores;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 namespace Web.Controllers;
 
 [Route("parties")]
 public class PartiesController : Controller
 {
-    private readonly MatchTrackerDbContext _dbContext;
-
-    public PartiesController(MatchTrackerDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
+    private readonly PartyStore _store;
+    public PartiesController(PartyStore store) => _store = store;
     public async Task<IActionResult> Index()
     {
-        var parties = await _dbContext.Parties
-            .Include(party => party.PlayerCreated)
-            .Include(party => party.Members)
-            .AsNoTracking()
-            .ToListAsync();
+        var parties = await _store.GetPartiesAsync();
         return View("PartiesView", parties);
     }
 
     [HttpGet("details/{id:guid}")]
-    public async Task<IActionResult> Details(Guid id, string? createdAt)
+    public async Task<IActionResult> Details(Guid id)
     {
-        var query = _dbContext.Parties
-            .Include(party => party.PlayerCreated)
-            .Include(party => party.Members)
-            .Include(party => party.PreferredPlayingDates)
-            .AsNoTracking();
-
-        Data.Models.Party? party = null;
-
-        if (!string.IsNullOrWhiteSpace(createdAt)
-            && DateTime.TryParse(
-                createdAt,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.RoundtripKind,
-                out var createdAtValue))
-        {
-            var dayStart = createdAtValue.Date;
-            var dayEnd = dayStart.AddDays(1);
-            party = await query.FirstOrDefaultAsync(p =>
-                p.DateCreated >= dayStart && p.DateCreated < dayEnd);
-        }
-
-        party ??= await query.FirstOrDefaultAsync(p => p.Id == id);
-
+        var party = await _store.FindByIdAsync(id);
         if (party is null)
         {
             return NotFound();
         }
-
         return View("PartyDetailsView", party);
     }
 }

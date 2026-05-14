@@ -4,58 +4,12 @@
     ViewData["Title"] = "Detalji utakmice";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/"),
+        new("Home", "/home"),
         new("Matches", "/Matches"),
         new($"{Model.PlayingField.Name} — {Model.MatchHeld.ToLocalTime():dd.MM.yyyy.}")
     };
 
-    string GetImageMimeType(byte[] bytes)
-    {
-        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-        {
-            return "image/jpeg";
-        }
 
-        if (bytes.Length >= 8
-            && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47
-            && bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
-        {
-            return "image/png";
-        }
-
-        if (bytes.Length >= 4 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
-        {
-            return "image/gif";
-        }
-
-        if (bytes.Length > 0 && bytes[0] == 0x3C)
-        {
-            return "image/svg+xml";
-        }
-
-        return "application/octet-stream";
-    }
-
-    string? GetAvatarDataUri(byte[] bytes)
-        => bytes.Length > 0
-            ? $"data:{GetImageMimeType(bytes)};base64,{Convert.ToBase64String(bytes)}"
-            : null;
-
-    string GetInitials(string username)
-    {
-        var parts = username
-            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
-            .Where(part => !string.IsNullOrWhiteSpace(part))
-            .Take(2)
-            .ToArray();
-
-        if (parts.Length == 0)
-        {
-            return "P";
-        }
-
-        return string.Concat(parts.Select(part => char.ToUpperInvariant(part[0])));
-    }
 
     var teamAPlayers = Model.MatchPlayers
         .Where(matchPlayer => matchPlayer.Team == Data.Data.Team.A)
@@ -120,17 +74,9 @@
                             <ul class="match-player-list">
                                 @foreach (var playerEntry in teamAPlayers)
                                 {
-                                    var avatarSrc = GetAvatarDataUri(playerEntry.Player.ProfilePicture);
                                     <li>
-                                        @if (!string.IsNullOrWhiteSpace(avatarSrc))
-                                        {
-                                            <img class="match-player-avatar" src="@avatarSrc" alt="@playerEntry.Player.Username avatar" loading="lazy" />
-                                        }
-                                        else
-                                        {
-                                            <div class="match-player-avatar" aria-hidden="true">@GetInitials(playerEntry.Player.Username)</div>
-                                        }
-                                        <a class="match-player-name" asp-controller="Players" asp-action="Details" asp-route-id="@playerEntry.Player.Id" asp-route-username="@playerEntry.Player.Username">
+                                        <div class="match-player-avatar" aria-hidden="true">@DataUtility.GetInitials(playerEntry.Player.Username, "P")</div>
+                                        <a class="match-player-name" asp-controller="Players" asp-action="Details" asp-route-id="@playerEntry.Player.Id">
                                             @playerEntry.Player.Username
                                         </a>
                                         <div class="match-player-stats">
@@ -147,17 +93,9 @@
                             <ul class="match-player-list">
                                 @foreach (var playerEntry in teamBPlayers)
                                 {
-                                    var avatarSrc = GetAvatarDataUri(playerEntry.Player.ProfilePicture);
                                     <li>
-                                        @if (!string.IsNullOrWhiteSpace(avatarSrc))
-                                        {
-                                            <img class="match-player-avatar" src="@avatarSrc" alt="@playerEntry.Player.Username avatar" loading="lazy" />
-                                        }
-                                        else
-                                        {
-                                            <div class="match-player-avatar" aria-hidden="true">@GetInitials(playerEntry.Player.Username)</div>
-                                        }
-                                        <a class="match-player-name" asp-controller="Players" asp-action="Details" asp-route-id="@playerEntry.Player.Id" asp-route-username="@playerEntry.Player.Username">
+                                        <div class="match-player-avatar" aria-hidden="true">@DataUtility.GetInitials(playerEntry.Player.Username, "P")</div>
+                                        <a class="match-player-name" asp-controller="Players" asp-action="Details" asp-route-id="@playerEntry.Player.Id">
                                             @playerEntry.Player.Username
                                         </a>
                                         <div class="match-player-stats">
@@ -225,7 +163,7 @@
                         <li><strong>Kontakt:</strong> @Model.PlayingField.ContactNumber</li>
                     </ul>
 
-                    <a class="match-field-link" asp-controller="Stadiums" asp-action="Details" asp-route-id="@Model.PlayingField.Id" asp-route-name="@Model.PlayingField.Name">
+                    <a class="match-field-link" asp-controller="Stadiums" asp-action="Details" asp-route-id="@Model.PlayingField.Id">
                         <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                         Otvori detalje terena
                     </a>

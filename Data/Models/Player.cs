@@ -1,10 +1,12 @@
 using Data.Data;
 using Data.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Data.Models;
 
 public class Player : IPlayer
 {
+    [Key]
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;

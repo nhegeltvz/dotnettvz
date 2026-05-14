@@ -2,56 +2,12 @@
 
 @{
     var creator = Model.PlayerCreated;
-    var creatorInitials = string.Concat(
-        creator.Username
-            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
-            .Where(part => !string.IsNullOrWhiteSpace(part))
-            .Take(2)
-            .Select(part => char.ToUpperInvariant(part[0])));
-
-    string GetImageMimeType(byte[] bytes)
-    {
-        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-        {
-            return "image/jpeg";
-        }
-
-        if (bytes.Length >= 8 &&
-            bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 &&
-            bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
-        {
-            return "image/png";
-        }
-
-        if (bytes.Length >= 4 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
-        {
-            return "image/gif";
-        }
-
-        if (bytes.Length > 0 && bytes[0] == 0x3C)
-        {
-            return "image/svg+xml";
-        }
-
-        return "application/octet-stream";
-    }
-
-    var creatorAvatarSrc = creator.ProfilePicture.Length > 0
-        ? $"data:{GetImageMimeType(creator.ProfilePicture)};base64,{Convert.ToBase64String(creator.ProfilePicture)}"
-        : null;
 }
 
 <div class="party-card @(Model.Id == Guid.Parse("00000000-0000-0000-0000-000000000001") ? "highlight" : "")">
     <div class="card-header">
         <div class="creator-info">
-            @if (!string.IsNullOrWhiteSpace(creatorAvatarSrc))
-            {
-                <img class="avatar avatar--image" src="@creatorAvatarSrc" alt="@creator.Username avatar" loading="lazy" />
-            }
-            else
-            {
-                <div class="avatar" aria-hidden="true">@creatorInitials</div>
-            }
+            <div class="avatar" aria-hidden="true">@DataUtility.GetInitials(creator.Username, "P")</div>
             <span>@Model.PlayerCreated.Username</span>
         </div>
     </div>
@@ -77,7 +33,6 @@
             <a asp-controller="Parties"
                asp-action="Details"
                asp-route-id="@Model.Id"
-               asp-route-createdAt="@Model.DateCreated.ToString("O")"
                class="details-button">Detalji</a>
         </div>
     </div>
