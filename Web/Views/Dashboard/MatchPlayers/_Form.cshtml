@@ -1,0 +1,35 @@
+@model Data.Dto.CRUD.MatchPlayer.MatchPlayerFormDto
+@using Data.Data
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">@(Model.Id.HasValue ? "Edit Match Player" : "Create Match Player")</h2>
+</div>
+
+<form class="dashboard-form" asp-controller="MatchPlayers" asp-action="@(Model.Id.HasValue ? "Edit" : "Create")" asp-route-id="@Model.Id" method="post" data-dashboard-form>
+    @if (Model.Id.HasValue)
+    {
+        <input type="hidden" name="Id" value="@Model.Id" />
+    }
+
+    <div class="dashboard-form-row">
+        <label asp-for="Team"></label>
+        <select asp-for="Team" asp-items="Html.GetEnumSelectList<Team>()"></select>
+        <span asp-validation-for="Team" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Goals"></label>
+        <input asp-for="Goals" type="number" min="0" max="999" />
+        <span asp-validation-for="Goals" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Assists"></label>
+        <input asp-for="Assists" type="number" min="0" max="999" />
+        <span asp-validation-for="Assists" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-actions">
+        <button class="dashboard-submit" type="submit">Save changes</button>
+    </div>
+</form>

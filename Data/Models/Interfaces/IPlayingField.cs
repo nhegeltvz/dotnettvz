@@ -15,5 +15,4 @@ public interface IPlayingField
     FieldStatus Status { get; }
     bool IsOutdoor { get; }
     SurfaceType SurfaceType { get; }
-    int CountOfPlayedMatches { get; }
 }

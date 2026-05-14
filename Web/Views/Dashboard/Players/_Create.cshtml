@@ -1,0 +1,19 @@
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">Create Player</h2>
+</div>
+
+<form class="dashboard-form" asp-controller="Players" asp-action="Create" method="post" data-dashboard-form>
+    <div class="dashboard-form-row">
+        <label>Username</label>
+        <input name="Username" />
+    </div>
+
+    <div class="dashboard-form-row">
+        <label>Email</label>
+        <input name="Email" />
+    </div>
+
+    <div class="dashboard-form-actions">
+        <button class="dashboard-submit" type="submit">Save changes</button>
+    </div>
+</form>

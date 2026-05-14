@@ -8,6 +8,7 @@
             {
 
                 pipeline.AddCssBundle("~/css/all.min.css",
+                    "css/dashboard.css",
                     "css/detailsShared.css",
                     "css/home.css",
                     "css/matchCard.css",

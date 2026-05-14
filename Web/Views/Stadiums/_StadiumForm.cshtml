@@ -1,0 +1,62 @@
+@model Data.Dto.CRUD.PlayingField.StadiumFormDto
+@using Data.Data
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">@((Model.Id.HasValue) ? "Edit Stadium" : "Create Stadium")</h2>
+</div>
+
+<form class="dashboard-form" asp-controller="Stadiums" asp-action="@(Model.Id.HasValue ? "Edit" : "Create")" asp-route-id="@Model.Id" method="post" data-dashboard-form>
+    @if (Model.Id.HasValue)
+    {
+        <input type="hidden" name="Id" value="@Model.Id" />
+    }
+
+    <div class="dashboard-form-row">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="ContactNumber"></label>
+        <input asp-for="ContactNumber" />
+        <span asp-validation-for="ContactNumber" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Status"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<FieldStatus>()"></select>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="SurfaceType"></label>
+        <select asp-for="SurfaceType" asp-items="Html.GetEnumSelectList<SurfaceType>()"></select>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="IsOutdoor"></label>
+        <input asp-for="IsOutdoor" type="checkbox" />
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Latitude"></label>
+        <input asp-for="Latitude" />
+        <span asp-validation-for="Latitude" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Longitude"></label>
+        <input asp-for="Longitude" />
+        <span asp-validation-for="Longitude" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-actions">
+        <button class="dashboard-submit" type="submit">Save changes</button>
+    </div>
+</form>

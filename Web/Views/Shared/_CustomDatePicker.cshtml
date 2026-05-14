@@ -1,0 +1,14 @@
+﻿@model CustomDatePickerModel
+
+<div class="date-picker-wrapper">
+     <input type="text"
+         class="date-picker-input"
+         data-custom-date-picker
+         data-field-name="@Model.FieldName"
+         placeholder=""
+         readonly />
+    <input type="hidden"
+        id="@Model.FieldName"
+        name="@Model.FieldName"
+        value="@Model.Value" />
+</div>

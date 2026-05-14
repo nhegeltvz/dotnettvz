@@ -1,0 +1,37 @@
+@model List<Data.Models.ScheduledMatchAttendance>
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">Scheduled Match Attendance</h2>
+    <a class="dashboard-action-button" href="#" data-dashboard-action="/attendance/create" aria-label="Add attendance">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    </a>
+</div>
+
+<table class="dashboard-table" aria-label="Scheduled match attendance list">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Attending</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var attendance in Model)
+        {
+            <tr>
+                <td>@attendance.Id</td>
+                <td>@attendance.IsAttending</td>
+                <td>
+                    <div class="dashboard-table-actions">
+                        <a class="dashboard-row-button" href="#" data-dashboard-action="/attendance/edit/@attendance.Id" aria-label="Edit attendance">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </a>
+                        <form asp-controller="ScheduledMatchAttendances" asp-action="Delete" asp-route-id="@attendance.Id" method="post" data-dashboard-delete>
+                            <button class="dashboard-row-button dashboard-row-button--danger" type="submit" aria-label="Delete attendance">X</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

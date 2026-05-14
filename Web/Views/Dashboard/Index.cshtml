@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
+<div class="dashboard-layout">
+    <aside class="dashboard-aside">
+        <nav class="dashboard-nav" aria-label="Dashboard navigation">
+            <ul class="dashboard-nav-list">
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Stadiums", "List")" asp-controller="Stadiums" asp-action="List" data-dashboard-url="/stadiums/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Stadiums</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Players", "List")" asp-controller="Players" asp-action="List" data-dashboard-url="/players/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Players</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Parties", "List")" asp-controller="Parties" asp-action="List" data-dashboard-url="/parties/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Parties</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Matches", "List")" asp-controller="Matches" asp-action="List" data-dashboard-url="/matches/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Match Records</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("MatchPlayers", "List")" asp-controller="MatchPlayers" asp-action="List" data-dashboard-url="/match-players/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Match Players</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("MatchVotes", "List" )" asp-controller="MatchVotes" asp-action="List" data-dashboard-url="/match-votes/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Match Votes</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("PlayerRatings", "List")" asp-controller="PlayerRatings" asp-action="List" data-dashboard-url="/player-ratings/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Player Ratings</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("PreferredPlayingDates", "List")" asp-controller="PreferredPlayingDates" asp-action="List" data-dashboard-url="/preferred-dates/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Preferred Playing Dates</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("ScheduledMatches", "List")" asp-controller="ScheduledMatches" asp-action="List" data-dashboard-url="/scheduled-matches/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Scheduled Matches</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("ScheduledMatchAttendance", "List")" asp-controller="ScheduledMatchAttendance" asp-action="List" data-dashboard-url="/attendance/list">
+                        <i class="fa-solid fa-table" aria-hidden="true"></i>
+                        <span>Scheduled Match Attendance</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    <div class="dashboard-main-content">
+        @await Html.PartialAsync("_LoadingSpinner")
+        <div id="dashboard-list" class="dashboard-panel" hidden></div>
+        <div id="dashboard-form" class="dashboard-panel" hidden></div>
+    </div>
+</div>
+
+@section Scripts {
+     <partial name="_ValidationScriptsPartial"></partial> 
+    <script>
+        (function () {
+            const listContainer = document.getElementById('dashboard-list');
+            const formContainer = document.getElementById('dashboard-form');
+            const tabs = Array.from(document.querySelectorAll('.dashboard-nav-link'));
+            let currentListUrl = '';
+
+            function setActiveTab(activeLink) {
+                tabs.forEach((tab) => tab.classList.toggle('active', tab === activeLink));
+            }
+
+            async function loadList(url) {
+                currentListUrl = url;
+                window.dashboardSpinner?.show();
+                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const html = await response.text();
+                listContainer.innerHTML = html;
+                listContainer.hidden = false;
+                window.dashboardInitAutocomplete?.(listContainer);
+                window.dashboardSpinner?.hide();
+            }
+
+            async function loadForm(url) {
+                window.dashboardSpinner?.show();
+                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const html = await response.text();
+                formContainer.innerHTML = html;
+                formContainer.hidden = false;
+                window.initDatetimePickers?.(formContainer);
+                $.validator.unobtrusive.parse(formContainer);
+                window.dashboardSpinner?.hide();
+            }
+
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    setActiveTab(tab);
+                    formContainer.hidden = true;
+                    const url = tab.getAttribute('data-dashboard-url');
+                    if (url) {
+                        loadList(url);
+                    } else {
+                        listContainer.hidden = true;
+                        listContainer.innerHTML = '';
+                    }
+                });
+            });
+            window.dashboardLoadList = loadList;
+
+            document.addEventListener('click', (event) => {
+                const actionButton = event.target.closest('[data-dashboard-action]');
+                if (!actionButton) {
+                    return;
+                }
+
+                event.preventDefault();
+                const actionUrl = actionButton.getAttribute('data-dashboard-action');
+                loadForm(actionUrl);
+            });
+
+            document.addEventListener('submit', async (event) => {
+                const form = event.target;
+
+                if (form.hasAttribute('data-dashboard-form')) {
+                    event.preventDefault();
+
+                    const response = await fetch(form.action, {
+                        method: form.method,
+                        body: new FormData(form)
+                    });
+
+                    if (response.ok) {
+                        formContainer.hidden = true;
+                        formContainer.innerHTML = '';
+                        if (currentListUrl) {
+                            window.dashboardSpinner?.show();
+                            await loadList(currentListUrl);
+                        }
+                    } else {
+                        const html = await response.text();
+                        formContainer.innerHTML = html;
+                        formContainer.hidden = false;
+                    }
+                }
+
+                if (form.hasAttribute('data-dashboard-delete')) {
+                    event.preventDefault();
+
+                    const response = await fetch(form.action, {
+                        method: form.method,
+                        body: new FormData(form)
+                    });
+
+                    if (response.ok && currentListUrl) {
+                        window.dashboardSpinner?.show();
+                        await loadList(currentListUrl);
+                    }
+                }
+            });
+        })();
+    </script>
+}

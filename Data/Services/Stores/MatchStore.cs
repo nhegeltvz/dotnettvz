@@ -1,29 +1,84 @@
-﻿using Data.Data;
+using Data.Data;
+using Data.Data.Common;
 using Data.Models;
+using Data.Models.Interfaces;
+using Data.Services.Validation.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace Data.Services.Stores
 {
     public class MatchStore
     {
         private readonly MatchTrackerDbContext _dbContext;
-        public MatchStore(MatchTrackerDbContext dbContext) => _dbContext = dbContext;
-        public async Task<List<MatchRecord>> GetMatchesAsync()
+        private readonly IValidator<MatchRecord> _matchRecordValidator;
+
+        public MatchStore(MatchTrackerDbContext dbContext, IValidator<MatchRecord> matchRecordValidator)
+        {
+            _dbContext = dbContext;
+            _matchRecordValidator = matchRecordValidator;
+        }
+
+        public async Task<List<MatchRecord>> GetAllMatchRecordsAsync()
             => await _dbContext.MatchRecords
-                .Include(match => match.PlayingField)
                 .AsNoTracking()
                 .ToListAsync();
 
-
-        public async Task<MatchRecord?> FindByIdAsync(Guid id)
-            =>await _dbContext.MatchRecords
-                    .Include(match => match.PlayingField)
-                    .Include(match => match.MatchPlayers)
-                    .ThenInclude(matchPlayer => matchPlayer.Player)
-                    .Include(match => match.MatchVotes)
-                    .ThenInclude(matchVote => matchVote.Player)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(m => m.Id == id);
+        public async Task<Result<MatchRecord>> FindByIdAsync(Guid id)
+        {
+            var matchRecord = await _dbContext.MatchRecords.FindAsync(id);
+            return matchRecord != null ? Result<MatchRecord>.Success(matchRecord) : Result<MatchRecord>.Failure(MatchRecordErrors.MatchRecordNotFound);
         }
+
+        public async Task<Result<Guid>> CreateMatchRecord(IMatchRecord model)
+        {
+            var matchRecord = new MatchRecord();
+            UpdateMatchRecord(model, matchRecord);
+            var validationResult = _matchRecordValidator.Validate(matchRecord);
+            if (!validationResult.IsSuccess)
+                return Result<Guid>.FromResult(validationResult);
+
+            _dbContext.MatchRecords.Add(matchRecord);
+            await _dbContext.SaveChangesAsync();
+
+            return Result<Guid>.Success(matchRecord.Id);
+        }
+
+        public async Task<Result> UpdateMatchRecord(IMatchRecord model)
+        {
+            var foundMatchRecordResult = await FindByIdAsync(model.Id);
+
+            if (!foundMatchRecordResult.IsSuccess || foundMatchRecordResult.Value == null)
+                return foundMatchRecordResult;
+
+            var matchRecord = foundMatchRecordResult.Value;
+            UpdateMatchRecord(model, matchRecord);
+            var validationResult = _matchRecordValidator.Validate(matchRecord);
+
+            if (!validationResult.IsSuccess)
+                return validationResult;
+
+            var rowsAffected = await _dbContext.SaveChangesAsync();
+            return rowsAffected != 0 ? Result.Success() : Result.Failure(MatchRecordErrors.MatchRecordNotUpdated);
+        }
+
+        private MatchRecord UpdateMatchRecord(IMatchRecord model, MatchRecord matchRecord)
+        {
+            matchRecord.WasMatchHeld = model.WasMatchHeld;
+            matchRecord.MatchHeld = model.MatchHeld;
+            matchRecord.PlayingFieldId = model.PlayingFieldId;
+            matchRecord.GoalsTeamA = model.GoalsTeamA;
+            matchRecord.GoalsTeamB = model.GoalsTeamB;
+            return matchRecord;
+        }
+
+        public async Task<Result> DeleteByIdAsync(Guid id)
+        {
+            var rowsAffected = await _dbContext.MatchRecords
+                .Where(x => x.Id == id)
+                .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
+
+            return rowsAffected == 0 ? Result.Failure(MatchRecordErrors.MatchRecordNotDeleted) : Result.Success();
+        }
+    }
 }

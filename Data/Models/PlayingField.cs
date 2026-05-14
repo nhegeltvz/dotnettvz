@@ -18,7 +18,6 @@ public class PlayingField : IPlayingField
     public FieldStatus Status { get; set; }
     public bool IsOutdoor { get; set; }
     public SurfaceType SurfaceType { get; set; }
-    public int CountOfPlayedMatches { get; set; }
 
     //EF navigation properties
     public virtual ICollection<MatchRecord> MatchRecords { get; set; } = new List<MatchRecord>();

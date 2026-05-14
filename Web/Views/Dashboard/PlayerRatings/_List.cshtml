@@ -1,0 +1,37 @@
+@model List<Data.Models.PlayerRating>
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">Player Ratings</h2>
+    <a class="dashboard-action-button" href="#" data-dashboard-action="/player-ratings/create" aria-label="Add player rating">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    </a>
+</div>
+
+<table class="dashboard-table" aria-label="Player ratings list">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Rating</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rating in Model)
+        {
+            <tr>
+                <td>@rating.Id</td>
+                <td>@rating.Rating</td>
+                <td>
+                    <div class="dashboard-table-actions">
+                        <a class="dashboard-row-button" href="#" data-dashboard-action="/player-ratings/edit/@rating.Id" aria-label="Edit player rating">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </a>
+                        <form asp-controller="PlayerRatings" asp-action="Delete" asp-route-id="@rating.Id" method="post" data-dashboard-delete>
+                            <button class="dashboard-row-button dashboard-row-button--danger" type="submit" aria-label="Delete player rating">X</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

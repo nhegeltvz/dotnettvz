@@ -1112,6 +1112,8 @@ body {
   font-style: italic;
 }
 
+/************        ANIMATION SPINNER     ********************/
+
 @media (max-width: 760px) {
   .player-list-row {
     flex-direction: column;
@@ -1122,3 +1124,5 @@ body {
     justify-content: flex-start;
   }
 }
+
+

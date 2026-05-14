@@ -1,0 +1,46 @@
+@model Data.Dto.CRUD.Player.PlayerFormDto
+@using Data.Data
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">@(Model.Id.HasValue ? "Edit Player" : "Create Player")</h2>
+</div>
+
+<form class="dashboard-form" asp-controller="Players" asp-action="@(Model.Id.HasValue ? "Edit" : "Create")" asp-route-id="@Model.Id" method="post" data-dashboard-form>
+    @if (Model.Id.HasValue)
+    {
+        <input type="hidden" name="Id" value="@Model.Id" />
+    }
+
+    <div class="dashboard-form-row">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" type="email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Bio"></label>
+        <textarea asp-for="Bio" rows="3"></textarea>
+        <span asp-validation-for="Bio" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="PreferredPosition"></label>
+        <select asp-for="PreferredPosition" asp-items="Html.GetEnumSelectList<Position>()"></select>
+    </div>
+
+    <div class="dashboard-form-row">
+        <label asp-for="Age"></label>
+        <input asp-for="Age" type="number" />
+        <span asp-validation-for="Age" class="text-danger"></span>
+    </div>
+
+    <div class="dashboard-form-actions">
+        <button class="dashboard-submit" type="submit">Save changes</button>
+    </div>
+</form>

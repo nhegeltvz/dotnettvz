@@ -1,0 +1,37 @@
+@model List<Data.Models.PreferredPlayingDate>
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">Preferred Playing Dates</h2>
+    <a class="dashboard-action-button" href="#" data-dashboard-action="/preferred-dates/create" aria-label="Add preferred date">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    </a>
+</div>
+
+<table class="dashboard-table" aria-label="Preferred playing dates list">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var date in Model)
+        {
+            <tr>
+                <td>@date.Id</td>
+                <td>@date.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <div class="dashboard-table-actions">
+                        <a class="dashboard-row-button" href="#" data-dashboard-action="/preferred-dates/edit/@date.Id" aria-label="Edit preferred date">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        </a>
+                        <form asp-controller="PreferredPlayingDates" asp-action="Delete" asp-route-id="@date.Id" method="post" data-dashboard-delete>
+                            <button class="dashboard-row-button dashboard-row-button--danger" type="submit" aria-label="Delete preferred date">X</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

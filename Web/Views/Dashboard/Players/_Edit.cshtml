@@ -1,0 +1,23 @@
+@model Data.Models.Player
+
+<div class="dashboard-panel-header">
+    <h2 class="dashboard-panel-title">Edit Player</h2>
+</div>
+
+<form class="dashboard-form" asp-controller="Players" asp-action="Edit" asp-route-id="@Model.Id" method="post" data-dashboard-form>
+    <input type="hidden" name="Id" value="@Model.Id" />
+
+    <div class="dashboard-form-row">
+        <label>Username</label>
+        <input name="Username" value="@Model.Username" />
+    </div>
+
+    <div class="dashboard-form-row">
+        <label>Email</label>
+        <input name="Email" value="@Model.Email" />
+    </div>
+
+    <div class="dashboard-form-actions">
+        <button class="dashboard-submit" type="submit">Save changes</button>
+    </div>
+</form>
