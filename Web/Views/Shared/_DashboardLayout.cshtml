@@ -1,0 +1,49 @@
+@{
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+}
+
+<div class="dashboard-layout">
+    <aside class="dashboard-aside">
+        <nav class="dashboard-nav" aria-label="Dashboard navigation">
+            <ul class="dashboard-nav-list">
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "PlayingFields")" asp-controller="Dashboard" asp-action="PlayingFields">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span>Playing Fields</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "Players")" asp-controller="Dashboard" asp-action="Players">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Players</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "Parties")" asp-controller="Dashboard" asp-action="Parties">
+                        <i class="fa-regular fa-comments"></i>
+                        <span>Parties</span>
+                    </a>
+                </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "MatchRecords")" asp-controller="Dashboard" asp-action="MatchRecords">
+                        <i class="fa-solid fa-square-poll-horizontal"></i>
+                        <span>Match Records</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    <div class="dashboard-main-content">
+        @RenderBody()
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"></partial>
+    @RenderSection("Scripts", required: false)
+}

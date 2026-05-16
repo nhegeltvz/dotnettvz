@@ -44,6 +44,7 @@ namespace Data.Services.Stores
             return Result<Guid>.Success(playingField.Id);
         }
 
+
         public async Task<Result> UpdatePlayingField(IPlayingField model)
         {
             var foundPlayingFieldResult = await FindByIdAsync(model.Id);

@@ -1,3 +1,4 @@
+using Data.Data;
 using Data.Dto.CRUD.Player;
 using Data.Models;
 using Data.Services.Stores;
@@ -33,20 +34,34 @@ public class PlayersController : Controller
         return PartialView("~/Views/Dashboard/Players/_List.cshtml", players);
     }
 
-    [HttpGet("create")]
-    public IActionResult Create()
+    [HttpGet("data")]
+    public async Task<IActionResult> GetAll()
     {
-        return PartialView("~/Views/Dashboard/Players/_Form.cshtml", new PlayerFormDto());
+        var players = await _store.GetAllPlayersAsync();
+        return Json(players);
     }
 
+    [HttpGet("form")]
+    public IActionResult Form() => PartialView("_PlayerForm", new PlayerFormDto());
+
+    [HttpGet("getById/{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var playerResult = await _store.FindByIdAsync(id);
+        if (!playerResult.IsSuccess)
+            return NotFound();
+
+        return Json(playerResult.Value);
+    }
+
+
+
     [HttpPost("create")]
-    public async Task<IActionResult> Create(PlayerFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Create([FromBody] PlayerFormDto model)
     {
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Players/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var player = new Player
         {
@@ -54,54 +69,27 @@ public class PlayersController : Controller
             Username = model.Username,
             Email = model.Email,
             Bio = model.Bio,
-            PreferredPosition = model.PreferredPosition,
+            PreferredPosition = (Position)model.PreferredPosition,
             Age = model.Age,
         };
 
         var result = await _store.CreatePlayer(player);
-
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Players/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpGet("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id)
-    {
-        var playerResult = await _store.FindByIdAsync(id);
-        if (!playerResult.IsSuccess)
-            return NotFound();
-
-        var player = playerResult.Value;
-        var model = new PlayerFormDto
-        {
-            Id = player.Id,
-            Username = player.Username,
-            Email = player.Email,
-            Bio = player.Bio,
-            PreferredPosition = player.PreferredPosition,
-            Age = player.Age,
-        };
-
-        return PartialView("~/Views/Dashboard/Players/_Form.cshtml", model);
-    }
 
     [HttpPost("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, PlayerFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Edit(Guid id, [FromBody] PlayerFormDto model)
     {
         if (id != model.Id)
             return BadRequest();
 
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Players/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var playerResult = await _store.FindByIdAsync(id);
         if (!playerResult.IsSuccess)
@@ -111,47 +99,26 @@ public class PlayersController : Controller
         player.Username = model.Username;
         player.Email = model.Email;
         player.Bio = model.Bio;
-        player.PreferredPosition = model.PreferredPosition;
+        player.PreferredPosition = (Position)model.PreferredPosition;
         player.Age = model.Age;
 
         var result = await _store.UpdatePlayer(player);
-
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Players/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpPost("delete/{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpDelete("delete/{id:guid}")]
+    public async Task<IActionResult> DeleteById(Guid id)
     {
         var playerResult = await _store.FindByIdAsync(id);
         if (!playerResult.IsSuccess)
             return NotFound();
 
-        try
-        {
-            await _store.DeleteByIdAsync(id);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest("Cannot delete player while related data exists.");
-        }
-
+        await _store.DeleteByIdAsync(id);
         return Ok();
     }
 
-    [HttpGet("search")]
-    public async Task<IActionResult> Search(string term)
-    {
-        if (string.IsNullOrWhiteSpace(term))
-            return Ok(Array.Empty<string>());
 
-        var names = await _store.SearchUsernamesAsync(term);
-        return Ok(names);
-    }
 }

@@ -26,9 +26,9 @@ public class StadiumFormDto
     [StringLength(40)]
     public string ContactNumber { get; set; } = string.Empty;
 
-    public FieldStatus Status { get; set; }
+    public int Status { get; set; }
 
     public bool IsOutdoor { get; set; }
 
-    public SurfaceType SurfaceType { get; set; }
+    public int SurfaceType { get; set; }
 }

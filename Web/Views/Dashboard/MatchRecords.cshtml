@@ -1,0 +1,118 @@
+﻿@{
+    ViewData["Title"] = "Dashboard - Match Records";
+}
+
+<section class="dashboard-panel">
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Match Record</button>
+    <header class="dashboard-panel-header">
+        <h2 class="dashboard-panel-title">Match Records</h2>
+    </header>
+    <div style="display:flex;justify-content:center;">
+        <table class="dashboard-table" aria-label="Match records table">
+            <thead>
+                <tr>
+                    <th>Score Team A</th>
+                    <th>Score Team B</th>
+                    <th>Stadium</th>
+                    <th>Date Played</th>
+                    <th>Was Match Held</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="matchRecordsTable">
+                <!-- Ajax: inject match record rows here -->
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="form-container"></div>
+
+@section Scripts {
+    <script>
+        const tableBody = document.getElementById("matchRecordsTable");
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadMatchRecords();
+        })
+
+        function loadMatchRecords() {
+            $.ajax({
+                url: "/matches/data",
+                method: "GET",
+                success: function (records) {
+                    let injectedHtml = "";
+                    records.forEach(record => {
+                        injectedHtml +=
+                        `
+                        <tr>
+                            <td>${record.goalsTeamA}</td>
+                            <td>${record.goalsTeamB}</td>
+                            <td>${record.playingFieldName}</td>
+                            <td>${record.matchHeld}</td>
+                            <td>${record.wasMatchHeld}</td>
+                            <td>
+                                <button class="dashboard-row-button dashboard-row-button--danger" onclick="deleteRecord('${record.id}')">Delete</button>
+                            </td>
+                        </tr>
+                        `;
+                    });
+                    tableBody.innerHTML = injectedHtml;
+                }
+            });
+        }
+
+        function openCreate() {
+            $.get("/matches/form", function (html) {
+                $("#form-container").html(html);
+                $("#match-record-id").val("");
+                $.validator.unobtrusive.parse("#match-record-form");
+            });
+        }
+
+        function cancelForm() {
+            $("#form-container").html("");
+        }
+
+        function submitForm() {
+            const id = $("#match-record-id").val();
+            const url = id ? `/matches/edit/${id}` : "/matches/create";
+
+            if (!$("#match-record-form").valid()) return;
+
+            $.ajax({
+                url: url,
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    wasMatchHeld: $("#Form_WasMatchHeld").is(":checked"),
+                    matchHeld: $("#Form_MatchHeld").val(),
+                    playingFieldId: $("#Form_PlayingFieldId").val(),
+                    goalsTeamA: $("#Form_GoalsTeamA").val(),
+                    goalsTeamB: $("#Form_GoalsTeamB").val()
+                }),
+                success: function () {
+                    cancelForm();
+                    loadMatchRecords();
+                },
+                error: function (xhr) {
+                    console.log(xhr.responseJSON);
+                }
+            });
+        }
+
+        function deleteRecord(id) {
+            if (!confirm("Are you sure?")) return;
+
+            $.ajax({
+                url: `/matches/delete/${id}`,
+                method: "DELETE",
+                success: function () {
+                    loadMatchRecords();
+                },
+                error: function (xhr) {
+                    console.log(xhr.responseJSON);
+                }
+            });
+        }
+    </script>
+}

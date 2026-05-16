@@ -1,0 +1,119 @@
+﻿@{
+	ViewData["Title"] = "Dashboard - Playing Fields";
+}
+
+<section class="dashboard-panel">
+	<button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Playing Field</button>
+	<header class="dashboard-panel-header">
+		<h2 class="dashboard-panel-title">Playing Fields</h2>
+	</header>
+	<div style="display:flex;justify-content:center;">
+		<table class="dashboard-table" aria-label="Playing fields table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Surface</th>
+					<th>Location</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody id="playingFieldTable">
+				<!-- Ajax: inject playing field rows here -->
+			</tbody>
+		</table>
+	</div>
+</section>
+
+<div id="form-container"></div>
+
+
+@section Scripts{
+	<script>
+		const tableBody = document.getElementById("playingFieldTable");
+		document.addEventListener("DOMContentLoaded", async () => {
+			await loadStadiums();
+		})
+
+		function loadStadiums(){
+					$.ajax({
+			url: "/stadiums/data",
+			method: "GET",
+			success: function(stadiums) {
+				let injectedHtml = "";
+				stadiums.forEach(stadium => {
+					injectedHtml +=
+					`
+					<tr>
+						<td>${stadium.name}</td>
+						<td>${stadium.surfaceType}</td>
+						<td>${stadium.longitude}/${stadium.latitude}</td>
+						<td>
+							<button class="dashboard-row-button dashboard-row-button--danger" onclick="deleteStadium('${stadium.id}')">Delete</button>
+						</td>
+					</tr>
+					`
+				});
+				tableBody.innerHTML=injectedHtml;
+			}
+		});
+		}
+
+		function openCreate() {
+			$.get("/stadiums/form", function(html) {
+				$("#form-container").html(html);
+				$("#stadium-id").val("");
+				$.validator.unobtrusive.parse("#stadium-form");
+			});
+		}
+
+		function cancelForm() {
+			$("#form-container").html("");
+		}
+
+		function submitForm() {
+			const id = $("#stadium-id").val();
+			const url = id ? `/stadiums/edit/${id}` : "/stadiums/create";
+
+			if (!$("#stadium-form").valid()) return;
+
+			$.ajax({
+				url: url,
+				method: "POST",
+				contentType: "application/json",
+				data: JSON.stringify({
+					name: $("#Name").val(),
+					description: $("#Description").val(),
+					longitude: $("#Longitude").val(),
+					latitude: $("#Latitude").val(),
+					contactNumber: $("#ContactNumber").val(),
+					status: $("#Status").val(),
+					isOutdoor: $("#IsOutdoor").is(":checked"),
+					surfaceType: $("#SurfaceType").val()
+				}),
+				success: function() {
+					cancelForm();
+					loadStadiums();
+				},
+				error: function(xhr) {
+					console.log(xhr.responseJSON);
+				}
+			});
+		}
+
+		function deleteStadium(id) {
+			if (!confirm("Are you sure?")) return;
+
+			$.ajax({
+				url: `/stadiums/delete/${id}`,
+				method: "DELETE",
+				success: function() {
+					loadStadiums();
+				},
+				error: function(xhr) {
+					console.log(xhr.responseJSON);
+				}
+			});
+		}
+
+	</script>
+}

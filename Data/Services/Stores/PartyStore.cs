@@ -1,5 +1,6 @@
 using Data.Data;
 using Data.Data.Common;
+using Data.Dto.CRUD.Party;
 using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
@@ -20,6 +21,20 @@ namespace Data.Services.Stores
 
         public async Task<List<Party>> GetAllPartiesAsync()
             => await _dbContext.Parties
+                .AsNoTracking()
+                .ToListAsync();
+
+        public async Task<List<PartyListDto>> GetPartiesForTableAsync()
+            => await _dbContext.Parties
+            .Select(party => new PartyListDto
+            {
+                Id = party.Id,
+                PartyDescription = party.PartyDescription,
+                DateCreated = party.DateCreated,
+                PlayerCreatedUsername= party.PlayerCreated.Username,
+                NumberOfMembers = party.Members.Count,
+                MaxMembers = party.MaxMembers
+            })
                 .AsNoTracking()
                 .ToListAsync();
 

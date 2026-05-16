@@ -1,0 +1,118 @@
+﻿@using Data.Model.DTO
+@model CategoryFormDto
+
+<div>
+    <h1>Add New Category</h1>
+</div>
+
+<div class="form-container d-flex flex-column">
+    <form method="post" asp-controller="Category" asp-action="Create">
+        <label asp-for="Name"></label>
+        <span asp-validation-for="Name" class="text-danger small"></span>
+        <input asp-for="Name" class="form-control" placeholder="ex. McDonalds" />
+        <button type="submit" class="btn-primary mt-3">Add new Category</button>
+        <hr />
+    </form>
+    <div class="d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Category Management</h2>
+            <button id="btnRefresh" class="btn btn-outline-primary btn-sm">Refresh Data</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped border" id="entityTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Delete</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- AJAX will inject rows here -->
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function(){
+            loadData();
+        })
+
+        document.getElementById('btnRefresh').addEventListener('click',async function(){
+            await loadData();
+            attachDeleteListener();
+        })
+
+        function attachDeleteListener(){
+            document.querySelectorAll('.delete-btn').forEach(item => item.addEventListener('click', function(){
+                let categoryId = item.dataset.id;
+                let categoryRow = item.closest('tr');
+
+                $.ajax({
+                    url: `deletecategory?id=${categoryId}`,
+                    type: 'DELETE',
+                    success: function(){
+                        $(categoryRow).fadeOut(400, function() {
+                            $(this).remove();
+                        });
+                    },
+                    error: function() {
+                        alert("Delete failed. The record might be in use.");
+                    }
+                });
+            }));
+        }
+
+
+        function loadData(){
+                    $.ajax({
+            url: '/category/getcategories',
+            type: 'GET',
+            success: function(data){
+
+                const tableBody = $('#entityTable tbody');
+            tableBody.empty(); // Clear "Loading..." message
+
+            if (data.length === 0) {
+                tableBody.append('<tr><td colspan="3" class="text-center">No data found</td></tr>');
+                return;
+            }
+
+            const rows = data.map(item => `
+                <tr class="category-data-row">
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                        <td>
+            <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${item.id}">
+                &times;
+            </button>
+        </td>
+        <td>                        <button class="btn btn-sm edit-btn" data-id="${item.id}">
+                &times;
+            </button></td>
+                </tr>
+            `).join('');
+
+            tableBody.html(rows);
+
+            attachDeleteListener();
+
+            },
+            error: function(xhr){
+                console.error("Failed to fetch: ", xhr.responseText)
+            }
+        })
+        }
+
+
+
+    </script>
+}

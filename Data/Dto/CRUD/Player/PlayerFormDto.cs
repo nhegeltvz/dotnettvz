@@ -20,7 +20,7 @@ public class PlayerFormDto
     [StringLength(200, MinimumLength = 10)]
     public string Bio { get; set; } = string.Empty;
 
-    public Position PreferredPosition { get; set; }
+    public int PreferredPosition { get; set; }
 
     [Required]
     [Range(18, 90)]

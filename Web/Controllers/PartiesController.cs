@@ -2,7 +2,9 @@ using Data.Dto.CRUD.Party;
 using Data.Models;
 using Data.Services.Stores;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Web.Models.Dashboard;
 
 namespace Web.Controllers;
 
@@ -10,8 +12,13 @@ namespace Web.Controllers;
 public class PartiesController : Controller
 {
     private readonly PartyStore _store;
+    private readonly PlayerStore _playerStore;
 
-    public PartiesController(PartyStore store) => _store = store;
+    public PartiesController(PartyStore store, PlayerStore playerStore)
+    {
+        _store = store;
+        _playerStore = playerStore;
+    }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
@@ -30,27 +37,48 @@ public class PartiesController : Controller
         return View("PartyDetailsView", partyResult.Value);
     }
 
-    [HttpGet("list")]
-    public async Task<IActionResult> List()
+
+    [HttpGet("data")]
+    public async Task<IActionResult> GetAll()
     {
-        var parties = await _store.GetAllPartiesAsync();
-        return PartialView("~/Views/Dashboard/Parties/_List.cshtml", parties);
+        var parties = await _store.GetPartiesForTableAsync();
+        return Json(parties);
     }
 
-    [HttpGet("create")]
-    public IActionResult Create()
+    [HttpGet("form")]
+    public async Task<IActionResult> Form()
     {
-        return PartialView("~/Views/Dashboard/Parties/_Form.cshtml", new PartyFormDto());
+        var players = await _playerStore.GetAllPlayersAsync();
+
+        var vm = new PartyFormViewModel
+        {
+            Players = players.Select(player => new SelectListItem
+            {
+                Value = player.Id.ToString(),
+                Text = player.Username,
+            }).ToList()
+        };
+
+        return PartialView("_PartyForm", vm);
     }
+
+    [HttpGet("getById/{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var partyResult = await _store.FindByIdAsync(id);
+        if (!partyResult.IsSuccess)
+            return NotFound();
+
+        return Json(partyResult.Value);
+    }
+
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create(PartyFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Create([FromBody] PartyFormDto model)
     {
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Parties/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var party = new Party
         {
@@ -63,49 +91,23 @@ public class PartiesController : Controller
         };
 
         var result = await _store.CreateParty(party);
-
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Parties/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpGet("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id)
-    {
-        var partyResult = await _store.FindByIdAsync(id);
-        if (!partyResult.IsSuccess)
-            return NotFound();
 
-        var party = partyResult.Value;
-        var model = new PartyFormDto
-        {
-            Id = party.Id,
-            PlayerCreatedId = party.PlayerCreatedId,
-            DateCreated = party.DateCreated,
-            MaxMembers = party.MaxMembers,
-            PartyDescription = party.PartyDescription,
-            PreferredLocations = party.PreferredLocations,
-        };
-
-        return PartialView("~/Views/Dashboard/Parties/_Form.cshtml", model);
-    }
 
     [HttpPost("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, PartyFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Edit(Guid id, [FromBody] PartyFormDto model)
     {
         if (id != model.Id)
             return BadRequest();
 
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Parties/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var partyResult = await _store.FindByIdAsync(id);
         if (!partyResult.IsSuccess)
@@ -119,33 +121,21 @@ public class PartiesController : Controller
         party.PreferredLocations = model.PreferredLocations;
 
         var result = await _store.UpdateParty(party);
-
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Parties/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpPost("delete/{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+
+    [HttpDelete("delete/{id:guid}")]
+    public async Task<IActionResult> DeleteById(Guid id)
     {
         var partyResult = await _store.FindByIdAsync(id);
         if (!partyResult.IsSuccess)
             return NotFound();
 
-        try
-        {
-            await _store.DeleteByIdAsync(id);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest("Cannot delete party while related data exists.");
-        }
-
+        await _store.DeleteByIdAsync(id);
         return Ok();
     }
 }

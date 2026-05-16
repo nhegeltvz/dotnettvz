@@ -1,3 +1,4 @@
+﻿using Data.Data;
 using Data.Data.Common;
 using Data.Dto.CRUD.PlayingField;
 using Data.Models;
@@ -48,161 +49,82 @@ public class StadiumsController : Controller
 
         return View("StadiumDetailsView", model);
     }
-
-    [HttpGet("list")]
-    public async Task<IActionResult> List(string? search)
+    [HttpGet("data")]
+    public async Task<IActionResult> GetAll()
     {
-        var fields = string.IsNullOrWhiteSpace(search)
-            ? await _store.GetAllStadiumsAsync()
-            : await _store.SearchByNameAsync(search);
-
-        return PartialView("~/Views/Dashboard/Stadiums/_List.cshtml", fields);
+        var playingFields = await _store.GetAllStadiumsAsync();
+        return Json(playingFields);
     }
 
-    [HttpGet("create")]
-    public IActionResult Create()
+    [HttpGet("form")]
+    public IActionResult Form() => PartialView("_StadiumForm", new StadiumFormDto());
+
+    [HttpGet("getById/{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
     {
-        return PartialView("~/Views/Dashboard/Stadiums/_Form.cshtml", new StadiumFormDto());
+        var playingField = await _store.FindByIdAsync(id);
+        return Json(playingField.Value);
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create(StadiumFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Create([FromBody] StadiumFormDto playingFieldForm)
     {
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Stadiums/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
-
-        var field = new PlayingField
+        var playingField = new PlayingField
         {
-            Id = Guid.NewGuid(),
-            Name = model.Name,
-            Description = model.Description,
-            Longitude = model.Longitude,
-            Latitude = model.Latitude,
-            ContactNumber = model.ContactNumber,
-            Status = model.Status,
-            IsOutdoor = model.IsOutdoor,
-            SurfaceType = model.SurfaceType,
+            Id = Guid.NewGuid()
         };
+        
+        playingField.Name = playingFieldForm.Name;
+        playingField.Description = playingFieldForm.Description;
+        playingField.Longitude = playingFieldForm.Longitude;
+        playingField.Latitude= playingFieldForm.Latitude;
+        playingField.ContactNumber= playingFieldForm.ContactNumber;
+        playingField.Status= (FieldStatus)playingFieldForm.Status;
+        playingField.IsOutdoor= playingFieldForm.IsOutdoor;
+        playingField.SurfaceType= (SurfaceType)playingFieldForm.SurfaceType;
 
-        var result = await _store.CreatePlayingField(field);
 
-        if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Stadiums/_Form.cshtml", model);
-        }
-
+        await _store.CreatePlayingField(playingField);
         return Ok();
-    }
-
-    [HttpGet("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id)
-    {
-        var fieldResult = await _store.FindByIdAsync(id);
-
-        if (fieldResult is null || !fieldResult.IsSuccess )
-        {
-            return NotFound();
-        }
-
-        var field = fieldResult.Value;
-
-        var model = new StadiumFormDto
-        {
-            Id = field.Id,
-            Name = field.Name,
-            Description = field.Description,
-            Longitude = field.Longitude,
-            Latitude = field.Latitude,
-            ContactNumber = field.ContactNumber,
-            Status = field.Status,
-            IsOutdoor = field.IsOutdoor,
-            SurfaceType = field.SurfaceType
-        };
-
-        return PartialView("~/Views/Dashboard/Stadiums/_Form.cshtml", model);
     }
 
     [HttpPost("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, StadiumFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Edit([FromBody] StadiumFormDto playingFieldForm, Guid id)
     {
-        if (id != model.Id)
-        {
-            return BadRequest();
-        }
-
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Stadiums/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
-        var fieldResult = await _store.FindByIdAsync(id);
+        var playingFieldResult = await _store.FindByIdAsync(id);
 
-        if (fieldResult is null || !fieldResult.IsSuccess)
-        {
+        if (playingFieldResult is null || !playingFieldResult.IsSuccess)
             return NotFound();
-        }
 
-        var field = fieldResult.Value;
+        var playingField = playingFieldResult.Value;
 
-        field.Name = model.Name;
-        field.Description = model.Description;
-        field.Longitude = model.Longitude;
-        field.Latitude = model.Latitude;
-        field.ContactNumber = model.ContactNumber;
-        field.Status = model.Status;
-        field.IsOutdoor = model.IsOutdoor;
-        field.SurfaceType = model.SurfaceType;
+        playingField.Name = playingFieldForm.Name;
+        playingField.Description = playingFieldForm.Description;
+        playingField.Longitude = playingFieldForm.Longitude;
+        playingField.Latitude = playingFieldForm.Latitude;
+        playingField.ContactNumber = playingFieldForm.ContactNumber;
+        playingField.Status = (FieldStatus)playingFieldForm.Status;
+        playingField.IsOutdoor = playingFieldForm.IsOutdoor;
+        playingField.SurfaceType = (SurfaceType)playingFieldForm.SurfaceType;
 
 
-        var result = await _store.UpdatePlayingField(field);
-
-        if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Stadiums/_Form.cshtml", model);
-        }
-
+        await _store.UpdatePlayingField(playingField);
         return Ok();
     }
 
-    [HttpPost("delete/{id:guid}")]
+    [HttpDelete("delete/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var fieldResult = await _store.FindByIdAsync(id);
-        if (fieldResult is null || !fieldResult.IsSuccess)
-        {
-            return NotFound();
-        }
-            var field = fieldResult.Value;
-
-        try
-        {
-            await _store.DeleteByIdAsync(field.Id);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest("Cannot delete stadium while related data exists.");
-        }
-
+        await _store.DeleteByIdAsync(id);
         return Ok();
     }
-    [HttpGet("search")]
-    public async Task<IActionResult> Search(string term)
-    {
-        if (string.IsNullOrWhiteSpace(term))
-        {
-            return Ok(Array.Empty<string>());
-        }
 
-        var names = await _store.SearchByNameAsync(term);
-        return Ok(names);
-    }
 }

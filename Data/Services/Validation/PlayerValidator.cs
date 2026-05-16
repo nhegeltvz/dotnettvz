@@ -8,7 +8,7 @@ namespace Data.Services.Validation
     {
         public Result Validate(Player entity)
         {
-            throw new NotImplementedException();
+            return Result.Success();
         }
     }
 }

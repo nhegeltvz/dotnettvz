@@ -1,5 +1,6 @@
 using Data.Data;
 using Data.Data.Common;
+using Data.Dto.CRUD.MatchRecord;
 using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
@@ -20,6 +21,20 @@ namespace Data.Services.Stores
 
         public async Task<List<MatchRecord>> GetAllMatchRecordsAsync()
             => await _dbContext.MatchRecords
+                .AsNoTracking()
+                .ToListAsync();
+
+        public async Task<List<MatchRecordListDto>> GetMatchRecordsForTableAsync()
+            => await _dbContext.MatchRecords
+                .Select(record => new MatchRecordListDto
+                {
+                    Id = record.Id,
+                    GoalsTeamA = record.GoalsTeamA,
+                    GoalsTeamB = record.GoalsTeamB,
+                    PlayingFieldName = record.PlayingField.Name,
+                    MatchHeld = record.MatchHeld,
+                    WasMatchHeld = record.WasMatchHeld,
+                })
                 .AsNoTracking()
                 .ToListAsync();
 

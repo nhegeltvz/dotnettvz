@@ -2,7 +2,9 @@ using Data.Dto.CRUD.MatchRecord;
 using Data.Models;
 using Data.Services.Stores;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Web.Models.Dashboard;
 
 namespace Web.Controllers;
 
@@ -10,8 +12,13 @@ namespace Web.Controllers;
 public class MatchesController : Controller
 {
     private readonly MatchStore _store;
+    private readonly StadiumStore _stadiumStore;
 
-    public MatchesController(MatchStore store) => _store = store;
+    public MatchesController(MatchStore store, StadiumStore stadiumStore)
+    {
+        _store = store;
+        _stadiumStore = stadiumStore;
+    }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
@@ -30,27 +37,48 @@ public class MatchesController : Controller
         return View("MatchDetailsView", matchResult.Value);
     }
 
-    [HttpGet("list")]
-    public async Task<IActionResult> List()
+    [HttpGet("data")]
+    public async Task<IActionResult> GetAll()
     {
-        var records = await _store.GetAllMatchRecordsAsync();
-        return PartialView("~/Views/Dashboard/Matches/_List.cshtml", records);
+        var records = await _store.GetMatchRecordsForTableAsync();
+        return Json(records);
     }
 
-    [HttpGet("create")]
-    public IActionResult Create()
+    [HttpGet("form")]
+    public async Task<IActionResult> Form()
     {
-        return PartialView("~/Views/Dashboard/Matches/_Form.cshtml", new MatchRecordFormDto());
+        var stadiums = await _stadiumStore.GetAllStadiumsAsync();
+
+        var vm = new MatchRecordFormViewModel
+        {
+            Stadiums = stadiums.Select(stadium => new SelectListItem
+            {
+                Value = stadium.Id.ToString(),
+                Text = stadium.Name,
+            }).ToList()
+        };
+
+        return PartialView("_MatchRecordForm", vm);
     }
+
+    [HttpGet("getById/{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var recordResult = await _store.FindByIdAsync(id);
+        if (!recordResult.IsSuccess)
+            return NotFound();
+
+        return Json(recordResult.Value);
+    }
+
+
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create(MatchRecordFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Create([FromBody] MatchRecordFormDto model)
     {
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Matches/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var record = new MatchRecord
         {
@@ -63,49 +91,22 @@ public class MatchesController : Controller
         };
 
         var result = await _store.CreateMatchRecord(record);
-
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Matches/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpGet("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id)
-    {
-        var recordResult = await _store.FindByIdAsync(id);
-        if (!recordResult.IsSuccess)
-            return NotFound();
-
-        var record = recordResult.Value;
-        var model = new MatchRecordFormDto
-        {
-            Id = record.Id,
-            WasMatchHeld = record.WasMatchHeld,
-            MatchHeld = record.MatchHeld,
-            PlayingFieldId = record.PlayingFieldId,
-            GoalsTeamA = record.GoalsTeamA,
-            GoalsTeamB = record.GoalsTeamB,
-        };
-
-        return PartialView("~/Views/Dashboard/Matches/_Form.cshtml", model);
-    }
 
     [HttpPost("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, MatchRecordFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Edit(Guid id, [FromBody] MatchRecordFormDto model)
     {
         if (id != model.Id)
             return BadRequest();
 
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Matches/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var recordResult = await _store.FindByIdAsync(id);
         if (!recordResult.IsSuccess)
@@ -119,33 +120,21 @@ public class MatchesController : Controller
         record.GoalsTeamB = model.GoalsTeamB;
 
         var result = await _store.UpdateMatchRecord(record);
-
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/Matches/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpPost("delete/{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+
+    [HttpDelete("delete/{id:guid}")]
+    public async Task<IActionResult> DeleteById(Guid id)
     {
         var recordResult = await _store.FindByIdAsync(id);
         if (!recordResult.IsSuccess)
             return NotFound();
 
-        try
-        {
-            await _store.DeleteByIdAsync(id);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest("Cannot delete match record while related data exists.");
-        }
-
+        await _store.DeleteByIdAsync(id);
         return Ok();
     }
 }

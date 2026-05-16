@@ -16,28 +16,27 @@ public class DashboardController : Controller
         return View();
     }
 
+    [HttpGet("parties")]
+    public IActionResult Parties()
+    {
+        return View("Parties");
+    }
+
+    [HttpGet("match-records")]
+    public IActionResult MatchRecords()
+    {
+        return View("MatchRecords");
+    }
+
     [HttpGet("players")]
-    public async Task<IActionResult> Players()
+    public IActionResult Players()
     {
-        var players = await _playerStore.GetAllPlayersAsync();
-        return PartialView("_PlayersList", players);
+        return View("Players");
     }
 
-    [HttpGet("players/create")]
-    public IActionResult CreatePlayer()
+    [HttpGet("playing-fields")]
+    public IActionResult PlayingFields()
     {
-        return PartialView("_PlayerCreate");
-    }
-
-    [HttpGet("players/{id:guid}")]
-    public async Task<IActionResult> EditPlayer(Guid id)
-    {
-        var player = await _playerStore.FindByIdAsync(id);
-        if (player is null)
-        {
-            return NotFound();
-        }
-
-        return PartialView("_PlayerEdit", player);
+        return View("Stadiums");
     }
 }

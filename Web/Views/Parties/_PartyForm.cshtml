@@ -1,0 +1,48 @@
+@using Data.Dto.CRUD.Party
+@using Web.Models.Dashboard
+@model PartyFormViewModel
+
+<section class="dashboard-panel">
+    <header class="dashboard-panel-header">
+        <h2 class="dashboard-panel-title">Party Details</h2>
+    </header>
+    <form id="party-form" class="dashboard-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" id="party-id" />
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.PlayerCreatedId"></label>
+            <select asp-for="Form.PlayerCreatedId" asp-items="Model.Players"></select>
+            <span asp-validation-for="Form.PlayerCreatedId" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.DateCreated"></label>
+            <input asp-for="Form.DateCreated" type="datetime-local" />
+            <span asp-validation-for="Form.DateCreated" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.MaxMembers"></label>
+            <input asp-for="Form.MaxMembers" type="number" />
+            <span asp-validation-for="Form.MaxMembers" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.PartyDescription"></label>
+            <textarea asp-for="Form.PartyDescription"></textarea>
+            <span asp-validation-for="Form.PartyDescription" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.PreferredLocations"></label>
+            <textarea asp-for="Form.PreferredLocations"></textarea>
+            <span asp-validation-for="Form.PreferredLocations" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-actions">
+            <button type="button" class="dashboard-button-secondary" onclick="cancelForm()">Cancel</button>
+            <button type="button" class="dashboard-submit" onclick="submitForm()">Save</button>
+        </div>
+    </form>
+</section>

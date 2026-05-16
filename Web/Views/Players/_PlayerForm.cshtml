@@ -1,0 +1,48 @@
+﻿@using Data.Data
+@using Data.Dto.CRUD.Player
+@model PlayerFormDto
+
+<section class="dashboard-panel">
+    <header class="dashboard-panel-header">
+        <h2 class="dashboard-panel-title">Player Details</h2>
+    </header>
+    <form id="player-form" class="dashboard-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" id="player-id" />
+
+        <div class="dashboard-form-row">
+            <label asp-for="Username"></label>
+            <input asp-for="Username" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Bio"></label>
+            <textarea asp-for="Bio"></textarea>
+            <span asp-validation-for="Bio" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Age"></label>
+            <input asp-for="Age" type="number" />
+            <span asp-validation-for="Age" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="PreferredPosition"></label>
+            <select asp-for="PreferredPosition" asp-items="Html.GetEnumSelectList<Position>()"></select>
+            <span asp-validation-for="PreferredPosition" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-actions">
+            <button type="button" class="dashboard-button-secondary" onclick="cancelForm()">Cancel</button>
+            <button type="button" class="dashboard-submit" onclick="submitForm()">Save</button>
+        </div>
+    </form>
+</section>
