@@ -2,7 +2,8 @@ using Data.Dto.CRUD.ScheduledMatch;
 using Data.Models;
 using Data.Services.Stores;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Web.Models.Dashboard;
 
 namespace Web.Controllers;
 
@@ -10,30 +11,68 @@ namespace Web.Controllers;
 public class ScheduledMatchesController : Controller
 {
     private readonly ScheduledMatchStore _store;
+    private readonly StadiumStore _stadiumStore;
+    private readonly PartyStore _partyStore;
 
-    public ScheduledMatchesController(ScheduledMatchStore store) => _store = store;
-
-    [HttpGet("list")]
-    public async Task<IActionResult> List()
+    public ScheduledMatchesController(
+        ScheduledMatchStore store,
+        StadiumStore stadiumStore,
+        PartyStore partyStore)
     {
-        var matches = await _store.GetAllScheduledMatchesAsync();
-        return PartialView("~/Views/Dashboard/ScheduledMatches/_List.cshtml", matches);
+        _store = store;
+        _stadiumStore = stadiumStore;
+        _partyStore = partyStore;
     }
 
-    [HttpGet("create")]
-    public IActionResult Create()
+    [HttpGet("data")]
+    public async Task<IActionResult> GetAll(string? search)
     {
-        return PartialView("~/Views/Dashboard/ScheduledMatches/_Form.cshtml", new ScheduledMatchFormDto());
+        var matches = await _store.GetScheduledMatchesForTableAsync();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            matches = matches
+                .Where(match =>
+                    (match.PartyDescription ?? string.Empty)
+                        .Contains(term, StringComparison.OrdinalIgnoreCase)
+                    || (match.PlayingFieldName ?? string.Empty)
+                        .Contains(term, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        return Json(matches);
+    }
+
+    [HttpGet("form")]
+    public async Task<IActionResult> Form()
+    {
+        var fields = await _stadiumStore.GetAllStadiumsAsync();
+        var parties = await _partyStore.GetAllPartiesAsync();
+
+        var vm = new ScheduledMatchFormViewModel
+        {
+            PlayingFields = fields.Select(field => new SelectListItem
+            {
+                Value = field.Id.ToString(),
+                Text = field.Name,
+            }).ToList(),
+            Parties = parties.Select(party => new SelectListItem
+            {
+                Value = party.Id.ToString(),
+                Text = party.PartyDescription,
+            }).ToList()
+        };
+
+        return PartialView("_ScheduledMatchForm", vm);
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> Create(ScheduledMatchFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Create([FromBody] ScheduledMatchFormDto model)
     {
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/ScheduledMatches/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var scheduledMatch = new ScheduledMatch
         {
@@ -46,45 +85,20 @@ public class ScheduledMatchesController : Controller
         var result = await _store.CreateScheduledMatch(scheduledMatch);
 
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/ScheduledMatches/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpGet("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id)
-    {
-        var scheduledMatchResult = await _store.FindByIdAsync(id);
-        if (!scheduledMatchResult.IsSuccess)
-            return NotFound();
-
-        var scheduledMatch = scheduledMatchResult.Value;
-        var model = new ScheduledMatchFormDto
-        {
-            Id = scheduledMatch.Id,
-            PlayingFieldId = scheduledMatch.PlayingFieldId,
-            PartyId = scheduledMatch.PartyId,
-            MatchDate = scheduledMatch.MatchDate,
-        };
-
-        return PartialView("~/Views/Dashboard/ScheduledMatches/_Form.cshtml", model);
-    }
-
     [HttpPost("edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, ScheduledMatchFormDto model)
+    [Consumes("application/json")]
+    public async Task<IActionResult> Edit(Guid id, [FromBody] ScheduledMatchFormDto model)
     {
         if (id != model.Id)
             return BadRequest();
 
         if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/ScheduledMatches/_Form.cshtml", model);
-        }
+            return BadRequest(ModelState);
 
         var scheduledMatchResult = await _store.FindByIdAsync(id);
         if (!scheduledMatchResult.IsSuccess)
@@ -98,31 +112,15 @@ public class ScheduledMatchesController : Controller
         var result = await _store.UpdateScheduledMatch(scheduledMatch);
 
         if (!result.IsSuccess)
-        {
-            ModelState.AddModelError(string.Empty, result.Errors!.First().Description);
-            Response.StatusCode = 400;
-            return PartialView("~/Views/Dashboard/ScheduledMatches/_Form.cshtml", model);
-        }
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
-    [HttpPost("delete/{id:guid}")]
+    [HttpDelete("delete/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var scheduledMatchResult = await _store.FindByIdAsync(id);
-        if (!scheduledMatchResult.IsSuccess)
-            return NotFound();
-
-        try
-        {
-            await _store.DeleteByIdAsync(id);
-        }
-        catch (DbUpdateException)
-        {
-            return BadRequest("Cannot delete scheduled match while related data exists.");
-        }
-
+        await _store.DeleteByIdAsync(id);
         return Ok();
     }
 }

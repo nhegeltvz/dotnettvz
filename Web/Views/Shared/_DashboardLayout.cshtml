@@ -35,8 +35,15 @@
                         <span>Match Records</span>
                     </a>
                 </li>
+                <li class="dashboard-nav-item">
+                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "ScheduledMatches")" asp-controller="Dashboard" asp-action="ScheduledMatches">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span>Scheduled Matches</span>
+                    </a>
+                </li>
             </ul>
         </nav>
+        <partial name="_LoadingSpinner"></partial>
     </aside>
     <div class="dashboard-main-content">
         @RenderBody()

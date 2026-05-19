@@ -1,5 +1,6 @@
 using Data.Data;
 using Data.Data.Common;
+using Data.Dto.CRUD.ScheduledMatch;
 using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
@@ -20,6 +21,20 @@ namespace Data.Services.Stores
 
         public async Task<List<ScheduledMatch>> GetAllScheduledMatchesAsync()
             => await _dbContext.ScheduledMatches
+                .AsNoTracking()
+                .ToListAsync();
+
+        public async Task<List<ScheduledMatchListDto>> GetScheduledMatchesForTableAsync()
+            => await _dbContext.ScheduledMatches
+                .Select(match => new ScheduledMatchListDto
+                {
+                    Id = match.Id,
+                    PlayingFieldId = match.PlayingFieldId,
+                    PlayingFieldName = match.PlayingField.Name,
+                    PartyId = match.PartyId,
+                    PartyDescription = match.Party.PartyDescription,
+                    MatchDate = match.MatchDate,
+                })
                 .AsNoTracking()
                 .ToListAsync();
 

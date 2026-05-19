@@ -1,0 +1,18 @@
+@model Web.Models.Dashboard.AutocompleteConfig
+
+<div class="dashboard-search" data-autocomplete-root>
+    <label class="dashboard-search__label" for="@Model.InputId">@Model.Label</label>
+    <div class="dashboard-search__input-wrap">
+        <input
+            class="dashboard-search__input"
+            id="@Model.InputId"
+            type="search"
+            placeholder="@Model.Placeholder"
+            autocomplete="off"
+            data-autocomplete-url="@Model.SearchUrl"
+            data-list-url="@Model.ListUrl"
+            data-label-field="@Model.LabelField" />
+        <button type="button" class="dashboard-search__clear" aria-label="Clear search">Clear</button>
+    </div>
+    <div class="dashboard-search__results" role="listbox" aria-label="@Model.Label results" hidden></div>
+</div>

@@ -24,20 +24,20 @@ public class PlayersController : Controller
         return View("PlayerDetailsView", playerResult.Value);
     }
 
-    [HttpGet("list")]
-    public async Task<IActionResult> List(string? search)
-    {
-        var players = string.IsNullOrWhiteSpace(search)
-            ? await _store.GetAllPlayersAsync()
-            : await _store.SearchByUsernameAsync(search);
-
-        return PartialView("~/Views/Dashboard/Players/_List.cshtml", players);
-    }
-
-    [HttpGet("data")]
-    public async Task<IActionResult> GetAll()
+    [HttpGet("")]
+    public async Task<IActionResult> Index()
     {
         var players = await _store.GetAllPlayersAsync();
+        return View("Players", players);
+    }
+
+
+    [HttpGet("data")]
+    public async Task<IActionResult> GetAll(string? search)
+    {
+        var players = string.IsNullOrWhiteSpace(search)
+    ? await _store.GetAllPlayersAsync()
+    : await _store.SearchByUsernameAsync(search);
         return Json(players);
     }
 
@@ -75,13 +75,16 @@ public class PlayersController : Controller
 
         var result = await _store.CreatePlayer(player);
         if (!result.IsSuccess)
+        {
+            ModelState.AddModelError(result.Errors)
             return BadRequest(result.Errors);
+        }
 
         return Ok();
     }
 
 
-    [HttpPost("edit/{id:guid}")]
+    [HttpPut("edit/{id:guid}")]
     [Consumes("application/json")]
     public async Task<IActionResult> Edit(Guid id, [FromBody] PlayerFormDto model)
     {

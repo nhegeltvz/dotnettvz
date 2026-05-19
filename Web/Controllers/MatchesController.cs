@@ -38,9 +38,19 @@ public class MatchesController : Controller
     }
 
     [HttpGet("data")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         var records = await _store.GetMatchRecordsForTableAsync();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            records = records
+                .Where(record => (record.PlayingFieldName ?? string.Empty)
+                    .Contains(term, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         return Json(records);
     }
 

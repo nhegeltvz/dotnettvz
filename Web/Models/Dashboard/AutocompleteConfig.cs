@@ -7,4 +7,5 @@ public class AutocompleteConfig
     public string InputId { get; set; } = string.Empty;
     public string SearchUrl { get; set; } = string.Empty;
     public string ListUrl { get; set; } = string.Empty;
+    public string LabelField { get; set; } = "name";
 }

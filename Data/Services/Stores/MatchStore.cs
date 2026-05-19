@@ -21,6 +21,9 @@ namespace Data.Services.Stores
 
         public async Task<List<MatchRecord>> GetAllMatchRecordsAsync()
             => await _dbContext.MatchRecords
+                .Include(mr => mr.PlayingField)
+                .Include(mr => mr.MatchVotes)
+                .Include(mr => mr.MatchPlayers)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -31,6 +34,7 @@ namespace Data.Services.Stores
                     Id = record.Id,
                     GoalsTeamA = record.GoalsTeamA,
                     GoalsTeamB = record.GoalsTeamB,
+                    PlayingFieldId = record.PlayingFieldId,
                     PlayingFieldName = record.PlayingField.Name,
                     MatchHeld = record.MatchHeld,
                     WasMatchHeld = record.WasMatchHeld,
@@ -40,8 +44,15 @@ namespace Data.Services.Stores
 
         public async Task<Result<MatchRecord>> FindByIdAsync(Guid id)
         {
-            var matchRecord = await _dbContext.MatchRecords.FindAsync(id);
-            return matchRecord != null ? Result<MatchRecord>.Success(matchRecord) : Result<MatchRecord>.Failure(MatchRecordErrors.MatchRecordNotFound);
+            var matchRecord = await _dbContext.MatchRecords
+                .Include(mr => mr.PlayingField)
+                .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.Player)
+                .Include(mr => mr.MatchVotes).ThenInclude(mv => mv.Player)
+                .FirstOrDefaultAsync(mr => mr.Id == id);
+
+            return matchRecord != null
+                ? Result<MatchRecord>.Success(matchRecord)
+                : Result<MatchRecord>.Failure(MatchRecordErrors.MatchRecordNotFound);
         }
 
         public async Task<Result<Guid>> CreateMatchRecord(IMatchRecord model)

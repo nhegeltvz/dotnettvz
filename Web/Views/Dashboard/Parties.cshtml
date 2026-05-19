@@ -1,9 +1,26 @@
-﻿@{
+﻿@using Web.Models.Dashboard
+@{
     ViewData["Title"] = "Dashboard - Parties";
+    var autocompleteConfig = new AutocompleteConfig()
+    {
+        Label = "Search Parties",
+        Placeholder = "ex. Evening kickoff",
+        InputId = "partySearch",
+        SearchUrl = "/parties/data",
+        ListUrl = "/parties/data",
+        LabelField = "partyDescription"
+    };
 }
 
+<div class="dashboard-toast"></div>
+<div class="dashboard-toolbar">
+    <div class="dashboard-search-wrapper">
+        <partial name="_AutocompleteSearch" model="autocompleteConfig" />
+    </div>
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Party</button>
+</div>
+
 <section class="dashboard-panel">
-	<button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Party</button>
     <header class="dashboard-panel-header">
         <h2 class="dashboard-panel-title">Parties</h2>
     </header>
@@ -28,89 +45,5 @@
 <div id="form-container"></div>
 
 @section Scripts {
-	<script>
-		const tableBody = document.getElementById("partiesTable");
-		document.addEventListener("DOMContentLoaded", async () => {
-			await loadParties();
-		})
-
-		function loadParties() {
-			$.ajax({
-				url: "/parties/data",
-				method: "GET",
-				success: function (parties) {
-					let injectedHtml = "";
-					parties.forEach(party => {
-						injectedHtml +=
-						`
-						<tr>
-							<td>${party.playerCreatedUsername}</td>
-							<td>${party.dateCreated}</td>
-							<td>${party.partyDescription}</td>
-							<td>${party.numberOfMembers}/${party.maxMembers}</td>
-							<td>
-								<button class="dashboard-row-button dashboard-row-button--danger" onclick="deleteParty('${party.id}')">Delete</button>
-							</td>
-						</tr>
-						`
-					});
-					tableBody.innerHTML = injectedHtml;
-				}
-			});
-		}
-
-		function openCreate() {
-			$.get("/parties/form", function (html) {
-				$("#form-container").html(html);
-				$("#party-id").val("");
-				$.validator.unobtrusive.parse("#party-form");
-			});
-		}
-
-		function cancelForm() {
-			$("#form-container").html("");
-		}
-
-		function submitForm() {
-			const id = $("#party-id").val();
-			const url = id ? `/parties/edit/${id}` : "/parties/create";
-
-			if (!$("#party-form").valid()) return;
-
-			$.ajax({
-				url: url,
-				method: "POST",
-				contentType: "application/json",
-				data: JSON.stringify({
-					playerCreatedId: $("#Form_PlayerCreatedId").val(),
-					dateCreated: $("#Form_DateCreated").val(),
-					maxMembers: $("#Form_MaxMembers").val(),
-					partyDescription: $("#Form_PartyDescription").val(),
-					preferredLocations: $("#Form_PreferredLocations").val()
-				}),
-				success: function () {
-					cancelForm();
-					loadParties();
-				},
-				error: function (xhr) {
-					console.log(xhr.responseJSON);
-				}
-			});
-		}
-
-		function deleteParty(id) {
-			if (!confirm("Are you sure?")) return;
-
-			$.ajax({
-				url: `/parties/delete/${id}`,
-				method: "DELETE",
-				success: function () {
-					loadParties();
-				},
-				error: function (xhr) {
-					console.log(xhr.responseJSON);
-				}
-			});
-		}
-	</script>
+    <script src="~/js/parties.js"></script>
 }

@@ -1,0 +1,36 @@
+@using Web.Models.Dashboard
+@model ScheduledMatchFormViewModel
+
+<section class="dashboard-panel">
+    <header class="dashboard-panel-header">
+        <h2 class="dashboard-panel-title">Scheduled Match</h2>
+    </header>
+    <form id="scheduled-match-form" class="dashboard-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" id="scheduled-match-id" />
+        <div id="scheduled-match-edit-banner" class="dashboard-edit-banner" hidden>Editing scheduled match</div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.PlayingFieldId"></label>
+            <select asp-for="Form.PlayingFieldId" asp-items="Model.PlayingFields"></select>
+            <span asp-validation-for="Form.PlayingFieldId" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.PartyId"></label>
+            <select asp-for="Form.PartyId" asp-items="Model.Parties"></select>
+            <span asp-validation-for="Form.PartyId" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.MatchDate"></label>
+            <input asp-for="Form.MatchDate" type="datetime-local" />
+            <span asp-validation-for="Form.MatchDate" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-actions">
+            <button type="button" class="dashboard-button-secondary" onclick="cancelForm()">Cancel</button>
+            <button type="button" class="dashboard-submit" onclick="submitForm()">Save</button>
+        </div>
+    </form>
+</section>

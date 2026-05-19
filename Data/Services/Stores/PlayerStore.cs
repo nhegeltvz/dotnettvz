@@ -23,10 +23,21 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public async Task<List<Player>> GetPlayersByIdsAsync(IEnumerable<Guid> playerIds)
+            => await _dbContext.Players
+            .Where(player => playerIds.Contains(player.Id))
+            .AsNoTracking().ToListAsync();
+
         public async Task<Result<Player>> FindByIdAsync(Guid id)
         {
-            var player = await _dbContext.Players.FindAsync(id);
-            return player != null ? Result<Player>.Success(player) : Result<Player>.Failure(PlayerErrors.PlayerNotFound);
+            var player = await _dbContext.Players
+                .Include(p => p.MatchPlayers)
+                .Include(p => p.RatingsReceived)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            return player != null
+                ? Result<Player>.Success(player)
+                : Result<Player>.Failure(PlayerErrors.PlayerNotFound);
         }
 
         public async Task<Result<Guid>> CreatePlayer(IPlayer model)

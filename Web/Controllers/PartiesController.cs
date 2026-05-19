@@ -39,9 +39,22 @@ public class PartiesController : Controller
 
 
     [HttpGet("data")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         var parties = await _store.GetPartiesForTableAsync();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            parties = parties
+                .Where(party =>
+                    (party.PartyDescription ?? string.Empty)
+                        .Contains(term, StringComparison.OrdinalIgnoreCase)
+                    || (party.PlayerCreatedUsername ?? string.Empty)
+                        .Contains(term, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         return Json(parties);
     }
 

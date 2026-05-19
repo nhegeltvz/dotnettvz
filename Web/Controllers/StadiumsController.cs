@@ -50,9 +50,19 @@ public class StadiumsController : Controller
         return View("StadiumDetailsView", model);
     }
     [HttpGet("data")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         var playingFields = await _store.GetAllStadiumsAsync();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            playingFields = playingFields
+                .Where(field => (field.Name ?? string.Empty)
+                    .Contains(term, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         return Json(playingFields);
     }
 

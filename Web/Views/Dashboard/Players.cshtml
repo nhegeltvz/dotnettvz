@@ -1,9 +1,24 @@
-﻿@{
+﻿@using Web.Models.Dashboard
+@{
     ViewData["Title"] = "Dashboard - Players";
+    var autocompleteConfig = new AutocompleteConfig()
+    {
+        Label = "Search Players",
+        Placeholder = "ex. Ronaldo Nazario",
+        InputId = "playerSearch",
+        SearchUrl = "/players/data",
+        ListUrl = "/players/data",
+        LabelField = "username"
+    };
 }
-
-<section class="dashboard-panel">
+<div class="dashboard-toast"></div>
+<div class="dashboard-toolbar">
+    <div class="dashboard-search-wrapper">
+        <partial name="_AutocompleteSearch" model="autocompleteConfig" />
+    </div>
     <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Player</button>
+</div>
+<section class="dashboard-panel">
     <header class="dashboard-panel-header">
         <h2 class="dashboard-panel-title">Players</h2>
     </header>
@@ -26,90 +41,5 @@
 <div id="form-container"></div>
 
 @section Scripts {
-    <script>
-        const tableBody = document.getElementById("playerTable");
-        document.addEventListener("DOMContentLoaded", async () => {
-            await loadPlayers();
-        })
-
-        function loadPlayers(){
-                    $.ajax({
-            url: "/players/data",
-            method: "GET",
-            success: function(players) {
-                console.log(players);
-                let injectedHtml = "";
-                players.forEach(player => {
-                    injectedHtml +=
-                    `
-                    <tr>
-                        <td>${player.username}</td>
-                        <td>${player.email}</td>
-                        <td>
-                            <button class="dashboard-row-button dashboard-row-button--danger" onclick="deletePlayer('${player.id}')">Delete</button>
-                        </td>
-                    </tr>
-                    `
-                });
-                tableBody.innerHTML=injectedHtml;
-            }
-        });
-        }
-
-        function openCreate() {
-            $.get("/players/form", function(html) {
-                $("#form-container").html(html);
-                $("#player-id").val("");
-                $.validator.unobtrusive.parse("#player-form");
-            });
-        }
-
-                function cancelForm() {
-            $("#form-container").html("");
-        }
-
-        function submitForm() {
-            const id = $("#player-id").val();
-            const url = id ? `/players/edit/${id}` : "/players/create";
-            const method = id ? "PUT" : "POST";
-
-            if (!$("#player-form").valid()) return;
-
-        $.ajax({
-            url: url,
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({
-                username: $("#Username").val(),
-                email: $("#Email").val(),
-                bio: $("#Bio").val(),
-                age: $("#Age").val(),
-                preferredPosition: $("#PreferredPosition").val()
-            }),
-            success: function() {
-                cancelForm();
-                loadPlayers();
-            },
-            error: function(xhr) {
-                console.log(xhr.responseJSON);
-            }
-        });
-        }
-
-                function deletePlayer(id) {
-            if (!confirm("Are you sure?")) return;
-
-            $.ajax({
-                url: `/players/delete/${id}`,
-                method: "DELETE",
-                success: function() {
-                    loadPlayers();
-                },
-                error: function(xhr) {
-                    console.log(xhr.responseJSON);
-                }
-            });
-        }
-
-    </script>
+    <script src="~/js/players.js"></script>
 }

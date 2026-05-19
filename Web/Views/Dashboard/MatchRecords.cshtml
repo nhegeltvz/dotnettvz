@@ -1,9 +1,26 @@
-﻿@{
+﻿@using Web.Models.Dashboard
+@{
     ViewData["Title"] = "Dashboard - Match Records";
+    var autocompleteConfig = new AutocompleteConfig()
+    {
+        Label = "Search Match Records",
+        Placeholder = "ex. Maksimir",
+        InputId = "matchRecordSearch",
+        SearchUrl = "/matches/data",
+        ListUrl = "/matches/data",
+        LabelField = "playingFieldName"
+    };
 }
 
-<section class="dashboard-panel">
+<div class="dashboard-toast"></div>
+<div class="dashboard-toolbar">
+    <div class="dashboard-search-wrapper">
+        <partial name="_AutocompleteSearch" model="autocompleteConfig" />
+    </div>
     <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Match Record</button>
+</div>
+
+<section class="dashboard-panel">
     <header class="dashboard-panel-header">
         <h2 class="dashboard-panel-title">Match Records</h2>
     </header>
@@ -29,90 +46,5 @@
 <div id="form-container"></div>
 
 @section Scripts {
-    <script>
-        const tableBody = document.getElementById("matchRecordsTable");
-        document.addEventListener("DOMContentLoaded", async () => {
-            await loadMatchRecords();
-        })
-
-        function loadMatchRecords() {
-            $.ajax({
-                url: "/matches/data",
-                method: "GET",
-                success: function (records) {
-                    let injectedHtml = "";
-                    records.forEach(record => {
-                        injectedHtml +=
-                        `
-                        <tr>
-                            <td>${record.goalsTeamA}</td>
-                            <td>${record.goalsTeamB}</td>
-                            <td>${record.playingFieldName}</td>
-                            <td>${record.matchHeld}</td>
-                            <td>${record.wasMatchHeld}</td>
-                            <td>
-                                <button class="dashboard-row-button dashboard-row-button--danger" onclick="deleteRecord('${record.id}')">Delete</button>
-                            </td>
-                        </tr>
-                        `;
-                    });
-                    tableBody.innerHTML = injectedHtml;
-                }
-            });
-        }
-
-        function openCreate() {
-            $.get("/matches/form", function (html) {
-                $("#form-container").html(html);
-                $("#match-record-id").val("");
-                $.validator.unobtrusive.parse("#match-record-form");
-            });
-        }
-
-        function cancelForm() {
-            $("#form-container").html("");
-        }
-
-        function submitForm() {
-            const id = $("#match-record-id").val();
-            const url = id ? `/matches/edit/${id}` : "/matches/create";
-
-            if (!$("#match-record-form").valid()) return;
-
-            $.ajax({
-                url: url,
-                method: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({
-                    wasMatchHeld: $("#Form_WasMatchHeld").is(":checked"),
-                    matchHeld: $("#Form_MatchHeld").val(),
-                    playingFieldId: $("#Form_PlayingFieldId").val(),
-                    goalsTeamA: $("#Form_GoalsTeamA").val(),
-                    goalsTeamB: $("#Form_GoalsTeamB").val()
-                }),
-                success: function () {
-                    cancelForm();
-                    loadMatchRecords();
-                },
-                error: function (xhr) {
-                    console.log(xhr.responseJSON);
-                }
-            });
-        }
-
-        function deleteRecord(id) {
-            if (!confirm("Are you sure?")) return;
-
-            $.ajax({
-                url: `/matches/delete/${id}`,
-                method: "DELETE",
-                success: function () {
-                    loadMatchRecords();
-                },
-                error: function (xhr) {
-                    console.log(xhr.responseJSON);
-                }
-            });
-        }
-    </script>
+    <script src="~/js/matchRecords.js"></script>
 }

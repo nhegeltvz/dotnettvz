@@ -10,6 +10,8 @@ public class PartyFormDto
 
     public DateTime DateCreated { get; set; }
 
+    public List<Guid> MemberIds { get; set; } = [];
+
     [Required]
     [Range(2, 20)]
     public int MaxMembers { get; set; }

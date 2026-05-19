@@ -28,6 +28,12 @@ public class DashboardController : Controller
         return View("MatchRecords");
     }
 
+    [HttpGet("scheduled-matches")]
+    public IActionResult ScheduledMatches()
+    {
+        return View("ScheduledMatches");
+    }
+
     [HttpGet("players")]
     public IActionResult Players()
     {

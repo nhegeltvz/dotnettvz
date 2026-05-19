@@ -25,8 +25,13 @@ namespace Data.Services.Stores
 
         public async Task<Result<PlayingField>> FindByIdAsync(Guid id)
         {
-            var playingField = await _dbContext.PlayingFields.FindAsync(id);
-            return playingField != null ? Result<PlayingField>.Success(playingField) : Result<PlayingField>.Failure(PlayingFieldErrors.PlayingFieldNotFound);
+            var playingField = await _dbContext.PlayingFields
+                .Include(pf => pf.MatchRecords)
+                .FirstOrDefaultAsync(pf => pf.Id == id);
+
+            return playingField != null
+                ? Result<PlayingField>.Success(playingField)
+                : Result<PlayingField>.Failure(PlayingFieldErrors.PlayingFieldNotFound);
         }
 
         public async Task<Result<Guid>> CreatePlayingField(IPlayingField model)

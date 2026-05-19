@@ -1,0 +1,48 @@
+@using Web.Models.Dashboard
+@{
+    ViewData["Title"] = "Dashboard - Scheduled Matches";
+    var autocompleteConfig = new AutocompleteConfig()
+    {
+        Label = "Search Scheduled Matches",
+        Placeholder = "ex. Sunday run",
+        InputId = "scheduledMatchSearch",
+        SearchUrl = "/scheduled-matches/data",
+        ListUrl = "/scheduled-matches/data",
+        LabelField = "partyDescription"
+    };
+}
+
+<div class="dashboard-toast"></div>
+<div class="dashboard-toolbar">
+    <div class="dashboard-search-wrapper">
+        <partial name="_AutocompleteSearch" model="autocompleteConfig" />
+    </div>
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Scheduled Match</button>
+</div>
+
+<section class="dashboard-panel">
+    <header class="dashboard-panel-header">
+        <h2 class="dashboard-panel-title">Scheduled Matches</h2>
+    </header>
+    <div style="display:flex;justify-content:center;">
+        <table class="dashboard-table" aria-label="Scheduled matches table">
+            <thead>
+                <tr>
+                    <th>Playing Field</th>
+                    <th>Party</th>
+                    <th>Match Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="scheduledMatchesTable">
+                <!-- Ajax: inject scheduled match rows here -->
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="form-container"></div>
+
+@section Scripts {
+    <script src="~/js/scheduledMatches.js"></script>
+}

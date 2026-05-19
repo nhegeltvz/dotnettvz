@@ -21,6 +21,7 @@ namespace Data.Services.Stores
 
         public async Task<List<Party>> GetAllPartiesAsync()
             => await _dbContext.Parties
+                .Include(party => party.PlayerCreated)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -29,19 +30,28 @@ namespace Data.Services.Stores
             .Select(party => new PartyListDto
             {
                 Id = party.Id,
+                PlayerCreatedId = party.PlayerCreatedId,
                 PartyDescription = party.PartyDescription,
                 DateCreated = party.DateCreated,
                 PlayerCreatedUsername= party.PlayerCreated.Username,
                 NumberOfMembers = party.Members.Count,
-                MaxMembers = party.MaxMembers
+                MaxMembers = party.MaxMembers,
+                PreferredLocations = party.PreferredLocations
             })
                 .AsNoTracking()
                 .ToListAsync();
 
         public async Task<Result<Party>> FindByIdAsync(Guid id)
         {
-            var party = await _dbContext.Parties.FindAsync(id);
-            return party != null ? Result<Party>.Success(party) : Result<Party>.Failure(PartyErrors.PartyNotFound);
+            var party = await _dbContext.Parties
+                .Include(p => p.PlayerCreated)
+                .Include(p => p.Members)
+                .Include(p => p.PreferredPlayingDates)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            return party != null
+                ? Result<Party>.Success(party)
+                : Result<Party>.Failure(PartyErrors.PartyNotFound);
         }
 
         public async Task<Result<Guid>> CreateParty(IParty model)

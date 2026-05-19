@@ -9,6 +9,7 @@
     <form id="match-record-form" class="dashboard-form">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" id="match-record-id" />
+        <div id="match-record-edit-banner" class="dashboard-edit-banner" hidden>Editing match record</div>
 
         <div class="dashboard-form-row">
             <label asp-for="Form.WasMatchHeld"></label>
