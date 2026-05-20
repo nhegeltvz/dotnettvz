@@ -23,6 +23,12 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public async Task<List<ScheduledMatchAttendance>> GetByScheduledMatchIdAsync(Guid scheduledMatchId)
+            => await _dbContext.ScheduledMatchAttendances
+                .Where(attendance => attendance.ScheduledMatchId == scheduledMatchId)
+                .AsNoTracking()
+                .ToListAsync();
+
         public async Task<Result<ScheduledMatchAttendance>> FindByIdAsync(Guid id)
         {
             var scheduledMatchAttendance = await _dbContext.ScheduledMatchAttendances.FindAsync(id);
@@ -77,6 +83,16 @@ namespace Data.Services.Stores
                 .ConfigureAwait(false);
 
             return rowsAffected == 0 ? Result.Failure(ScheduledMatchAttendanceErrors.ScheduledMatchAttendanceNotDeleted) : Result.Success();
+        }
+
+        public async Task<Result> DeleteByScheduledMatchIdAsync(Guid scheduledMatchId)
+        {
+            await _dbContext.ScheduledMatchAttendances
+                .Where(x => x.ScheduledMatchId == scheduledMatchId)
+                .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
+
+            return Result.Success();
         }
     }
 }

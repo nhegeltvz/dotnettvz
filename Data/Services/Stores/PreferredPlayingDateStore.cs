@@ -23,6 +23,12 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public async Task<List<PreferredPlayingDate>> GetPreferredPlayingDatesByPartyIdAsync(Guid partyId)
+            => await _dbContext.PreferredPlayingDates
+                .Where(date => date.PartyId == partyId)
+                .AsNoTracking()
+                .ToListAsync();
+
         public async Task<Result<PreferredPlayingDate>> FindByIdAsync(Guid id)
         {
             var preferredPlayingDate = await _dbContext.PreferredPlayingDates.FindAsync(id);
@@ -76,6 +82,16 @@ namespace Data.Services.Stores
                 .ConfigureAwait(false);
 
             return rowsAffected == 0 ? Result.Failure(PreferredPlayingDateErrors.PreferredPlayingDateNotDeleted) : Result.Success();
+        }
+
+        public async Task<Result> DeleteByPartyIdAsync(Guid partyId)
+        {
+            var rowsAffected = await _dbContext.PreferredPlayingDates
+                .Where(x => x.PartyId == partyId)
+                .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
+
+            return Result.Success();
         }
     }
 }

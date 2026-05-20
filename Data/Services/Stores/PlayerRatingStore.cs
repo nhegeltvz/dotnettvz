@@ -58,7 +58,7 @@ namespace Data.Services.Stores
                 return validationResult;
 
             var rowsAffected = await _dbContext.SaveChangesAsync();
-            return rowsAffected != 0 ? Result.Success() : Result.Failure(PlayerRatingErrors.PlayerRatingNotUpdated);
+            return Result.Success();
         }
 
         private PlayerRating UpdatePlayerRating(IPlayerRating model, PlayerRating playerRating)
@@ -78,6 +78,22 @@ namespace Data.Services.Stores
                 .ConfigureAwait(false);
 
             return rowsAffected == 0 ? Result.Failure(PlayerRatingErrors.PlayerRatingNotDeleted) : Result.Success();
+        }
+
+        public async Task<Result> DeleteByMatchPlayerIdsAsync(IEnumerable<Guid> matchPlayerIds)
+        {
+            var ids = matchPlayerIds.ToList();
+            if (!ids.Any())
+            {
+                return Result.Success();
+            }
+
+            await _dbContext.PlayerRatings
+                .Where(x => ids.Contains(x.MatchPlayerId))
+                .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
+
+            return Result.Success();
         }
     }
 }

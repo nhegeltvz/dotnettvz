@@ -1,6 +1,11 @@
 @using Data.Dto.CRUD.Party
 @using Web.Models.Dashboard
+@using Web.Models
 @model PartyFormViewModel
+
+@{
+    var attendanceHidden = Model.Form.ScheduledMatchAttendances.Any() ? string.Empty : "hidden";
+}
 
 <section class="dashboard-panel">
     <header class="dashboard-panel-header">
@@ -9,6 +14,7 @@
     <form id="party-form" class="dashboard-form">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" id="party-id" />
+        <input type="hidden" id="scheduled-match-id" value="@Model.Form.ScheduledMatchId" />
         <div id="party-edit-banner" class="dashboard-edit-banner" hidden>Editing party</div>
 
         <div class="dashboard-form-row">
@@ -19,7 +25,13 @@
 
         <div class="dashboard-form-row">
             <label asp-for="Form.DateCreated"></label>
-            <input asp-for="Form.DateCreated" type="datetime-local" />
+            @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+            {
+                FieldName = "Form_DateCreated",
+                Value = Model.Form.DateCreated != default
+                    ? Model.Form.DateCreated.ToString("yyyy-MM-ddTHH:mm")
+                    : string.Empty
+            })
             <span asp-validation-for="Form.DateCreated" class="text-danger"></span>
         </div>
 
@@ -39,6 +51,75 @@
             <label asp-for="Form.PreferredLocations"></label>
             <textarea asp-for="Form.PreferredLocations"></textarea>
             <span asp-validation-for="Form.PreferredLocations" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.ScheduledMatchPlayingFieldId">Scheduled match field</label>
+            <select asp-for="Form.ScheduledMatchPlayingFieldId" asp-items="Model.PlayingFields">
+                <option value="">-- Select playing field --</option>
+            </select>
+            <span asp-validation-for="Form.ScheduledMatchPlayingFieldId" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Form.ScheduledMatchDate">Scheduled match date</label>
+            @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+            {
+                FieldName = "Form_ScheduledMatchDate",
+                Value = Model.Form.ScheduledMatchDate.HasValue
+                    ? Model.Form.ScheduledMatchDate.Value.ToString("yyyy-MM-ddTHH:mm")
+                    : string.Empty
+            })
+            <span asp-validation-for="Form.ScheduledMatchDate" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label>Preferred playing dates</label>
+            <div class="dashboard-date-input">
+                @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+                {
+                    FieldName = "preferred-date-input",
+                    Value = string.Empty
+                })
+                <button type="button" class="dashboard-button-secondary" id="add-preferred-date">Add date</button>
+            </div>
+            <div id="preferred-dates-list" class="dashboard-date-chip-list">
+                @foreach (var date in Model.Form.PreferredPlayingDates)
+                {
+                    var localDate = date.ToLocalTime();
+                    <div class="dashboard-date-chip" data-date="@date.ToString("yyyy-MM-ddTHH:mm")">
+                        <span>@localDate.ToString("dd.MM.yyyy. HH:mm")</span>
+                        <button type="button" class="dashboard-chip-remove" aria-label="Remove date">X</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="dashboard-form-row">
+            @await Html.PartialAsync("_HegelMultiSelect", Model.HmsPartyMembers)
+        </div>
+
+        <div id="scheduled-attendance-section" class="dashboard-form-section" @attendanceHidden>
+            <h3 class="dashboard-form-section-title">Scheduled match attendance</h3>
+            <table class="dashboard-table dashboard-table--compact" aria-label="Scheduled match attendance">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Attending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var attendance in Model.Form.ScheduledMatchAttendances)
+                    {
+                        <tr data-player-id="@attendance.PlayerId" data-attendance-id="@attendance.Id">
+                            <td>@attendance.PlayerName</td>
+                            <td>
+                                <input type="checkbox" class="attendance-toggle" @(attendance.IsAttending ? "checked" : string.Empty) />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
 
         <div class="dashboard-form-actions">

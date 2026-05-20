@@ -1,8 +1,31 @@
-﻿@{
+﻿@using Data.CustomControlData
+@using TestniApp.Models.CustomSelectControl
+@{
     ViewData["Title"] = "Home Page";
+    var multiSelectConfig = new MultiSelectConfig()
+            {
+                ControlId = "student-select",
+                Label = "Students",
+                FieldName = "studentIds",
+                AvailableItems = MockRepository.GetStudents().Select(t => new SelectableItem
+                {
+                    Id = t.Id.ToString(),
+                    Name = t.Name
+                }).ToList(),
+                SelectedItems = []
+            };
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+<div style="max-width:200px">
+<partial name="_MultiSelect" model="multiSelectConfig" />
+</div>
+
+@section Scripts{
+    <script>
+        const studentSelect = new HegelMultiSelect('student-select');
+    </script>
+}

@@ -22,7 +22,6 @@
                     );
 
                 pipeline.AddJavaScriptBundle("~/js/players.min.js", "js/players.js");
-                pipeline.AddJavaScriptBundle("~/js/scheduledMatches.min.js", "js/scheduledMatches.js");
                 pipeline.AddJavaScriptBundle("~/js/matchRecords.min.js", "js/matchRecords.js");
                 pipeline.AddJavaScriptBundle("~/js/parties.min.js", "js/parties.js");
                 pipeline.AddJavaScriptBundle("~/js/playingFields.min.js", "js/playingFields.js");

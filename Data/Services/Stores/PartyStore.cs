@@ -47,6 +47,9 @@ namespace Data.Services.Stores
                 .Include(p => p.PlayerCreated)
                 .Include(p => p.Members)
                 .Include(p => p.PreferredPlayingDates)
+                .Include(p => p.ScheduledMatch)
+                    .ThenInclude(sm => sm.ScheduledMatchAttendances)
+                        .ThenInclude(attendance => attendance.Player)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             return party != null
@@ -83,7 +86,7 @@ namespace Data.Services.Stores
                 return validationResult;
 
             var rowsAffected = await _dbContext.SaveChangesAsync();
-            return rowsAffected != 0 ? Result.Success() : Result.Failure(PartyErrors.PartyNotUpdated);
+            return Result.Success();
         }
 
         private Party UpdateParty(IParty model, Party party)
@@ -94,6 +97,26 @@ namespace Data.Services.Stores
             party.PartyDescription = model.PartyDescription;
             party.PreferredLocations = model.PreferredLocations;
             return party;
+        }
+
+        public async Task SyncMembersAsync(Guid partyId, List<Guid> memberIds)
+        {
+            var party = await _dbContext.Parties
+                .Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == partyId);
+
+            if (party == null)
+                return;
+
+            var players = await _dbContext.Players
+                .Where(p => memberIds.Contains(p.Id))
+                .ToListAsync();
+
+            party.Members.Clear();
+            foreach (var player in players)
+                party.Members.Add(player);
+
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<Result> DeleteByIdAsync(Guid id)

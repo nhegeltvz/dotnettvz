@@ -76,7 +76,6 @@ public class PlayersController : Controller
         var result = await _store.CreatePlayer(player);
         if (!result.IsSuccess)
         {
-            ModelState.AddModelError(result.Errors)
             return BadRequest(result.Errors);
         }
 

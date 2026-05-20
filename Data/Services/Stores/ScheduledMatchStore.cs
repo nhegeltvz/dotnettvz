@@ -73,7 +73,7 @@ namespace Data.Services.Stores
                 return validationResult;
 
             var rowsAffected = await _dbContext.SaveChangesAsync();
-            return rowsAffected != 0 ? Result.Success() : Result.Failure(ScheduledMatchErrors.ScheduledMatchNotUpdated);
+            return Result.Success();
         }
 
         private ScheduledMatch UpdateScheduledMatch(IScheduledMatch model, ScheduledMatch scheduledMatch)

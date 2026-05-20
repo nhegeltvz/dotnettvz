@@ -1,4 +1,5 @@
 @using Web.Models.Dashboard
+@using Web.Models
 @model ScheduledMatchFormViewModel
 
 <section class="dashboard-panel">
@@ -24,7 +25,13 @@
 
         <div class="dashboard-form-row">
             <label asp-for="Form.MatchDate"></label>
-            <input asp-for="Form.MatchDate" type="datetime-local" />
+            @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+            {
+                FieldName = "Form_MatchDate",
+                Value = Model.Form.MatchDate != default
+                    ? Model.Form.MatchDate.ToString("yyyy-MM-ddTHH:mm")
+                    : string.Empty
+            })
             <span asp-validation-for="Form.MatchDate" class="text-danger"></span>
         </div>
 

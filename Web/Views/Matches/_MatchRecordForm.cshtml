@@ -1,6 +1,12 @@
 @using Data.Dto.CRUD.MatchRecord
 @using Web.Models.Dashboard
+@using Web.Models
 @model MatchRecordFormViewModel
+
+@{
+    var playersById = Model.HmsMatchPlayers.AvailableItems
+        .ToDictionary(item => item.Id, item => item.Name);
+}
 
 <section class="dashboard-panel">
     <header class="dashboard-panel-header">
@@ -19,7 +25,13 @@
 
         <div class="dashboard-form-row">
             <label asp-for="Form.MatchHeld"></label>
-            <input asp-for="Form.MatchHeld" type="datetime-local" />
+            @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+            {
+                FieldName = "Form_MatchHeld",
+                Value = Model.Form.MatchHeld != default
+                    ? Model.Form.MatchHeld.ToString("yyyy-MM-ddTHH:mm")
+                    : string.Empty
+            })
             <span asp-validation-for="Form.MatchHeld" class="text-danger"></span>
         </div>
 
@@ -39,6 +51,66 @@
             <label asp-for="Form.GoalsTeamB"></label>
             <input asp-for="Form.GoalsTeamB" type="number" />
             <span asp-validation-for="Form.GoalsTeamB" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            @await Html.PartialAsync("_HegelMultiSelect", Model.HmsMatchPlayers)
+        </div>
+
+        @{
+            var statsHidden = Model.Form.MatchPlayerStats.Any() ? string.Empty : "hidden";
+        }
+        <div id="match-player-stats-section" class="dashboard-form-section" @statsHidden>
+            <h3 class="dashboard-form-section-title">Player stats</h3>
+            <table class="dashboard-table dashboard-table--compact" aria-label="Player stats">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Goals</th>
+                        <th>Assists</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var stats in Model.Form.MatchPlayerStats)
+                    {
+                        var playerName = playersById.TryGetValue(stats.PlayerId.ToString(), out var pName) ? pName : stats.PlayerId.ToString();
+                        <tr data-player-id="@stats.PlayerId">
+                            <td>@playerName</td>
+                            <td><input type="number" class="player-goals" value="@stats.Goals" min="0" /></td>
+                            <td><input type="number" class="player-assists" value="@stats.Assists" min="0" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div id="match-rating-section" class="dashboard-form-section" hidden>
+            <h3 class="dashboard-form-section-title">Player ratings</h3>
+            <div class="dashboard-rating-row">
+                <select id="rating-giver"></select>
+                <span class="dashboard-rating-label">rates</span>
+                <select id="rating-receiver"></select>
+                <input id="rating-value" type="number" min="1" max="5" />
+                <button type="button" class="dashboard-button-secondary" id="add-rating">Add rating</button>
+            </div>
+            <div id="rating-list" class="dashboard-rating-list">
+                @foreach (var rating in Model.Form.PlayerRatings)
+                {
+                    var giverName = playersById.TryGetValue(rating.PlayerGivingRatingId.ToString(), out var giver)
+                        ? giver
+                        : rating.PlayerGivingRatingId.ToString();
+                    var receiverName = playersById.TryGetValue(rating.PlayerReceivingRatingId.ToString(), out var receiver)
+                        ? receiver
+                        : rating.PlayerReceivingRatingId.ToString();
+                    <div class="dashboard-rating-chip"
+                         data-giver-id="@rating.PlayerGivingRatingId"
+                         data-receiver-id="@rating.PlayerReceivingRatingId"
+                         data-rating="@rating.Rating">
+                        <span>@giverName -> @receiverName: @rating.Rating</span>
+                        <button type="button" class="dashboard-chip-remove" aria-label="Remove rating">X</button>
+                    </div>
+                }
+            </div>
         </div>
 
         <div class="dashboard-form-actions">

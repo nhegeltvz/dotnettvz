@@ -1,0 +1,37 @@
+﻿@using System.Text.Json;
+@using TestniApp.Models.CustomSelectControl;
+
+@model MultiSelectConfig
+
+@{
+    var availableData = JsonSerializer.Serialize(Model.AvailableItems.Select(x => new { id = x.Id, displayName = x.Name }));
+}
+
+<div class="multi-select-control"
+    id="@Model.ControlId"
+    data-available="@availableData"
+    data-field-name="@Model.FieldName">
+
+    <label class="hms-label">@Model.Label</label>
+
+    <div class="hms-input-wrapper">
+        <input type="text"
+               class="hms-search-input"
+               placeholder="@Model.Placeholder"
+               autocomplete="off" />
+        <ul class="hms-dropdown" style="display:none"></ul>
+    </div>
+
+    <ul class="hms-selected-list">
+        @foreach(var item in Model.SelectedItems)
+        {
+            <li data-id="@item.Id">
+                <span>@item.Name</span>
+                <button type="button" class="hms-remove-btn" aria-label="Remove">X</button>
+            </li>
+        }
+    </ul>
+
+    <input type="hidden" class="hms-hidden-value" />
+
+</div>

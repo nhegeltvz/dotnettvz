@@ -47,6 +47,7 @@ namespace Data.Services.Stores
             var matchRecord = await _dbContext.MatchRecords
                 .Include(mr => mr.PlayingField)
                 .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.Player)
+                .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.PlayerRating)
                 .Include(mr => mr.MatchVotes).ThenInclude(mv => mv.Player)
                 .FirstOrDefaultAsync(mr => mr.Id == id);
 
@@ -84,7 +85,7 @@ namespace Data.Services.Stores
                 return validationResult;
 
             var rowsAffected = await _dbContext.SaveChangesAsync();
-            return rowsAffected != 0 ? Result.Success() : Result.Failure(MatchRecordErrors.MatchRecordNotUpdated);
+            return Result.Success();
         }
 
         private MatchRecord UpdateMatchRecord(IMatchRecord model, MatchRecord matchRecord)

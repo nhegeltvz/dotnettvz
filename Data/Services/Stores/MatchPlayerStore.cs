@@ -23,6 +23,12 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public async Task<List<MatchPlayer>> GetByMatchRecordIdAsync(Guid matchRecordId)
+            => await _dbContext.MatchPlayers
+                .Where(matchPlayer => matchPlayer.MatchRecordId == matchRecordId)
+                .AsNoTracking()
+                .ToListAsync();
+
         public async Task<Result<MatchPlayer>> FindByIdAsync(Guid id)
         {
             var matchPlayer = await _dbContext.MatchPlayers.FindAsync(id);
@@ -69,6 +75,15 @@ namespace Data.Services.Stores
             matchPlayer.Goals = model.Goals;
             matchPlayer.Assists = model.Assists;
             return matchPlayer;
+        }
+
+        public async Task UpdateStatsAsync(Guid id, int goals, int assists)
+        {
+            await _dbContext.MatchPlayers
+                .Where(mp => mp.Id == id)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(mp => mp.Goals, goals)
+                    .SetProperty(mp => mp.Assists, assists));
         }
 
         public async Task<Result> DeleteByIdAsync(Guid id)
