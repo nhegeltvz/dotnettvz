@@ -26,7 +26,7 @@ namespace Data.Services.Validation
             {
                 var name = entity.Name.Trim().ToLowerInvariant();
                 var nameExists = _dbContext.PlayingFields.Any(field =>
-                    field.Id != entity.Id && field.Name.ToLowerInvariant() == name);
+                    field.Id != entity.Id && field.Name.ToLower() == name);
                 if (nameExists)
                 {
                     errors.Add(new Error(ErrorType.Validation, "Playing field name is already in use."));

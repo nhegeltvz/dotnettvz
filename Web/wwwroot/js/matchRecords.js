@@ -197,10 +197,7 @@ function submitForm() {
       showToast(id ? "Updated!" : "Saved!");
     },
     error: function (xhr) {
-      renderValidationSummary(
-        "match-record-form",
-        collectValidationMessages(xhr.responseJSON),
-      );
+      showErrorModal(collectValidationMessages(xhr.responseJSON));
     },
     complete: function () {
       dashboardSpinner.hide();

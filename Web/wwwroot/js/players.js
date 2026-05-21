@@ -178,10 +178,7 @@ function submitForm() {
       showToast(id ? "Updated!" : "Saved!");
     },
     error: function (xhr) {
-      renderValidationSummary(
-        "player-form",
-        collectValidationMessages(xhr.responseJSON),
-      );
+      showErrorModal(collectValidationMessages(xhr.responseJSON));
     },
   });
 }

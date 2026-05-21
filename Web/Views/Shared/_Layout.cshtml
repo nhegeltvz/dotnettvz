@@ -42,6 +42,18 @@
     <script src="~/js/customDateControl.js" asp-append-version="true"></script>
     <script src="~/js/dashboard-autocomplete.js" asp-append-version="true"></script>
     <script src="~/js/hegelMultiSelect.js" asp-append-version="true"></script>
+    <div class="modal fade" id="error-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger text-white py-2">
+                    <h6 class="modal-title mb-0">Something went wrong</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="error-modal-body"></div>
+            </div>
+        </div>
+    </div>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

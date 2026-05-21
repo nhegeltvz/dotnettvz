@@ -1,4 +1,3 @@
-using Data.Data;
 using System.ComponentModel.DataAnnotations;
 
 namespace Data.Dto.CRUD.Player;

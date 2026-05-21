@@ -76,8 +76,8 @@
                         var playerName = playersById.TryGetValue(stats.PlayerId.ToString(), out var pName) ? pName : stats.PlayerId.ToString();
                         <tr data-player-id="@stats.PlayerId">
                             <td>@playerName</td>
-                            <td><input type="number" class="player-goals" value="@stats.Goals" min="0" /></td>
-                            <td><input type="number" class="player-assists" value="@stats.Assists" min="0" /></td>
+                            <td><input type="number" class="player-goals" value="@stats.Goals" data-val="false" /></td>
+                            <td><input type="number" class="player-assists" value="@stats.Assists" data-val="false" /></td>
                         </tr>
                     }
                 </tbody>

@@ -97,7 +97,6 @@ public class StadiumsController : Controller
         playingField.IsOutdoor= playingFieldForm.IsOutdoor;
         playingField.SurfaceType= (SurfaceType)playingFieldForm.SurfaceType;
 
-
         await _store.CreatePlayingField(playingField);
         return Ok();
     }
@@ -125,8 +124,12 @@ public class StadiumsController : Controller
         playingField.IsOutdoor = playingFieldForm.IsOutdoor;
         playingField.SurfaceType = (SurfaceType)playingFieldForm.SurfaceType;
 
+        var result = await _store.UpdatePlayingField(playingField);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Errors);
+        }
 
-        await _store.UpdatePlayingField(playingField);
         return Ok();
     }
 

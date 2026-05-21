@@ -85,6 +85,7 @@ namespace Data.Services.Stores
                 return validationResult;
 
             var rowsAffected = await _dbContext.SaveChangesAsync();
+            _dbContext.ChangeTracker.Clear();
             return Result.Success();
         }
 

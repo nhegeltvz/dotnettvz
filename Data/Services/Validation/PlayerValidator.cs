@@ -43,9 +43,9 @@ namespace Data.Services.Validation
                 }
             }
 
-            if (entity.Age.HasValue && (entity.Age.Value < 10 || entity.Age.Value > 100))
+            if (entity.Age.HasValue && (entity.Age.Value < 18 || entity.Age.Value > 100))
             {
-                errors.Add(new Error(ErrorType.Validation, "Age must be between 10 and 100."));
+                errors.Add(new Error(ErrorType.Validation, "Age must be between 18 and 100."));
             }
 
             if (!string.IsNullOrWhiteSpace(entity.Username))

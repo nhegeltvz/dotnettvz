@@ -339,7 +339,17 @@ body {
 }
 
 .date-picker-input {
+  width: 100%;
   padding-right: 2.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--mt-border-strong);
+  background: var(--mt-surface-deep);
+  color: var(--mt-text);
+}
+
+.form-control[readonly] {
+  background-color: var(--mt-surface-deep) !important;
+  color: var(--mt-text-muted) !important;
 }
 
 .date-picker-icon {
@@ -347,6 +357,17 @@ body {
   right: 0.75rem;
   color: #ffffff;
   pointer-events: none;
+}
+
+#error-modal .modal-content {
+  background: var(--mt-surface);
+  color: var(--mt-text);
+  border-color: rgba(207, 79, 99, 0.6);
+}
+
+#error-modal .modal-body {
+  background: var(--mt-surface-deep);
+  color: var(--mt-text);
 }
 
 /* Breadcrumb bar */

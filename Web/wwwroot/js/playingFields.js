@@ -24,6 +24,7 @@ function fetchForm(callback) {
   $.get("/stadiums/form", function (html) {
     $("#form-container").html(html);
     $.validator.unobtrusive.parse("#stadium-form");
+
     if (callback) callback();
   }).always(function () {
     dashboardSpinner.hide();
@@ -156,9 +157,9 @@ function openCreate() {
 function submitForm() {
   const id = $("#stadium-id").val();
   const url = id ? `/stadiums/edit/${id}` : "/stadiums/create";
-  const method = "POST";
+    const method = "POST";
 
-  if (!$("#stadium-form").valid()) return;
+    if (!$("#stadium-form").valid()) return;
 
   $.ajax({
     url: url,
@@ -175,7 +176,7 @@ function submitForm() {
       isOutdoor: $("#IsOutdoor").is(":checked"),
       surfaceType: $("#SurfaceType").val(),
     }),
-    beforeSend: function () {
+      beforeSend: function () {
       dashboardSpinner.show();
     },
     success: function () {
@@ -184,10 +185,7 @@ function submitForm() {
       showToast(id ? "Updated!" : "Saved!");
     },
     error: function (xhr) {
-      renderValidationSummary(
-        "stadium-form",
-        collectValidationMessages(xhr.responseJSON),
-      );
+      showErrorModal(collectValidationMessages(xhr.responseJSON));
     },
     complete: function () {
       dashboardSpinner.hide();
@@ -230,6 +228,7 @@ function editStadium(stadium) {
     $("#IsOutdoor").prop("checked", stadium.isOutdoor);
     $("#Latitude").val(stadium.latitude);
     $("#Longitude").val(stadium.longitude);
+
     setEditState(true, stadium.name);
   });
 }
