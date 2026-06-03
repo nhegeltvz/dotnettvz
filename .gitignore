@@ -24,3 +24,6 @@ Thumbs.db
 
 # GitHub Copilot hooks - agent logs from grading
 .github/hooks/agent_log.txt
+*.db-shm
+*.db-wal
+matchtracker.db
