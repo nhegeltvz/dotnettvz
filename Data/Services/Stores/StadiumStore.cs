@@ -20,6 +20,7 @@ namespace Data.Services.Stores
 
         public async Task<List<PlayingField>> GetAllStadiumsAsync()
             => await _dbContext.PlayingFields
+                .Include(pf => pf.Images)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -30,6 +31,7 @@ namespace Data.Services.Stores
         {
             var playingField = await _dbContext.PlayingFields
                 .Include(pf => pf.MatchRecords)
+                .Include(pf => pf.Images)
                 .FirstOrDefaultAsync(pf => pf.Id == id);
 
             return playingField != null
@@ -67,8 +69,8 @@ namespace Data.Services.Stores
             if (!validationResult.IsSuccess)
                 return validationResult;
 
-            var rowsAffected = await _dbContext.SaveChangesAsync();
-            return rowsAffected != 0 ? Result.Success() : Result.Failure(PlayingFieldErrors.PlayingFieldNotUpdated);
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
         }
 
         private PlayingField UpdatePlayingField(IPlayingField model, PlayingField playingField)
@@ -99,6 +101,35 @@ namespace Data.Services.Stores
         public async Task<List<PlayingField>> SearchByNameAsync(string search)
         {
             return await _dbContext.PlayingFields.Where(x => x.Name.Contains(search)).AsNoTracking().ToListAsync();
+        }
+
+        public async Task AddImageResourceAsync(ImageResource image)
+        {
+            _dbContext.Images.Add(image);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task LinkImagesToFieldAsync(Guid playingFieldId, List<Guid> imageIds)
+        {
+            await _dbContext.Images
+                .Where(img => imageIds.Contains(img.Id) && img.PlayingFieldId == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(img => img.PlayingFieldId, playingFieldId));
+        }
+
+        public async Task<Result<ImageResource>> GetImageByIdAsync(Guid imageId)
+        {
+            var image = await _dbContext.Images.FindAsync(imageId);
+            return image != null
+                ? Result<ImageResource>.Success(image)
+                : Result<ImageResource>.Failure(ImageResourceErrors.ImageNotFound);
+        }
+
+        public async Task<Result> RemoveImageAsync(Guid imageId)
+        {
+            var rowsAffected = await _dbContext.Images
+                .Where(img => img.Id == imageId)
+                .ExecuteDeleteAsync();
+            return rowsAffected > 0 ? Result.Success() : Result.Failure(ImageResourceErrors.ImageNotDeleted);
         }
     }
 }

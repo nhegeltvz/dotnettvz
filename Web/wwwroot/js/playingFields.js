@@ -161,6 +161,8 @@ function submitForm() {
 
     if (!$("#stadium-form").valid()) return;
 
+  var imageIds = typeof window.getUploadedImageIds === "function" ? window.getUploadedImageIds() : [];
+
   $.ajax({
     url: url,
     method: method,
@@ -175,6 +177,7 @@ function submitForm() {
       status: $("#Status").val(),
       isOutdoor: $("#IsOutdoor").is(":checked"),
       surfaceType: $("#SurfaceType").val(),
+      imageIds: imageIds,
     }),
       beforeSend: function () {
       dashboardSpinner.show();
@@ -230,5 +233,11 @@ function editStadium(stadium) {
     $("#Longitude").val(stadium.longitude);
 
     setEditState(true, stadium.name);
+
+    $.getJSON("/stadiums/" + stadium.id + "/images", function (images) {
+      if (images && images.length > 0 && typeof window.preloadDropzoneImages === "function") {
+        window.preloadDropzoneImages(images);
+      }
+    });
   });
 }

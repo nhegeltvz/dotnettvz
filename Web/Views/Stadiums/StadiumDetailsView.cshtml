@@ -33,7 +33,33 @@
                 </div>
 
                 <div class="stadium-image-panel">
-                    @if (field.Image != null && field.Image.Length > 0)
+                    @if (field.Images != null && field.Images.Any())
+                    {
+                        <div id="stadiumCarousel" class="carousel slide stadium-carousel" data-bs-ride="false">
+                            <div class="carousel-inner">
+                                @{ var isFirst = true; }
+                                @foreach (var img in field.Images)
+                                {
+                                    <div class="carousel-item @(isFirst ? "active" : "")">
+                                        <img src="@img.Path" alt="@field.Name" class="stadium-carousel-img" />
+                                    </div>
+                                    isFirst = false;
+                                }
+                            </div>
+                            @if (field.Images.Count > 1)
+                            {
+                                <button class="carousel-control-prev" type="button" data-bs-target="#stadiumCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#stadiumCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            }
+                        </div>
+                    }
+                    else if (field.Image != null && field.Image.Length > 0)
                     {
                         var base64 = Convert.ToBase64String(field.Image);
                         var imgSrc = $"data:image/jpeg;base64,{base64}";
