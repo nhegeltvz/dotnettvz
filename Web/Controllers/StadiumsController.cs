@@ -90,8 +90,8 @@ public class StadiumsController : Controller
         
         playingField.Name = playingFieldForm.Name;
         playingField.Description = playingFieldForm.Description;
-        playingField.Longitude = playingFieldForm.Longitude;
-        playingField.Latitude= playingFieldForm.Latitude;
+        playingField.Longitude = playingFieldForm.Longitude ?? 0;
+        playingField.Latitude= playingFieldForm.Latitude ?? 0;
         playingField.ContactNumber= playingFieldForm.ContactNumber;
         playingField.Status= (FieldStatus)playingFieldForm.Status;
         playingField.IsOutdoor= playingFieldForm.IsOutdoor;
@@ -117,8 +117,8 @@ public class StadiumsController : Controller
 
         playingField.Name = playingFieldForm.Name;
         playingField.Description = playingFieldForm.Description;
-        playingField.Longitude = playingFieldForm.Longitude;
-        playingField.Latitude = playingFieldForm.Latitude;
+        playingField.Longitude = playingFieldForm.Longitude ?? 0;
+        playingField.Latitude = playingFieldForm.Latitude ?? 0;
         playingField.ContactNumber = playingFieldForm.ContactNumber;
         playingField.Status = (FieldStatus)playingFieldForm.Status;
         playingField.IsOutdoor = playingFieldForm.IsOutdoor;

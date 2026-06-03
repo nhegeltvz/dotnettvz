@@ -25,6 +25,18 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public IQueryable<Party> QueryPartiesAsync()
+            => _dbContext.Parties
+                .Include(party => party.PlayerCreated)
+                .Include(party => party.Members)
+                .Include(party => party.PreferredPlayingDates)
+                .Include(party => party.ScheduledMatch)
+                    .ThenInclude(match => match.PlayingField)
+                .Include(party => party.ScheduledMatch)
+                    .ThenInclude(match => match.ScheduledMatchAttendances)
+                        .ThenInclude(attendance => attendance.Player)
+                .AsNoTracking();
+
         public async Task<List<PartyListDto>> GetPartiesForTableAsync()
             => await _dbContext.Parties
             .Select(party => new PartyListDto

@@ -27,6 +27,9 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public IQueryable<MatchRecord> QueryMatchesAsync()
+                 => _dbContext.MatchRecords;
+
         public async Task<List<MatchRecordListDto>> GetMatchRecordsForTableAsync()
             => await _dbContext.MatchRecords
                 .Select(record => new MatchRecordListDto

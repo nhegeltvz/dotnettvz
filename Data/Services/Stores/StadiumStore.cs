@@ -23,6 +23,9 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public IQueryable<PlayingField> QueryPlayingFieldsAsync()
+            => _dbContext.PlayingFields.AsNoTracking();
+
         public async Task<Result<PlayingField>> FindByIdAsync(Guid id)
         {
             var playingField = await _dbContext.PlayingFields

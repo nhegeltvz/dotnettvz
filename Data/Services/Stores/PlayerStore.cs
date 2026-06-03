@@ -23,6 +23,9 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public IQueryable<Player> QueryPlayersAsync()
+              => _dbContext.Players;
+
         public async Task<List<Player>> GetPlayersByIdsAsync(IEnumerable<Guid> playerIds)
             => await _dbContext.Players
             .Where(player => playerIds.Contains(player.Id))
