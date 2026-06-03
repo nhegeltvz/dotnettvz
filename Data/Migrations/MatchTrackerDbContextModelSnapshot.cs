@@ -17,6 +17,40 @@ namespace Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.26");
 
+            modelBuilder.Entity("Data.Models.ImageResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("PlayingFieldId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayingFieldId");
+
+                    b.ToTable("Images");
+                });
+
             modelBuilder.Entity("Data.Models.MatchPlayer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -316,6 +350,16 @@ namespace Data.Migrations
                     b.ToTable("PartyMembers", (string)null);
                 });
 
+            modelBuilder.Entity("Data.Models.ImageResource", b =>
+                {
+                    b.HasOne("Data.Models.PlayingField", "PlayingField")
+                        .WithMany("Images")
+                        .HasForeignKey("PlayingFieldId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("PlayingField");
+                });
+
             modelBuilder.Entity("Data.Models.MatchPlayer", b =>
                 {
                     b.HasOne("Data.Models.MatchRecord", "MatchRecord")
@@ -503,6 +547,8 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Models.PlayingField", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("MatchRecords");
 
                     b.Navigation("ScheduledMatches");

@@ -31,4 +31,6 @@ public class StadiumFormDto
     public bool IsOutdoor { get; set; }
 
     public int SurfaceType { get; set; }
+
+    public List<Guid> ImageIds { get; set; } = new();
 }

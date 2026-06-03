@@ -17,6 +17,7 @@ public class MatchTrackerDbContext : DbContext
     public DbSet<PreferredPlayingDate> PreferredPlayingDates { get; set; } = null!;
     public DbSet<ScheduledMatch> ScheduledMatches { get; set; } = null!;
     public DbSet<ScheduledMatchAttendance> ScheduledMatchAttendances { get; set; } = null!;
+    public DbSet<ImageResource> Images { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -121,6 +122,12 @@ public class MatchTrackerDbContext : DbContext
             .WithMany(player => player.ScheduledMatchAttendances)
             .HasForeignKey(attendance => attendance.PlayerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ImageResource>()
+            .HasOne(img => img.PlayingField)
+            .WithMany(pf => pf.Images)
+            .HasForeignKey(img => img.PlayingFieldId)
+            .OnDelete(DeleteBehavior.Cascade);
 
     }
 }

@@ -60,6 +60,12 @@ namespace Data.Data.Common
         public static Error PlayingFieldNotDeleted { get; } = new(ErrorType.DataOperation, "Playing field not deleted.");
     }
 
+    public static class ImageResourceErrors
+    {
+        public static Error ImageNotFound { get; } = new(ErrorType.NotFound, "Image not found.");
+        public static Error ImageNotDeleted { get; } = new(ErrorType.DataOperation, "Image not deleted.");
+    }
+
     public static class PreferredPlayingDateErrors
     {
         public static Error PreferredPlayingDateNotFound { get; } = new(ErrorType.NotFound, "Preferred playing date not found.");

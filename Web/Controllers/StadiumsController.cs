@@ -13,9 +13,12 @@ namespace Web.Controllers;
 public class StadiumsController : Controller
 {
     private readonly StadiumStore _store;
-    public StadiumsController(StadiumStore store)
+    private readonly IWebHostEnvironment _env;
+
+    public StadiumsController(StadiumStore store, IWebHostEnvironment env)
     {
         _store = store;
+        _env = env;
     }
 
     [HttpGet("")]
@@ -76,6 +79,24 @@ public class StadiumsController : Controller
         return Json(playingField.Value);
     }
 
+    [HttpGet("{id:guid}/images")]
+    public async Task<IActionResult> GetImages(Guid id)
+    {
+        var result = await _store.FindByIdAsync(id);
+        if (!result.IsSuccess)
+            return NotFound();
+
+        var images = result.Value.Images.Select(img => new
+        {
+            id = img.Id,
+            path = img.Path,
+            fileName = img.FileName,
+            sizeBytes = img.SizeBytes,
+        });
+
+        return Json(images);
+    }
+
     [HttpPost("create")]
     [Consumes("application/json")]
     public async Task<IActionResult> Create([FromBody] StadiumFormDto playingFieldForm)
@@ -97,7 +118,13 @@ public class StadiumsController : Controller
         playingField.IsOutdoor= playingFieldForm.IsOutdoor;
         playingField.SurfaceType= (SurfaceType)playingFieldForm.SurfaceType;
 
-        await _store.CreatePlayingField(playingField);
+        var result = await _store.CreatePlayingField(playingField);
+        if (!result.IsSuccess)
+            return BadRequest(result.Errors);
+
+        if (playingFieldForm.ImageIds.Count > 0)
+            await _store.LinkImagesToFieldAsync(result.Value, playingFieldForm.ImageIds);
+
         return Ok();
     }
 
@@ -126,9 +153,10 @@ public class StadiumsController : Controller
 
         var result = await _store.UpdatePlayingField(playingField);
         if (!result.IsSuccess)
-        {
             return BadRequest(result.Errors);
-        }
+
+        if (playingFieldForm.ImageIds.Count > 0)
+            await _store.LinkImagesToFieldAsync(id, playingFieldForm.ImageIds);
 
         return Ok();
     }
@@ -137,6 +165,57 @@ public class StadiumsController : Controller
     public async Task<IActionResult> Delete(Guid id)
     {
         await _store.DeleteByIdAsync(id);
+        return Ok();
+    }
+
+    [HttpPost("upload")]
+    public async Task<IActionResult> Upload(IFormFile file, [FromQuery] Guid? stadiumId)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file provided.");
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+        if (!allowedTypes.Contains(file.ContentType))
+            return BadRequest("Unsupported file type.");
+
+        var ext = Path.GetExtension(file.FileName);
+        var uniqueName = $"{Guid.NewGuid()}{ext}";
+        var folderPath = Path.Combine(_env.WebRootPath, "images", "stadiums");
+        Directory.CreateDirectory(folderPath);
+        var absolutePath = Path.Combine(folderPath, uniqueName);
+
+        using (var stream = new FileStream(absolutePath, FileMode.Create))
+            await file.CopyToAsync(stream);
+
+        var image = new ImageResource
+        {
+            Id = Guid.NewGuid(),
+            Path = $"/images/stadiums/{uniqueName}",
+            FileName = file.FileName,
+            SizeBytes = file.Length,
+            ContentType = file.ContentType,
+            UploadDate = DateTime.UtcNow,
+            PlayingFieldId = stadiumId
+        };
+
+        await _store.AddImageResourceAsync(image);
+
+        return Ok(new { id = image.Id, path = image.Path });
+    }
+
+    [HttpDelete("image/{id:guid}")]
+    public async Task<IActionResult> DeleteImage(Guid id)
+    {
+        var imageResult = await _store.GetImageByIdAsync(id);
+        if (!imageResult.IsSuccess)
+            return NotFound();
+
+        var image = imageResult.Value;
+        var absolutePath = Path.Combine(_env.WebRootPath, image.Path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+        if (System.IO.File.Exists(absolutePath))
+            System.IO.File.Delete(absolutePath);
+
+        await _store.RemoveImageAsync(id);
         return Ok();
     }
 
