@@ -1,0 +1,81 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-page">
+    <div class="auth-split auth-split--hero-right">
+
+        <!-- Left: Form -->
+        <div class="auth-card">
+            <h2 class="auth-card__title">Prijava</h2>
+
+            <form id="account" method="post">
+                <div asp-validation-summary="ModelOnly" class="auth-validation-summary mb-3" role="alert"></div>
+
+                <div class="auth-field">
+                    <label asp-for="Input.Email">Email</label>
+                    <input asp-for="Input.Email" autocomplete="username" placeholder="ime@example.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="auth-field mt-2">
+                    <label asp-for="Input.Password">Lozinka</label>
+                    <input asp-for="Input.Password" autocomplete="current-password" placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="auth-field mt-2" style="flex-direction:row; align-items:center; gap:0.5rem;">
+                    <input class="form-check-input" asp-for="Input.RememberMe" style="width:1rem;height:1rem;accent-color:var(--mt-highlight);" />
+                    <label asp-for="Input.RememberMe" style="font-size:0.85rem; color:var(--mt-text-muted); text-transform:none; letter-spacing:0; cursor:pointer;">
+                        Zapamti me
+                    </label>
+                </div>
+
+                <button id="login-submit" type="submit" class="auth-submit mt-2">Prijavi se</button>
+            </form>
+
+            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+            {
+                <div class="auth-divider">ili</div>
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    @foreach (var provider in Model.ExternalLogins!)
+                    {
+                        <button type="submit" class="auth-google-btn" name="provider" value="@provider.Name">
+                            <i class="fa-brands fa-google"></i> Nastavi s @provider.DisplayName
+                        </button>
+                    }
+                </form>
+            }
+
+            <div class="auth-links">
+                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Nemaš račun? Registriraj se</a>
+                <a id="forgot-password" asp-page="./ForgotPassword">Zaboravljena lozinka?</a>
+            </div>
+        </div>
+
+        <!-- Right: Hero -->
+        <div class="auth-hero">
+            <span class="auth-hero__kicker">MatchTracker &mdash; dobrodošao natrag</span>
+            <h1 class="auth-hero__heading">
+                Bok,<br />
+                <span class="highlight">nedostajao</span><br />
+                si nam
+            </h1>
+            <p class="auth-hero__sub">
+                Prijavi se i nastavi pratiti mečeve, terene i igrače
+                koji čine svaku utakmicu posebnom.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

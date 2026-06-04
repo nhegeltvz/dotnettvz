@@ -1,9 +1,12 @@
+using Data.Data;
 using Data.Services.Stores;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers;
 
 [Route("dashboard")]
+[Authorize(Roles = AppRoles.ADMIN_ROLE)]
 public class DashboardController : Controller
 {
     private readonly PlayerStore _playerStore;

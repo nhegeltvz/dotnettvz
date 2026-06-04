@@ -1,0 +1,69 @@
+@page
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-page">
+    <div class="auth-split">
+
+        <!-- Left: Hero -->
+        <div class="auth-hero">
+            <span class="auth-hero__kicker">MatchTracker &mdash; još malo</span>
+            <h1 class="auth-hero__heading">
+                Trebamo još<br />
+                <span class="highlight">nekoliko</span><br />
+                podataka
+            </h1>
+            <p class="auth-hero__sub">
+                Uspješno si se prijavio putem @Model.ProviderDisplayName.
+                Popuni preostala polja i tvoj račun je spreman.
+            </p>
+        </div>
+
+        <!-- Right: Form -->
+        <div class="auth-card">
+            <h2 class="auth-card__title">Završi registraciju</h2>
+
+            <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                <div asp-validation-summary="ModelOnly" class="auth-validation-summary mb-3" role="alert"></div>
+
+                <div class="auth-field">
+                    <label asp-for="Input.Email">Email</label>
+                    <input asp-for="Input.Email" autocomplete="email" placeholder="ime@example.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="auth-field mt-2">
+                    <label asp-for="Input.Username">Username</label>
+                    <input asp-for="Input.Username" autocomplete="username" placeholder="npr. ronaldo99" />
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+
+                <div class="auth-fields-row mt-2">
+                    <div class="auth-field">
+                        <label asp-for="Input.OIB">OIB</label>
+                        <input asp-for="Input.OIB" maxlength="11" placeholder="11 znamenki" />
+                        <span asp-validation-for="Input.OIB" class="text-danger"></span>
+                    </div>
+                    <div class="auth-field">
+                        <label asp-for="Input.JMBG">JMBG</label>
+                        <input asp-for="Input.JMBG" maxlength="13" placeholder="13 znamenki" />
+                        <span asp-validation-for="Input.JMBG" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-submit mt-2">Završi registraciju</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

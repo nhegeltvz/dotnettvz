@@ -22,7 +22,7 @@ namespace Data.Services.Validation
             {
                 errors.Add(new Error(ErrorType.Validation, "Player is required."));
             }
-            else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerId))
+            else if (!_dbContext.Users.Any(player => player.Id == entity.PlayerId))
             {
                 errors.Add(new Error(ErrorType.Validation, "Player does not exist."));
             }

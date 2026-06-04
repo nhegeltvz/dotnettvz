@@ -18,7 +18,8 @@
                     "css/playerDetails.css",
                     "css/site.css",
                     "css/stadiumCard.css",
-                    "css/stadiumDetails.css"
+                    "css/stadiumDetails.css",
+                    "css/userDashboard.css"
                     );
 
                 pipeline.AddJavaScriptBundle("~/js/players.min.js", "js/players.js");

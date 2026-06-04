@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = "Forbidden";
+}
+
+<div class="forbidden-page">
+    <div class="forbidden-content">
+        <span class="forbidden-code">403</span>
+        <h1 class="forbidden-title">Pristup zabranjen</h1>
+        <p class="forbidden-sub">Nemate ovlasti za pristup ovoj stranici.</p>
+        <a class="forbidden-btn" asp-controller="Home" asp-action="Index">Natrag na početnu</a>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .forbidden-page {
+            min-height: calc(100vh - 76px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .forbidden-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .forbidden-code {
+            font-family: var(--font-heading);
+            font-size: clamp(5rem, 15vw, 9rem);
+            font-weight: 700;
+            line-height: 1;
+            color: var(--mt-highlight);
+            text-shadow: 0 0 40px var(--mt-highlight-glow);
+            letter-spacing: 0.05rem;
+        }
+
+        .forbidden-title {
+            font-family: var(--font-heading);
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08rem;
+            color: var(--mt-text-on-tint);
+            margin: 0;
+        }
+
+        .forbidden-sub {
+            color: var(--mt-text-muted);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .forbidden-btn {
+            margin-top: 0.5rem;
+            padding: 0.65rem 1.75rem;
+            background: var(--mt-highlight);
+            color: var(--mt-bg-dark);
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.08rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: background-color 140ms ease, transform 140ms ease;
+        }
+
+        .forbidden-btn:hover {
+            background: var(--mt-highlight-active);
+            transform: translateY(-1px);
+        }
+    </style>
+}

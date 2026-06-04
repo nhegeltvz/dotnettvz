@@ -5,7 +5,7 @@
         public static string GetInitials(string name, string fallback)
         {
             var parts = name
-                .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
+                .Split(new char[] { '_', '-', '.' }, StringSplitOptions.RemoveEmptyEntries)
                 .Where(part => !string.IsNullOrWhiteSpace(part))
                 .Take(2)
                 .ToArray();

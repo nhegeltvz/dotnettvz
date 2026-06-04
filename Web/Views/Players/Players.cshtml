@@ -1,4 +1,4 @@
-@model List<Data.Models.Player>
+@model List<Data.Models.AppUser>
 @using Data.Data
 @using Data.Models
 
@@ -10,10 +10,10 @@
         new("Players")
     };
 
-    List<Player> GetPositionedPlayers(Position prefferedPositon)
+    List<AppUser>GetPositionedPlayers(Position prefferedPositon)
     => Model.Where(player => player.PreferredPosition == prefferedPositon).ToList();
 
-    List<Player> GetFeaturedPlayers(List<Player> players, Func<Player,double> selector, int takeNumber)
+    List<AppUser>GetFeaturedPlayers(List<AppUser>players, Func<AppUser, double> selector, int takeNumber)
     => players
         .OrderByDescending(selector)
         .ThenByDescending(player => player.MatchPlayers.Count)

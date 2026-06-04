@@ -120,7 +120,7 @@ namespace Data.Services.Stores
             if (party == null)
                 return;
 
-            var players = await _dbContext.Players
+            var players = await _dbContext.Users
                 .Where(p => memberIds.Contains(p.Id))
                 .ToListAsync();
 

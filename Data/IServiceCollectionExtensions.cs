@@ -1,11 +1,12 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Data.Data;
 using Data.Models;
 using Data.Services.Stores;
 using Data.Services.Validation;
 using Data.Services.Validation.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Data
 {
@@ -41,7 +42,7 @@ namespace Data
                 .AddScoped<IValidator<MatchRecord>, MatchRecordValidator>()
                 .AddScoped<IValidator<MatchVote>, MatchVoteValidator>()
                 .AddScoped<IValidator<Party>, PartyValidator>()
-                .AddScoped<IValidator<Player>, PlayerValidator>()
+                .AddScoped<IValidator<AppUser>, PlayerValidator>()
                 .AddScoped<IValidator<PlayerRating>, PlayerRatingValidator>()
                 .AddScoped<IValidator<PlayingField>, PlayingFieldValidator>()
                 .AddScoped<IValidator<PreferredPlayingDate>, PreferredPlayingDateValidator>()

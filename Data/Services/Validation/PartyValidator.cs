@@ -22,7 +22,7 @@ namespace Data.Services.Validation
             {
                 errors.Add(new Error(ErrorType.Validation, "Party owner is required."));
             }
-            else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerCreatedId))
+            else if (!_dbContext.Users.Any(player => player.Id == entity.PlayerCreatedId))
             {
                 errors.Add(new Error(ErrorType.Validation, "Party owner does not exist."));
             }

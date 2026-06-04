@@ -17,7 +17,7 @@ namespace Web.Controllers.api
             _store = store;
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PlayerDto>>> Get([FromQuery]  QueryOptions<Player> queryOptions)
+        public async Task<ActionResult<IEnumerable<PlayerDto>>> Get([FromQuery]  QueryOptions<AppUser> queryOptions)
         {
             var playersQuery = _store.QueryPlayersAsync();
 
@@ -51,7 +51,7 @@ namespace Web.Controllers.api
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var player = new Player
+            var player = new AppUser
             {
                 Id = Guid.NewGuid()
             };

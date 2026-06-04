@@ -24,6 +24,9 @@ namespace Web.Controllers
             return View();
         }
 
+        [HttpGet("/forbidden")]
+        public IActionResult Forbidden() => View();
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [HttpGet("/error")]
         public IActionResult Error()

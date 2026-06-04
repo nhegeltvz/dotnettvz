@@ -1,0 +1,92 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-page">
+    <div class="auth-split">
+
+        <!-- Left: Hero -->
+        <div class="auth-hero">
+            <span class="auth-hero__kicker">MatchTracker &mdash; pridruži se</span>
+            <h1 class="auth-hero__heading">
+                Zakorači u<br />
+                <span class="highlight">svijet mečeva</span><br />
+                i počni pratiti
+            </h1>
+            <p class="auth-hero__sub">
+                Registriraj se, unesi svoje podatke i budi u toku s rezultatima,
+                igračima i terenima u par klikova.
+            </p>
+        </div>
+
+        <!-- Right: Form -->
+        <div class="auth-card">
+            <h2 class="auth-card__title">Novi račun</h2>
+
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                <div asp-validation-summary="ModelOnly" class="auth-validation-summary mb-3" role="alert"></div>
+
+                <div class="auth-field">
+                    <label asp-for="Input.Email">Email</label>
+                    <input asp-for="Input.Email" autocomplete="username" placeholder="ime@example.com" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="auth-field mt-2">
+                    <label asp-for="Input.Password">Lozinka</label>
+                    <input asp-for="Input.Password" autocomplete="new-password" placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="auth-field mt-2">
+                    <label asp-for="Input.ConfirmPassword">Potvrdi lozinku</label>
+                    <input asp-for="Input.ConfirmPassword" autocomplete="new-password" placeholder="••••••••" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="auth-fields-row mt-2">
+                    <div class="auth-field">
+                        <label asp-for="Input.OIB">OIB</label>
+                        <input asp-for="Input.OIB" placeholder="11 znamenki" />
+                        <span asp-validation-for="Input.OIB" class="text-danger"></span>
+                    </div>
+                    <div class="auth-field">
+                        <label asp-for="Input.JMBG">JMBG</label>
+                        <input asp-for="Input.JMBG" placeholder="13 znamenki" />
+                        <span asp-validation-for="Input.JMBG" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <button id="registerSubmit" type="submit" class="auth-submit mt-2">Registriraj se</button>
+            </form>
+
+            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+            {
+                <div class="auth-divider">ili</div>
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    @foreach (var provider in Model.ExternalLogins!)
+                    {
+                        <button type="submit" class="auth-google-btn" name="provider" value="@provider.Name">
+                            <i class="fa-brands fa-google"></i> Nastavi s @provider.DisplayName
+                        </button>
+                    }
+                </form>
+            }
+
+            <div class="auth-links">
+                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Već imaš račun? Prijavi se</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Data.Models
+@inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> SignInManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -26,13 +29,17 @@
             <a class="header-link @Html.IsActive("Players", "Index")" asp-area="" asp-controller="Players" asp-action="Index">Players</a>
         </nav>
         <div class="header-side header-right">
-            <a class ="header-link @Html.IsActive("Dashboard", "Index")" asp-area="" asp-controller="Dashboard" asp-action="Index">  <i class="fa-solid fa-gauge-high user-profile-icon" aria-hidden="true"></i> </a>
+            <partial name="_LoginPartial" />
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <a class="header-link @Html.IsActive("Dashboard", "Index")" asp-area="" asp-controller="Dashboard" asp-action="Index">  <i class="fa-solid fa-gauge-high user-profile-icon" aria-hidden="true"></i> </a>
+            }
         </div>
     </header>
     @await Html.PartialAsync("_Breadcrumbs")
     <main role="main" class="main-content">
         <div asp-validation-summary="ModelOnly" class="field-validation-error"></div>
-            @RenderBody()
+        @RenderBody()
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js" integrity="sha512-K/oyQtMXpxI4+K0W7H25UopjM8pzq0yrVdFdG21Fh5dBe91I40pDd9A4lzNlHPHBIP2cwZuoxaUSX0GJSObvGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

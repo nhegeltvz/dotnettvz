@@ -1,4 +1,4 @@
-﻿@using Data.Data
+@using Data.Data
 @using Data.Dto.CRUD.Player
 @model PlayerFormDto
 
@@ -21,6 +21,24 @@
             <label asp-for="Email"></label>
             <input asp-for="Email" />
             <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" type="password" placeholder="Leave blank to keep existing" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="OIB"></label>
+            <input asp-for="OIB" maxlength="11" />
+            <span asp-validation-for="OIB" class="text-danger"></span>
+        </div>
+
+        <div class="dashboard-form-row">
+            <label asp-for="JMBG"></label>
+            <input asp-for="JMBG" maxlength="13" type="text" />
+            <span asp-validation-for="JMBG" class="text-danger"></span>
         </div>
 
         <div class="dashboard-form-row">

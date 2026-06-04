@@ -24,4 +24,18 @@ public class PlayerFormDto
     [Required]
     [Range(18, 90)]
     public int? Age { get; set; }
+
+    [Required]
+    [StringLength(11, MinimumLength = 11)]
+    [RegularExpression("^[0-9]*$", ErrorMessage = "OIB must be 11 digits.")]
+    public string OIB { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(13, MinimumLength = 13)]
+    [RegularExpression("^[0-9]*$", ErrorMessage = "JMBG must be 13 digits.")]
+    public string JMBG { get; set; } = string.Empty;
+
+    // Only required on create; left empty on edit means password unchanged
+    [StringLength(100, MinimumLength = 6)]
+    public string? Password { get; set; }
 }

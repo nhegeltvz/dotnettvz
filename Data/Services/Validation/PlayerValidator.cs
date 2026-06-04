@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Data.Services.Validation
 {
-    public class PlayerValidator : IValidator<Player>
+    public class PlayerValidator : IValidator<AppUser>
     {
         private readonly MatchTrackerDbContext _dbContext;
 
@@ -15,7 +15,7 @@ namespace Data.Services.Validation
             _dbContext = dbContext;
         }
 
-        public Result Validate(Player entity)
+        public Result Validate(AppUser entity)
         {
             var errors = new List<Error>();
 
@@ -51,7 +51,7 @@ namespace Data.Services.Validation
             if (!string.IsNullOrWhiteSpace(entity.Username))
             {
                 var username = entity.Username.Trim();
-                var usernameExists = _dbContext.Players.Any(player =>
+                var usernameExists = _dbContext.Users.Any(player =>
                     player.Id != entity.Id && EF.Functions.Like(player.Username, username));
                 if (usernameExists)
                 {
@@ -62,7 +62,7 @@ namespace Data.Services.Validation
             if (!string.IsNullOrWhiteSpace(entity.Email))
             {
                 var email = entity.Email.Trim();
-                var emailExists = _dbContext.Players.Any(player =>
+                var emailExists = _dbContext.Users.Any(player =>
                     player.Id != entity.Id && EF.Functions.Like(player.Email, email));
                 if (emailExists)
                 {

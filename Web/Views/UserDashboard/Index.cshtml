@@ -1,0 +1,52 @@
+@using Data.Models
+@inject Microsoft.AspNetCore.Identity.UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = "Moj profil";
+    var user = await UserManager.GetUserAsync(User);
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/home"),
+        new("Moj profil")
+    };
+}
+
+<div class="user-dashboard-page">
+    <div class="user-dashboard-header">
+        <h1 class="page-title">Moj profil</h1>
+    </div>
+
+    <div class="user-dashboard-content">
+        <section class="user-info-card">
+            <h2><i class="fa-solid fa-user-circle"></i> Osnovni podaci</h2>
+            <div class="user-info-grid">
+                <div class="user-info-item">
+                    <label>Email</label>
+                    <span>@user?.Email</span>
+                </div>
+                <div class="user-info-item">
+                    <label>OIB</label>
+                    <span>@user?.OIB</span>
+                </div>
+                <div class="user-info-item">
+                    <label>JMBG</label>
+                    <span>@user?.JMBG</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="user-actions-card">
+            <h2><i class="fa-solid fa-sliders"></i> Postavke</h2>
+            <div class="user-action-buttons">
+                <a href="/Identity/Account/Manage/" class="user-action-btn">
+                    <i class="fa-solid fa-lock"></i>
+                    Promijeni lozinku
+                </a>
+                <a href="/Identity/Account/Logout" class="user-action-btn user-action-btn--danger">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                    Odjava
+                </a>
+            </div>
+        </section>
+    </div>
+</div>

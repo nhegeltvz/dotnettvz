@@ -168,6 +168,9 @@ function submitForm() {
       id: $("#player-id").val() || null,
       username: $("#Username").val(),
       email: $("#Email").val(),
+      password: $("#Password").val() || null,
+      oib: $("#OIB").val(),
+      jmbg: $("#JMBG").val(),
       bio: $("#Bio").val(),
       age: $("#Age").val(),
       preferredPosition: $("#PreferredPosition").val(),
@@ -206,6 +209,8 @@ function editPlayer(player) {
     $("#player-id").val(player.id);
     $("#Username").val(player.username);
     $("#Email").val(player.email);
+    $("#OIB").val(player.oib);
+    $("#JMBG").val(player.jmbg);
     $("#Bio").val(player.bio);
     $("#Age").val(player.age);
     $("#PreferredPosition").val(player.preferredPosition);
