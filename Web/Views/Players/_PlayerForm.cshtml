@@ -1,6 +1,7 @@
 @using Data.Data
-@using Data.Dto.CRUD.Player
-@model PlayerFormDto
+@using Web.Models
+@using Web.Models.Dashboard
+@model PlayerFormViewModel
 
 <section class="dashboard-panel">
     <header class="dashboard-panel-header">
@@ -12,51 +13,36 @@
         <div id="player-edit-banner" class="dashboard-edit-banner" hidden>Editing player</div>
 
         <div class="dashboard-form-row">
-            <label asp-for="Username"></label>
-            <input asp-for="Username" />
-            <span asp-validation-for="Username" class="text-danger"></span>
+            <label asp-for="Form.UserId">User</label>
+            <select asp-for="Form.UserId" asp-items="Model.Users">
+                <option value="">-- Select user --</option>
+            </select>
+            <span asp-validation-for="Form.UserId" class="text-danger"></span>
         </div>
 
         <div class="dashboard-form-row">
-            <label asp-for="Email"></label>
-            <input asp-for="Email" />
-            <span asp-validation-for="Email" class="text-danger"></span>
+            <label asp-for="Form.Bio"></label>
+            <textarea asp-for="Form.Bio"></textarea>
+            <span asp-validation-for="Form.Bio" class="text-danger"></span>
         </div>
 
         <div class="dashboard-form-row">
-            <label asp-for="Password"></label>
-            <input asp-for="Password" type="password" placeholder="Leave blank to keep existing" />
-            <span asp-validation-for="Password" class="text-danger"></span>
+            <label asp-for="Form.DateOfBirth"></label>
+            @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+            {
+                FieldName = "Form_DateOfBirth",
+                EnableTime = false,
+                Value = Model.Form.DateOfBirth != default
+                    ? Model.Form.DateOfBirth.ToString("yyyy-MM-dd")
+                    : null,
+            })
+            <span asp-validation-for="Form.DateOfBirth" class="text-danger"></span>
         </div>
 
         <div class="dashboard-form-row">
-            <label asp-for="OIB"></label>
-            <input asp-for="OIB" maxlength="11" />
-            <span asp-validation-for="OIB" class="text-danger"></span>
-        </div>
-
-        <div class="dashboard-form-row">
-            <label asp-for="JMBG"></label>
-            <input asp-for="JMBG" maxlength="13" type="text" />
-            <span asp-validation-for="JMBG" class="text-danger"></span>
-        </div>
-
-        <div class="dashboard-form-row">
-            <label asp-for="Bio"></label>
-            <textarea asp-for="Bio"></textarea>
-            <span asp-validation-for="Bio" class="text-danger"></span>
-        </div>
-
-        <div class="dashboard-form-row">
-            <label asp-for="Age"></label>
-            <input asp-for="Age" type="number" />
-            <span asp-validation-for="Age" class="text-danger"></span>
-        </div>
-
-        <div class="dashboard-form-row">
-            <label asp-for="PreferredPosition"></label>
-            <select asp-for="PreferredPosition" asp-items="Html.GetEnumSelectList<Position>()"></select>
-            <span asp-validation-for="PreferredPosition" class="text-danger"></span>
+            <label asp-for="Form.PreferredPosition"></label>
+            <select asp-for="Form.PreferredPosition" asp-items="Html.GetEnumSelectList<Position>()"></select>
+            <span asp-validation-for="Form.PreferredPosition" class="text-danger"></span>
         </div>
 
         <div class="dashboard-form-actions">

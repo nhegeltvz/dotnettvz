@@ -1,0 +1,52 @@
+@using Data.Models
+@using Web.Models
+@inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> SignInManager
+
+<div id="party-modal-overlay" class="mt-modal-overlay" hidden>
+    <div class="mt-modal" role="dialog" aria-modal="true" aria-labelledby="party-modal-title">
+        <button class="mt-modal-close" onclick="closePartyModal()" aria-label="Zatvori">&times;</button>
+        <h2 id="party-modal-title" class="mt-modal-title">Otvori svoj meč</h2>
+
+        <form id="user-party-form" novalidate>
+            <input type="hidden" id="um-party-id" />
+
+            <div class="mt-modal-field">
+                <label for="um-max-members">Maksimalan broj igrača</label>
+                <input type="number" id="um-max-members" name="maxMembers" min="2" max="20"
+                       class="mt-modal-input" placeholder="npr. 10" required />
+                <span class="mt-modal-hint">Između 2 i 20 igrača</span>
+            </div>
+
+            <div class="mt-modal-field">
+                <label for="um-description">Opis grupe</label>
+                <textarea id="um-description" name="partyDescription" class="mt-modal-input mt-modal-input--textarea"
+                          placeholder="Kratak opis vašeg meča..." minlength="10" maxlength="200" required></textarea>
+            </div>
+
+            <div class="mt-modal-field">
+                <label for="um-locations">Preferirana lokacija</label>
+                <input type="text" id="um-locations" name="preferredLocations" class="mt-modal-input"
+                       placeholder="npr. Zagreb, Maksimir..." minlength="5" maxlength="200" required />
+            </div>
+
+            <div class="mt-modal-field">
+                <label>Preferirani datumi igranja</label>
+                <div class="mt-date-chip-row">
+                    @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+                    {
+                        FieldName = "um-date-input",
+                        EnableTime = true,
+                        Value = null,
+                    })
+                    <button type="button" class="mt-modal-btn mt-modal-btn--cancel" onclick="umAddDate()">Dodaj</button>
+                </div>
+                <div id="um-dates-list" class="mt-chip-list"></div>
+            </div>
+
+            <div class="mt-modal-actions">
+                <button type="button" class="mt-modal-btn mt-modal-btn--cancel" onclick="closePartyModal()">Odustani</button>
+                <button type="submit" id="um-submit-btn" class="mt-modal-btn mt-modal-btn--submit">Otvori meč</button>
+            </div>
+        </form>
+    </div>
+</div>

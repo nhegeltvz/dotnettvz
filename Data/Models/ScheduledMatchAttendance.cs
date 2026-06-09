@@ -17,6 +17,6 @@ namespace Data.Models
         //EF navigation properties
 
         public virtual ScheduledMatch ScheduledMatch { get; set; } = null!;
-        public virtual AppUser Player { get; set; } = null!;
+        public virtual Player Player { get; set; } = null!;
     }
 }

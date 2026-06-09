@@ -26,7 +26,7 @@ namespace Data.Dto.CRUD.Party
             {
                 Id = party.Id,
                 PlayerCreatedId = party.PlayerCreatedId,
-                PlayerCreatedUsername = party.PlayerCreated == null ? string.Empty : party.PlayerCreated.Username,
+                PlayerCreatedUsername = party.PlayerCreated == null ? string.Empty : party.PlayerCreated.User.UserName ?? string.Empty,
                 DateCreated = party.DateCreated,
                 MaxMembers = party.MaxMembers,
                 PartyDescription = party.PartyDescription,
@@ -46,7 +46,7 @@ namespace Data.Dto.CRUD.Party
                         .Select(member => new PartyMemberDto
                         {
                             Id = member.Id,
-                            Username = member.Username
+                            Username = member.User.UserName ?? string.Empty
                         })
                         .ToList(),
                 ScheduledMatchId = party.ScheduledMatch == null ? (Guid?)null : party.ScheduledMatch.Id,
@@ -67,7 +67,7 @@ namespace Data.Dto.CRUD.Party
                             .Select(attendance => new ScheduledMatchAttendanceDto
                             {
                                 PlayerId = attendance.PlayerId,
-                                PlayerUsername = attendance.Player == null ? string.Empty : attendance.Player.Username,
+                                PlayerUsername = attendance.Player == null ? string.Empty : attendance.Player.User.UserName ?? string.Empty,
                                 IsAttending = attendance.IsAttending
                             })
                             .ToList()

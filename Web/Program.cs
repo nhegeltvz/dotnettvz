@@ -13,11 +13,17 @@ builder.Services
 
 builder.Services.AddDefaultIdentity<AppUser>(options =>
 {
+    options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
+
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
 })
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<MatchTrackerDbContext>();
@@ -79,3 +85,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class  Program { }

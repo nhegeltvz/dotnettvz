@@ -4,7 +4,9 @@ using Data.Models;
 using Data.Services.Stores;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Web.Models.Dashboard;
 
 namespace Web.Controllers;
 
@@ -41,14 +43,56 @@ public class PlayersController : Controller
     public async Task<IActionResult> GetAll(string? search)
     {
         var players = await _store.QueryPlayersAsync()
-            .Where(p => string.IsNullOrEmpty(search) || EF.Functions.Like(p.Username, $"%{search}%"))
+            .Where(p => string.IsNullOrEmpty(search) || EF.Functions.Like(p.User.UserName, $"%{search}%"))
             .Select(PlayerDto.ToDto())
             .ToListAsync();
         return Json(players);
     }
 
     [HttpGet("form")]
-    public IActionResult Form() => PartialView("_PlayerForm", new PlayerFormDto());
+    public async Task<IActionResult> Form(Guid? id)
+    {
+        // Users that already have a player profile
+        var takenUserIds = await _store.QueryPlayersAsync()
+            .Select(p => p.UserId)
+            .ToListAsync();
+
+        // If editing, the current player's UserId should remain available
+        if (id.HasValue)
+        {
+            var existing = await _store.FindByIdAsync(id.Value);
+            if (existing.IsSuccess)
+                takenUserIds.Remove(existing.Value!.UserId);
+        }
+
+        var availableUsers = await _userManager.Users
+            .Where(u => !takenUserIds.Contains(u.Id))
+            .OrderBy(u => u.UserName)
+            .Select(u => new SelectListItem
+            {
+                Value = u.Id.ToString(),
+                Text = u.UserName ?? u.Email ?? u.Id.ToString(),
+            })
+            .ToListAsync();
+
+        var vm = new PlayerFormViewModel { Users = availableUsers };
+
+        if (id.HasValue)
+        {
+            var playerResult = await _store.FindByIdAsync(id.Value);
+            if (!playerResult.IsSuccess)
+                return NotFound();
+
+            var player = playerResult.Value!;
+            vm.Form.Id = player.Id;
+            vm.Form.UserId = player.UserId;
+            vm.Form.Bio = player.Bio;
+            vm.Form.PreferredPosition = (int)player.PreferredPosition;
+            vm.Form.DateOfBirth = player.DateOfBirth;
+        }
+
+        return PartialView("_PlayerForm", vm);
+    }
 
     [HttpGet("getById/{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
@@ -61,6 +105,7 @@ public class PlayersController : Controller
         return dto is null ? NotFound() : Json(dto);
     }
 
+    // Creates a Player profile for an existing AppUser (admin selects user from dropdown)
     [HttpPost("create")]
     [Consumes("application/json")]
     public async Task<IActionResult> Create([FromBody] PlayerFormDto model)
@@ -68,31 +113,34 @@ public class PlayersController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        if (string.IsNullOrWhiteSpace(model.Password))
-            return BadRequest("Password is required when creating a player.");
+        if (model.UserId == Guid.Empty)
+            return BadRequest("Please select a user.");
 
-        var player = new AppUser
+        var user = await _userManager.FindByIdAsync(model.UserId.ToString());
+        if (user == null)
+            return BadRequest("User not found.");
+
+        var existingPlayer = await _store.FindByUserIdAsync(model.UserId);
+        if (existingPlayer.IsSuccess)
+            return BadRequest("This user already has a player profile.");
+
+        var player = new Player
         {
             Id = Guid.NewGuid(),
-            Username = model.Username,
-            Email = model.Email,
-            UserName = model.Email,
+            UserId = model.UserId,
             Bio = model.Bio,
             PreferredPosition = (Position)model.PreferredPosition,
-            Age = model.Age,
-            OIB = model.OIB,
-            JMBG = model.JMBG,
+            DateOfBirth = model.DateOfBirth,
         };
 
-        var result = await _userManager.CreateAsync(player, model.Password);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors.Select(e => e.Description));
-
-        await _userManager.AddToRoleAsync(player, "User");
+        var result = await _store.CreatePlayer(player);
+        if (!result.IsSuccess)
+            return BadRequest(result.Errors);
 
         return Ok();
     }
 
+    // Updates Player domain fields only
     [HttpPut("edit/{id:guid}")]
     [Consumes("application/json")]
     public async Task<IActionResult> Edit(Guid id, [FromBody] PlayerFormDto model)
@@ -108,26 +156,14 @@ public class PlayersController : Controller
             return NotFound();
 
         var player = playerResult.Value;
-        player.Username = model.Username;
-        player.Email = model.Email;
-        player.UserName = model.Email;
+        player.UserId = model.UserId;
         player.Bio = model.Bio;
         player.PreferredPosition = (Position)model.PreferredPosition;
-        player.Age = model.Age;
-        player.OIB = model.OIB;
-        player.JMBG = model.JMBG;
+        player.DateOfBirth = model.DateOfBirth;
 
-        var updateResult = await _userManager.UpdateAsync(player);
-        if (!updateResult.Succeeded)
-            return BadRequest(updateResult.Errors.Select(e => e.Description));
-
-        if (!string.IsNullOrWhiteSpace(model.Password))
-        {
-            var token = await _userManager.GeneratePasswordResetTokenAsync(player);
-            var pwResult = await _userManager.ResetPasswordAsync(player, token, model.Password);
-            if (!pwResult.Succeeded)
-                return BadRequest(pwResult.Errors.Select(e => e.Description));
-        }
+        var updateResult = await _store.UpdatePlayer(player);
+        if (!updateResult.IsSuccess)
+            return BadRequest(updateResult.Errors);
 
         return Ok();
     }

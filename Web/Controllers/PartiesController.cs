@@ -84,7 +84,7 @@ public class PartiesController : Controller
             Players = players.Select(player => new SelectListItem
             {
                 Value = player.Id.ToString(),
-                Text = player.Username,
+                Text = player.User.UserName ?? string.Empty,
             }).ToList(),
             PlayingFields = fields.Select(field => new SelectListItem
             {
@@ -101,7 +101,7 @@ public class PartiesController : Controller
                 AvailableItems = players.Select(p => new Models.SelectableItem
                 {
                     Id = p.Id.ToString(),
-                    Name = p.Username
+                    Name = p.User.UserName ?? string.Empty
                 }).ToList()
             }
         };
@@ -130,7 +130,7 @@ public class PartiesController : Controller
             vm.HmsPartyMembers.SelectedItems = party.Members.Select(member => new Models.SelectableItem
             {
                 Id = member.Id.ToString(),
-                Name = member.Username
+                Name = member.User.UserName ?? string.Empty
             }).ToList();
 
             if (party.ScheduledMatch != null)
@@ -149,7 +149,7 @@ public class PartiesController : Controller
                     {
                         Id = attendance?.Id,
                         PlayerId = member.Id,
-                        PlayerName = member.Username,
+                        PlayerName = member.User.UserName ?? string.Empty,
                         IsAttending = attendance?.IsAttending ?? false,
                     };
                 }).ToList();

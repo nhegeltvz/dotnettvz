@@ -1,4 +1,4 @@
-@model List<Data.Models.AppUser>
+@model List<Data.Models.Player>
 @using Data.Data
 @using Data.Models
 
@@ -10,26 +10,24 @@
         new("Players")
     };
 
-    List<AppUser>GetPositionedPlayers(Position prefferedPositon)
-    => Model.Where(player => player.PreferredPosition == prefferedPositon).ToList();
+    List<Player> GetPositionedPlayers(Position preferredPosition)
+        => Model.Where(player => player.PreferredPosition == preferredPosition).ToList();
 
-    List<AppUser>GetFeaturedPlayers(List<AppUser>players, Func<AppUser, double> selector, int takeNumber)
-    => players
-        .OrderByDescending(selector)
-        .ThenByDescending(player => player.MatchPlayers.Count)
-        .Take(takeNumber).ToList();
+    List<Player> GetFeaturedPlayers(List<Player> players, Func<Player, double> selector, int takeNumber)
+        => players
+            .OrderByDescending(selector)
+            .ThenByDescending(player => player.MatchPlayers.Count)
+            .Take(takeNumber).ToList();
 
+    var goalkeepers   = GetPositionedPlayers(Position.Goalkeeper);
+    var defenders     = GetPositionedPlayers(Position.Defender);
+    var midfielders   = GetPositionedPlayers(Position.Midfielder);
+    var strikers      = GetPositionedPlayers(Position.Forward);
 
-    var goalkeepers = GetPositionedPlayers(Position.Goalkeeper);
-    var defenders = GetPositionedPlayers(Position.Defender);
-    var midfielders = GetPositionedPlayers(Position.Midfielder);
-    var strikers = GetPositionedPlayers(Position.Forward);
-
-
-    var featuredGoalkeepers = GetFeaturedPlayers(goalkeepers, player => player.RatingsReceived.Count == 0 ? 0: player.RatingsReceived.Average(rating => rating.Rating), 1);
-    var featuredDefenders = GetFeaturedPlayers(defenders, player => player.RatingsReceived.Count == 0? 0: player.RatingsReceived.Average(rating => rating.Rating), 2);
-    var featuredMidfielders = GetFeaturedPlayers(midfielders, player => player.MatchPlayers.Sum(match => match.Assists), 3);
-    var featuredStrikers = GetFeaturedPlayers(strikers, player => player.MatchPlayers.Sum(match => match.Goals), 3);
+    var featuredGoalkeepers  = GetFeaturedPlayers(goalkeepers,  p => p.RatingsReceived.Count == 0 ? 0 : p.RatingsReceived.Average(r => r.Rating), 1);
+    var featuredDefenders    = GetFeaturedPlayers(defenders,    p => p.RatingsReceived.Count == 0 ? 0 : p.RatingsReceived.Average(r => r.Rating), 2);
+    var featuredMidfielders  = GetFeaturedPlayers(midfielders,  p => p.MatchPlayers.Sum(m => m.Assists), 3);
+    var featuredStrikers     = GetFeaturedPlayers(strikers,     p => p.MatchPlayers.Sum(m => m.Goals), 3);
 }
 
 <header class="players-stars-header" aria-label="Featured players section">
@@ -45,7 +43,7 @@
             <div class="featured-cards">
                 @foreach (var player in featuredStrikers)
                 {
-                    if(!string.IsNullOrEmpty(player.Username))
+                    if (!string.IsNullOrEmpty(player.User?.UserName))
                     {
                         <partial name="_PlayerCard" model="player" />
                     }
@@ -66,7 +64,6 @@
             </div>
         </div>
         <h2 class="position-title">Midfielders</h2>
-
     </div>
     <div class="position-container defenders-container" data-jump-position="defender" role="button" tabindex="0" aria-label="Show defenders in player list">
         <img class="hero-image hero-square hero-defenders" src="~/images/vuskovicHero.png" alt="" />
@@ -110,44 +107,36 @@
 
         <div class="players-search-wrap">
             <label for="playersSearch" class="players-search-label">Trazi po username-u</label>
-            <input
-                id="playersSearch"
-                class="players-search-input"
-                type="search"
-                placeholder="Upisi username..."
-                autocomplete="off" />
+            <input id="playersSearch" class="players-search-input" type="search"
+                   placeholder="Upisi username..." autocomplete="off" />
         </div>
     </div>
 
     <div class="player-list">
         @foreach (var player in Model)
         {
-            var matches = player.MatchPlayers.Count;
-            var goals = player.MatchPlayers.Sum(match => match.Goals);
-            var assists = player.MatchPlayers.Sum(match => match.Assists);
+            var matches   = player.MatchPlayers.Count;
+            var goals     = player.MatchPlayers.Sum(m => m.Goals);
+            var assists   = player.MatchPlayers.Sum(m => m.Assists);
             var avgRating = player.RatingsReceived.Count == 0
                 ? 0
-                : player.RatingsReceived.Average(rating => rating.Rating);
-            var ageLabel = player.Age.HasValue ? player.Age.Value.ToString() : "-";
+                : player.RatingsReceived.Average(r => r.Rating);
+            var age = player.DateOfBirth != default
+                ? (DateTime.Today.Year - player.DateOfBirth.Year).ToString()
+                : "-";
+            var username = player.User?.UserName ?? string.Empty;
 
-            <a
-                class="player-list-link"
-                asp-controller="Players"
-                asp-action="Details"
-                asp-route-id="@player.Id">
-                <article
-                    class="player-list-row"
-                    data-position="@player.PreferredPosition.ToString().ToLowerInvariant()"
-                    data-username="@player.Username.ToLowerInvariant()">
+            <a class="player-list-link" asp-controller="Players" asp-action="Details" asp-route-id="@player.Id">
+                <article class="player-list-row"
+                         data-position="@player.PreferredPosition.ToString().ToLowerInvariant()"
+                         data-username="@username.ToLowerInvariant()">
                     <div class="player-list-main">
-                            <div class="player-row-avatar" aria-hidden="true">@DataUtility.GetInitials(player.Username, "P")</div>
-
+                        <div class="player-row-avatar" aria-hidden="true">@DataUtility.GetInitials(username, "P")</div>
                         <div class="player-row-identity">
-                            <span class="player-row-username">@player.Username</span>
-                            <span class="player-row-meta">@player.PreferredPosition • @ageLabel god</span>
+                            <span class="player-row-username">@username</span>
+                            <span class="player-row-meta">@player.PreferredPosition • @age god</span>
                         </div>
                     </div>
-
                     <div class="player-row-stats" aria-label="Player stats">
                         <span class="player-row-pill">M @matches</span>
                         <span class="player-row-pill">G @goals</span>
@@ -177,64 +166,40 @@
             function applyFilters() {
                 const usernameFilter = (searchInput?.value || '').trim().toLowerCase();
                 let visibleCount = 0;
-
                 listRows.forEach((row) => {
                     const rowPosition = row.dataset.position || '';
                     const rowUsername = row.dataset.username || '';
-
                     const matchesPosition = activePosition === 'all' || rowPosition === activePosition;
                     const matchesUsername = usernameFilter.length === 0 || rowUsername.includes(usernameFilter);
-
                     const shouldShow = matchesPosition && matchesUsername;
                     row.parentElement.hidden = !shouldShow;
-
-                    if (shouldShow) {
-                        visibleCount += 1;
-                    }
+                    if (shouldShow) visibleCount += 1;
                 });
-
                 noResults.hidden = visibleCount > 0;
             }
 
             function activatePositionFilter(position) {
                 activePosition = position;
-
                 filterButtons.forEach((button) => {
-                    const isActive = (button.dataset.position || 'all') === position;
-                    button.classList.toggle('is-active', isActive);
+                    button.classList.toggle('is-active', (button.dataset.position || 'all') === position);
                 });
-
                 applyFilters();
             }
 
-            filterButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    activatePositionFilter(button.dataset.position || 'all');
-                });
-            });
+            filterButtons.forEach((button) => button.addEventListener('click', () => activatePositionFilter(button.dataset.position || 'all')));
 
             featuredContainers.forEach((container) => {
                 const jump = () => {
-                    const selectedPosition = container.dataset.jumpPosition || 'all';
-
-                    activatePositionFilter(selectedPosition);
-
-                    if (listContainer) {
-                        listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
+                    activatePositionFilter(container.dataset.jumpPosition || 'all');
+                    listContainer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 };
-
                 container.addEventListener('click', jump);
                 container.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        jump();
-                    }
+                    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); jump(); }
                 });
             });
 
             searchInput?.addEventListener('input', applyFilters);
-
             applyFilters();
         })();
     </script>

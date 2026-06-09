@@ -29,6 +29,28 @@ namespace Data.Services.Stores
                 .AsNoTracking()
                 .ToListAsync();
 
+        public async Task<List<MatchPlayer>> GetByPlayerIdAsync(Guid playerId)
+            => await _dbContext.MatchPlayers
+                .Where(mp => mp.PlayerId == playerId)
+                .Include(mp => mp.MatchRecord)
+                    .ThenInclude(mr => mr.PlayingField)
+                .Include(mp => mp.MatchRecord)
+                    .ThenInclude(mr => mr.MatchPlayers)
+                        .ThenInclude(mp2 => mp2.Player)
+                            .ThenInclude(p => p.User)
+                .Include(mp => mp.MatchRecord)
+                    .ThenInclude(mr => mr.MatchPlayers)
+                        .ThenInclude(mp2 => mp2.PlayerRating)
+                .Include(mp => mp.PlayerRating)
+                .OrderByDescending(mp => mp.MatchRecord.MatchHeld)
+                // No AsNoTracking — EF's identity map resolves the MatchPlayer→MatchRecord→MatchPlayers cycle
+                .ToListAsync();
+
+        public async Task<MatchPlayer?> FindByPlayerAndMatchRecordAsync(Guid playerId, Guid matchRecordId)
+            => await _dbContext.MatchPlayers
+                .Include(mp => mp.PlayerRating)
+                .FirstOrDefaultAsync(mp => mp.PlayerId == playerId && mp.MatchRecordId == matchRecordId);
+
         public async Task<Result<MatchPlayer>> FindByIdAsync(Guid id)
         {
             var matchPlayer = await _dbContext.MatchPlayers.FindAsync(id);
@@ -85,6 +107,11 @@ namespace Data.Services.Stores
                     .SetProperty(mp => mp.Goals, goals)
                     .SetProperty(mp => mp.Assists, assists));
         }
+
+        public async Task DeleteByMatchRecordIdAsync(Guid matchRecordId)
+            => await _dbContext.MatchPlayers
+                .Where(mp => mp.MatchRecordId == matchRecordId)
+                .ExecuteDeleteAsync();
 
         public async Task<Result> DeleteByIdAsync(Guid id)
         {

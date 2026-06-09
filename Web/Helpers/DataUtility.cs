@@ -2,8 +2,10 @@
 {
     public static class DataUtility
     {
-        public static string GetInitials(string name, string fallback)
+        public static string GetInitials(string? name, string fallback)
         {
+            if (string.IsNullOrWhiteSpace(name)) return fallback;
+
             var parts = name
                 .Split(new char[] { '_', '-', '.' }, StringSplitOptions.RemoveEmptyEntries)
                 .Where(part => !string.IsNullOrWhiteSpace(part))

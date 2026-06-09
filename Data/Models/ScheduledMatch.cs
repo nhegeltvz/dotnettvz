@@ -18,5 +18,6 @@ namespace Data.Models
         public virtual PlayingField PlayingField { get; set; } = null!;
         public virtual Party Party { get; set; } = null!;
         public virtual ICollection<ScheduledMatchAttendance> ScheduledMatchAttendances { get; set; } = new List<ScheduledMatchAttendance>();
+        public virtual MatchRecord? MatchRecord { get; set; }
     }
 }

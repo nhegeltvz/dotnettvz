@@ -1,15 +1,14 @@
-﻿window.initDatetimePickers = function (container) {
-  const locale = navigator.language.startsWith("hr") ? "hr" : "default";
-
+window.initDatetimePickers = function (container) {
   container.querySelectorAll("[data-custom-date-picker]").forEach((input) => {
     const fieldName = input.dataset.fieldName;
     const hiddenInput = document.getElementById(fieldName);
+    const enableTime = input.dataset.enableTime !== "false";
 
     const options = {
-      enableTime: true,
-      dateFormat: "Y-m-d\\TH:i",
+      enableTime: enableTime,
+      dateFormat: enableTime ? "Y-m-d\\TH:i" : "Y-m-d",
       altInput: true,
-      altFormat: "j.m.Y H:i",
+      altFormat: enableTime ? "j.m.Y H:i" : "j.m.Y",
       clickOpens: true,
       defaultDate: hiddenInput.value || null,
       onChange: function (selectedDates, dateStr) {

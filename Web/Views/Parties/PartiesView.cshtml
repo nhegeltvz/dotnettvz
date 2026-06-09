@@ -1,4 +1,5 @@
 @model List<Data.Models.Party>
+@inject Microsoft.AspNetCore.Identity.SignInManager<Data.Models.AppUser> SignInManager
 
 @{
     ViewData["Title"] = "Pronađi Meč";
@@ -7,6 +8,7 @@
         new("Home", "/home"),
         new("Parties")
     };
+    var isSignedIn = SignInManager.IsSignedIn(User);
 }
 
 <div class="parties-container">
@@ -19,13 +21,14 @@
                 </button>
                 <input type="text" class="search-bar" placeholder="Upiši lokaciju, ime igrača..." />
             </div>
-            <div class="create-party-container small">
-                <img src="~/images/createParty.png" alt="Create a party" class="create-party-image"/>
-                <div class="overlay">
-                    <span class="create-party-text">Otvori svoj meč!</span>
-                </div>
+            <div class="create-party-container small"
+                 data-signed-in="@isSignedIn.ToString().ToLower()"
+                 onclick="openCreatePartyModal()">
+                <span class="create-party-text">Otvori svoj meč!</span>
             </div>
         </div>
+
+        <partial name="_PartyFormModal" />
 
         <div class="parties-grid">
             @foreach (var party in Model)
@@ -35,3 +38,4 @@
         </div>
     </div>
 </div>
+

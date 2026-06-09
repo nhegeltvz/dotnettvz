@@ -85,6 +85,15 @@ namespace Data.Services.Stores
             return rowsAffected == 0 ? Result.Failure(ScheduledMatchAttendanceErrors.ScheduledMatchAttendanceNotDeleted) : Result.Success();
         }
 
+        public async Task<ScheduledMatchAttendance?> FindByPlayerAndMatchAsync(Guid playerId, Guid scheduledMatchId)
+            => await _dbContext.ScheduledMatchAttendances
+                .FirstOrDefaultAsync(a => a.PlayerId == playerId && a.ScheduledMatchId == scheduledMatchId);
+
+        public async Task DeleteByPlayerAndMatchAsync(Guid playerId, Guid scheduledMatchId)
+            => await _dbContext.ScheduledMatchAttendances
+                .Where(a => a.PlayerId == playerId && a.ScheduledMatchId == scheduledMatchId)
+                .ExecuteDeleteAsync();
+
         public async Task<Result> DeleteByScheduledMatchIdAsync(Guid scheduledMatchId)
         {
             await _dbContext.ScheduledMatchAttendances

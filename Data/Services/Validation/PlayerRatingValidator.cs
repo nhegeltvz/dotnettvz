@@ -31,7 +31,7 @@ namespace Data.Services.Validation
             {
                 errors.Add(new Error(ErrorType.Validation, "Player giving rating is required."));
             }
-            else if (!_dbContext.Users.Any(player => player.Id == entity.PlayerGivingRatingId))
+            else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerGivingRatingId))
             {
                 errors.Add(new Error(ErrorType.Validation, "Player giving rating does not exist."));
             }
@@ -40,7 +40,7 @@ namespace Data.Services.Validation
             {
                 errors.Add(new Error(ErrorType.Validation, "Player receiving rating is required."));
             }
-            else if (!_dbContext.Users.Any(player => player.Id == entity.PlayerReceivingRatingId))
+            else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerReceivingRatingId))
             {
                 errors.Add(new Error(ErrorType.Validation, "Player receiving rating does not exist."));
             }
@@ -51,7 +51,7 @@ namespace Data.Services.Validation
                 errors.Add(new Error(ErrorType.Validation, "Player cannot rate themselves."));
             }
 
-            if (entity.Rating < 1 || entity.Rating > 5)
+            if (entity.Rating < 1 || entity.Rating > 10)
             {
                 errors.Add(new Error(ErrorType.Validation, "Rating must be between 1 and 5."));
             }

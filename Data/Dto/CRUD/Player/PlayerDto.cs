@@ -1,19 +1,16 @@
-﻿using Data.Data;
 using System.Linq.Expressions;
-using PlayerModel = Data.Models.AppUser;
+using PlayerModel = Data.Models.Player;
 
 namespace Data.Dto.CRUD.Player
 {
     public class PlayerDto
     {
         public Guid Id { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string OIB { get; set; } = string.Empty;
-        public string JMBG { get; set; } = string.Empty;
+        public Guid UserId { get; set; }
+        public string Username { get; set; } = string.Empty;   // from Player.User.UserName
         public string Bio { get; set; } = string.Empty;
-        public Position PreferredPosition { get; set; }
-        public int? Age { get; set; }
+        public string PreferredPosition { get; set; } = string.Empty;
+        public DateOnly DateOfBirth { get; set; }
         public int? CreatedPartiesCount { get; set; }
         public int? JoinedPartiesCount { get; set; }
         public int? MatchesPlayedCount { get; set; }
@@ -26,20 +23,20 @@ namespace Data.Dto.CRUD.Player
             return player => new PlayerDto
             {
                 Id = player.Id,
-                Username = player.Username,
-                Email = player.Email ?? string.Empty,
-                OIB = player.OIB,
-                JMBG = player.JMBG,
+                UserId = player.UserId,
+                Username = player.User.UserName ?? string.Empty,
                 Bio = player.Bio,
-                PreferredPosition = player.PreferredPosition,
-                Age = player.Age,
+                PreferredPosition = player.PreferredPosition.ToString(),
+                DateOfBirth = player.DateOfBirth,
                 CreatedPartiesCount = player.CreatedParties.Count,
                 JoinedPartiesCount = player.JoinedParties.Count,
-                MatchesPlayedCount = player.MatchPlayers.Where(matchPlayer => matchPlayer.MatchRecord.WasMatchHeld).Count(),
+                MatchesPlayedCount = player.MatchPlayers
+                    .Where(mp => mp.MatchRecord.WasMatchHeld)
+                    .Count(),
                 RatingsGivenCount = player.RatingsGiven.Count,
                 RatingsReceivedCount = player.RatingsReceived.Count,
                 AverageMatchRating = player.RatingsReceived
-                    .Select(rating => (double?)rating.Rating)
+                    .Select(r => (double?)r.Rating)
                     .Average() ?? 0.0
             };
         }

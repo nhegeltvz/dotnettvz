@@ -20,7 +20,7 @@ public class MatchPlayer : IMatchPlayer
     //EF navigation properties
 
     //Player is essentially a user, so Match player is connected to a matcha and a Player
-    public virtual AppUser Player { get; set; } = null!;
+    public virtual Player Player { get; set; } = null!;
     //If a match was played, it holds a match record, this player is connected to that match record
     public virtual MatchRecord MatchRecord { get; set; } = null!;
     //Player gives rating to other players in the match

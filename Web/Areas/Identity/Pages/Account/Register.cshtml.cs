@@ -3,12 +3,13 @@
 #nullable disable
 
 using Data.Models;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Web.Areas.Identity.Pages.Account
 {
@@ -46,12 +47,18 @@ namespace Web.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
+            [StringLength(50, MinimumLength = 3)]
+            [Display(Name = "Korisničko ime")]
+            public string Username { get; set; }
+
+            [Required]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
             [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
+                    ErrorMessage = "Lozinka mora imati najmanje 8 znakova, jedno veliko slovo, malo slovo i broj.")]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
             public string Password { get; set; }
@@ -87,27 +94,41 @@ namespace Web.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = new AppUser
-                {
-                    OIB = Input.OIB,
-                    JMBG = Input.JMBG
-                };
+                if (await _userManager.Users.AnyAsync(u => u.OIB == Input.OIB))
+                    ModelState.AddModelError("Input.OIB", "OIB je već registriran.");
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                if (await _userManager.Users.AnyAsync(u => u.JMBG == Input.JMBG))
+                    ModelState.AddModelError("Input.JMBG", "JMBG je već registriran.");
+
+                if (await _userManager.FindByEmailAsync(Input.Email) != null)
+                    ModelState.AddModelError("Input.Email", "Email je već registriran.");
+
+                if (await _userManager.FindByNameAsync(Input.Username) != null)
+                    ModelState.AddModelError("Input.Username", "Korisničko ime je već zauzeto.");
+
+                if (!ModelState.IsValid)
+                    return Page();
+
+                var user = new AppUser { OIB = Input.OIB, JMBG = Input.JMBG };
+                await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
-                await _userManager.AddToRoleAsync(user, "User");
 
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "User");
                     _logger.LogInformation("User created a new account with password.");
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnUrl);
                 }
 
+                // Only unexpected/password errors reach here
                 foreach (var error in result.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
+                {
+                    var field = error.Code.StartsWith("Password") ? "Input.Password" : string.Empty;
+                    ModelState.AddModelError(field, error.Description);
+                }
             }
 
             return Page();
