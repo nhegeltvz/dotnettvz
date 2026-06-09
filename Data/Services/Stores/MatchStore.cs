@@ -99,6 +99,7 @@ namespace Data.Services.Stores
             matchRecord.PlayingFieldId = model.PlayingFieldId;
             matchRecord.GoalsTeamA = model.GoalsTeamA;
             matchRecord.GoalsTeamB = model.GoalsTeamB;
+            matchRecord.ScheduledMatchId = model.ScheduledMatchId;
             return matchRecord;
         }
 

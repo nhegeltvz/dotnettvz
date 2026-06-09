@@ -7,9 +7,9 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item user-menu-wrapper">
-        <a class="user-menu-account" asp-controller="UserDashboard" asp-action="Index">My Account</a>
         <a class="user-menu-icon" asp-controller="UserDashboard" asp-action="Index" title="Profil">
             <i class="fa-solid fa-user"></i>
+            <span class="user-menu-username">@UserManager.GetUserName(User)</span>
         </a>
         <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" class="user-menu-logout">
             <button type="submit" class="user-logout-btn" title="Logout">

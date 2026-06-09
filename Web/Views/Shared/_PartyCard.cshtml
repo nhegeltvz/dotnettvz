@@ -1,15 +1,32 @@
 @model Data.Models.Party
+@inject Microsoft.AspNetCore.Identity.UserManager<Data.Models.AppUser> UserManager
 
 @{
     var creator = Model.PlayerCreated;
+    var currentUserId = UserManager.GetUserId(User);
+    var isOwner  = currentUserId != null && Model.PlayerCreated.UserId.ToString() == currentUserId;
+    var isMember = !isOwner && currentUserId != null && Model.Members.Any(m => m.UserId.ToString() == currentUserId);
+    var isFull   = Model.Members.Count >= Model.MaxMembers;
 }
 
-<div class="party-card @(Model.Id == Guid.Parse("00000000-0000-0000-0000-000000000001") ? "highlight" : "")">
+<div class="party-card @(Model.Id == Guid.Parse("00000000-0000-0000-0000-000000000001") ? "highlight" : "")"
+     data-party-id="@Model.Id">
     <div class="card-header">
         <div class="creator-info">
-            <div class="avatar" aria-hidden="true">@DataUtility.GetInitials(creator.Username, "P")</div>
-            <span>@Model.PlayerCreated.Username</span>
+            <div class="avatar" aria-hidden="true">@DataUtility.GetInitials(creator.User?.UserName, "P")</div>
+            <span>@Model.PlayerCreated.User?.UserName</span>
         </div>
+        @if (isOwner)
+        {
+            <a href="/user-dashboard/my-parties" class="owner-badge">
+                <span class="owner-badge__default">Vi ste vlasnik ove grupe</span>
+                <span class="owner-badge__hover">Moderiraj</span>
+            </a>
+        }
+        else if (isMember)
+        {
+            <span class="member-badge">Član ste ove grupe</span>
+        }
     </div>
     <div class="card-body">
         <p class="description">@Model.PartyDescription</p>
@@ -29,7 +46,18 @@
             }
         </div>
         <div class="card-buttons">
-            <button class="join-button @(Model.Id == Guid.Parse("00000000-0000-0000-0000-000000000001") ? "highlight" : "")">PRIDRUŽI SE</button>
+            @if (!isOwner && !isMember && !isFull)
+            {
+                <button class="join-button" onclick="joinParty('@Model.Id', this)">PRIDRUŽI SE</button>
+            }
+            @if (!isOwner && !isMember && isFull)
+            {
+                <button class="join-button" disabled style="opacity:0.45;cursor:not-allowed;">POPUNJENO</button>
+            }
+            @if (isMember)
+            {
+                <button class="leave-button" onclick="leaveParty('@Model.Id', this)">NAPUSTI</button>
+            }
             <a asp-controller="Parties"
                asp-action="Details"
                asp-route-id="@Model.Id"

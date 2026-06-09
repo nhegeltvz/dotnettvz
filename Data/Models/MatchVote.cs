@@ -19,5 +19,5 @@ public class MatchVote : IMatchVote
 
     //EF navigation properties
     public virtual MatchRecord MatchRecord { get; set; } = null!;
-    public virtual AppUser Player { get; set; } = null!;
+    public virtual Player Player { get; set; } = null!;
 }

@@ -1,0 +1,181 @@
+@model List<Data.Models.Party>
+@using Data.Models
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Moji mečevi";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/home"),
+        new("Moj profil", "/user-dashboard"),
+        new("Moji mečevi")
+    };
+    var playingFields = ViewBag.PlayingFields as List<PlayingField> ?? [];
+}
+
+<div class="user-dashboard-page">
+    <div class="user-dashboard-header">
+        <h1 class="page-title">Moji mečevi</h1>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="user-info-card">
+            <p style="color: var(--mt-text-subtle); margin: 0;">
+                Trenutno niste vlasnik nijedne grupe.
+                <a href="/parties" style="color: var(--mt-highlight);">Otvorite jedan na stranici mečeva.</a>
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="my-parties-list">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var party = Model[i];
+                var existingDates = party.PreferredPlayingDates
+                    .OrderBy(d => d.Date)
+                    .Select(d => d.Date.ToString("yyyy-MM-ddTHH:mm"))
+                    .ToList();
+                var datesJson = JsonSerializer.Serialize(existingDates);
+
+                <div class="my-party-row">
+                    <div class="my-party-number">#@(i + 1)</div>
+
+                    <div class="my-party-details">
+                        <section class="user-info-card">
+                            <div class="my-party-card-header">
+                                <h2><i class="fa-solid fa-users"></i> Detalji grupe</h2>
+                                <div class="my-party-card-actions">
+                                    <button class="my-party-action-btn my-party-action-btn--edit js-edit-party"
+                                            data-party-id="@party.Id"
+                                            data-max-members="@party.MaxMembers"
+                                            data-description="@party.PartyDescription"
+                                            data-locations="@party.PreferredLocations"
+                                            data-dates="@datesJson">
+                                        <i class="fa-solid fa-pen"></i> Uredi
+                                    </button>
+                                    <button class="my-party-action-btn my-party-action-btn--delete"
+                                            onclick="deleteParty('@party.Id')">
+                                        <i class="fa-solid fa-trash"></i> Izbriši
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="user-info-grid">
+                                <div class="user-info-item">
+                                    <label>Opis</label>
+                                    <span>@party.PartyDescription</span>
+                                </div>
+                                <div class="user-info-item">
+                                    <label>Lokacija</label>
+                                    <span>@party.PreferredLocations</span>
+                                </div>
+                                <div class="user-info-item">
+                                    <label>Članovi</label>
+                                    <span>@party.Members.Count / @party.MaxMembers</span>
+                                </div>
+                                <div class="user-info-item">
+                                    <label>Datum kreiranja</label>
+                                    <span>@party.DateCreated.ToString("dd.MM.yyyy.")</span>
+                                </div>
+                                @if (party.PreferredPlayingDates.Any())
+                                {
+                                    <div class="user-info-item" style="grid-column: 1 / -1;">
+                                        <label>Preferirani datumi</label>
+                                        <div class="mt-chip-list" style="margin-top:0.25rem;">
+                                            @foreach (var pd in party.PreferredPlayingDates.OrderBy(d => d.Date))
+                                            {
+                                                <span class="mt-chip" style="pointer-events:none;">
+                                                    @pd.Date.ToLocalTime().ToString("dd.MM.yyyy. HH:mm")
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+
+                        <section class="user-info-card" style="margin-top: 1rem;">
+                            <h2><i class="fa-solid fa-user-group"></i> Članovi</h2>
+                            <div class="user-info-grid">
+                                @foreach (var member in party.Members)
+                                {
+                                    <div class="my-party-member-row">
+                                        <span>@member.User?.UserName</span>
+                                        @if (member.Id != party.PlayerCreatedId)
+                                        {
+                                            <button class="kick-btn"
+                                                    onclick="kickMember('@party.Id', '@member.Id', this)">
+                                                Kick
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="my-party-schedule">
+                        @if (party.ScheduledMatch != null)
+                        {
+                            <partial name="_ScheduledMatchSummaryCard" model="party.ScheduledMatch" />
+                            <button class="mt-modal-btn mt-modal-btn--cancel my-party-edit-schedule-btn"
+                                    onclick="openScheduleModal('@party.Id', '@party.ScheduledMatch.Id', '@party.ScheduledMatch.PlayingFieldId', '@party.ScheduledMatch.MatchDate.ToString("yyyy-MM-ddTHH:mm")')">
+                                <i class="fa-solid fa-pen"></i> Uredi
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="schedule-match-btn" onclick="openScheduleModal('@party.Id', null, null, null)">
+                                <div class="schedule-match-btn__icon">
+                                    <i class="fa-solid fa-plus"></i>
+                                </div>
+                                <span>Zabilježi meč</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<partial name="_PartyFormModal" />
+
+<!-- Schedule match modal -->
+<div id="schedule-modal-overlay" class="mt-modal-overlay" hidden>
+    <div class="mt-modal" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
+        <button class="mt-modal-close" onclick="closeScheduleModal()" aria-label="Zatvori">&times;</button>
+        <h2 id="schedule-modal-title" class="mt-modal-title">Zakaži meč</h2>
+
+        <form id="schedule-match-form" novalidate>
+            <input type="hidden" id="sm-party-id" />
+            <input type="hidden" id="sm-match-id" />
+
+            <div class="mt-modal-field">
+                <label for="sm-playing-field">Teren</label>
+                <select id="sm-playing-field" class="mt-modal-input" required>
+                    <option value="">-- Odaberi teren --</option>
+                    @foreach (var field in playingFields)
+                    {
+                        <option value="@field.Id">@field.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mt-modal-field">
+                <label for="sm-match-date">Datum i vrijeme</label>
+                <input type="datetime-local" id="sm-match-date" class="mt-modal-input" required />
+            </div>
+
+            <div class="mt-modal-actions">
+                <button type="button" class="mt-modal-btn mt-modal-btn--cancel" onclick="closeScheduleModal()">Odustani</button>
+                <button type="submit" class="mt-modal-btn mt-modal-btn--submit">Spremi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/my-parties.js" asp-append-version="true"></script>
+}

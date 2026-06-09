@@ -15,14 +15,14 @@
         .Where(matchPlayer => matchPlayer.Team == Data.Data.Team.A)
         .OrderByDescending(matchPlayer => matchPlayer.Goals)
         .ThenByDescending(matchPlayer => matchPlayer.Assists)
-        .ThenBy(matchPlayer => matchPlayer.Player.Username)
+        .ThenBy(matchPlayer => matchPlayer.Player.User?.UserName ?? string.Empty)
         .ToList();
 
     var teamBPlayers = Model.MatchPlayers
         .Where(matchPlayer => matchPlayer.Team == Data.Data.Team.B)
         .OrderByDescending(matchPlayer => matchPlayer.Goals)
         .ThenByDescending(matchPlayer => matchPlayer.Assists)
-        .ThenBy(matchPlayer => matchPlayer.Player.Username)
+        .ThenBy(matchPlayer => matchPlayer.Player.User?.UserName ?? string.Empty)
         .ToList();
 
     var votedYesCount = Model.MatchVotes.Count(vote => vote.VotedHeld);
@@ -75,9 +75,9 @@
                                 @foreach (var playerEntry in teamAPlayers)
                                 {
                                     <li>
-                                        <div class="match-player-avatar" aria-hidden="true">@DataUtility.GetInitials(playerEntry.Player.Username, "P")</div>
+                                        <div class="match-player-avatar" aria-hidden="true">@DataUtility.GetInitials(playerEntry.Player.User?.UserName ?? string.Empty, "P")</div>
                                         <a class="match-player-name" asp-controller="Players" asp-action="Details" asp-route-id="@playerEntry.Player.Id">
-                                            @playerEntry.Player.Username
+                                            @(playerEntry.Player.User?.UserName ?? string.Empty)
                                         </a>
                                         <div class="match-player-stats">
                                             <span class="match-player-chip">G @playerEntry.Goals</span>
@@ -94,9 +94,9 @@
                                 @foreach (var playerEntry in teamBPlayers)
                                 {
                                     <li>
-                                        <div class="match-player-avatar" aria-hidden="true">@DataUtility.GetInitials(playerEntry.Player.Username, "P")</div>
+                                        <div class="match-player-avatar" aria-hidden="true">@DataUtility.GetInitials(playerEntry.Player.User?.UserName ?? string.Empty, "P")</div>
                                         <a class="match-player-name" asp-controller="Players" asp-action="Details" asp-route-id="@playerEntry.Player.Id">
-                                            @playerEntry.Player.Username
+                                            @(playerEntry.Player.User?.UserName ?? string.Empty)
                                         </a>
                                         <div class="match-player-stats">
                                             <span class="match-player-chip">G @playerEntry.Goals</span>
@@ -116,10 +116,10 @@
                         <span class="match-vote-pill match-vote-pill--no"><i class="fa-solid fa-thumbs-down" aria-hidden="true"></i> Ne dolazi: @votedNoCount</span>
                     </div>
                     <ul class="match-votes-list">
-                        @foreach (var vote in Model.MatchVotes.OrderBy(v => v.Player.Username))
+                        @foreach (var vote in Model.MatchVotes.OrderBy(v => v.Player.User?.UserName ?? string.Empty))
                         {
                             <li>
-                                <span class="match-vote-user">@vote.Player.Username</span>
+                                <span class="match-vote-user">@(vote.Player.User?.UserName ?? string.Empty)</span>
                                 <span class="match-vote-state @(vote.VotedHeld ? "match-vote-state--yes" : "match-vote-state--no")">
                                     <i class="fa-solid @(vote.VotedHeld ? "fa-check" : "fa-xmark")" aria-hidden="true"></i>
                                     @(vote.VotedHeld ? "Dolazi" : "Ne dolazi")

@@ -66,7 +66,20 @@ public class StadiumsController : Controller
                 .ToList();
         }
 
-        return Json(playingFields);
+        var result = playingFields.Select(f => new
+        {
+            id = f.Id,
+            name = f.Name,
+            description = f.Description,
+            longitude = f.Longitude,
+            latitude = f.Latitude,
+            contactNumber = f.ContactNumber,
+            status = (int)f.Status,
+            isOutdoor = f.IsOutdoor,
+            surfaceType = (int)f.SurfaceType,
+        });
+
+        return Json(result);
     }
 
     [HttpGet("form")]

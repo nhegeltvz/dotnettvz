@@ -88,7 +88,7 @@ public class MatchesController : Controller
                 AvailableItems = players.Select(player => new Models.SelectableItem
                 {
                     Id = player.Id.ToString(),
-                    Name = player.Username
+                    Name = player.User.UserName ?? string.Empty
                 }).ToList()
             }
         };
@@ -112,7 +112,7 @@ public class MatchesController : Controller
             vm.HmsMatchPlayers.SelectedItems = record.MatchPlayers.Select(player => new Models.SelectableItem
             {
                 Id = player.PlayerId.ToString(),
-                Name = player.Player.Username
+                Name = player.Player.User.UserName ?? string.Empty
             }).ToList();
 
             vm.Form.PlayerRatings = record.MatchPlayers

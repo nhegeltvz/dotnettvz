@@ -1,5 +1,12 @@
 @using Data.Data
+@using Data.Models
 @model Data.Models.Party
+@inject Microsoft.AspNetCore.Identity.UserManager<AppUser> UserManager
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/partyDetails.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/myMatches.css" asp-append-version="true" />
+}
 
 @{
     ViewData["Title"] = "Detalji Partije";
@@ -10,6 +17,20 @@
         new(Model.PartyDescription)
     };
 
+    var currentUserId = UserManager.GetUserId(User);
+
+    // After AppUser/Player split: m.UserId is the FK to AppUser, currentUserId is AppUser.Id
+    var currentPlayer = Model.Members.FirstOrDefault(m => m.UserId.ToString() == currentUserId);
+    var isMember = currentPlayer != null;
+    var isOwner = currentUserId != null && Model.PlayerCreated.UserId.ToString() == currentUserId;
+    var canFinalize = isOwner && Model.ScheduledMatch != null && Model.ScheduledMatch.MatchRecord == null;
+    var canEdit    = isOwner && Model.ScheduledMatch?.MatchRecord != null;
+
+    // Attendance is keyed by Player.Id, so use currentPlayer.Id
+    var myAttendance = currentPlayer != null
+        ? Model.ScheduledMatch?.ScheduledMatchAttendances.FirstOrDefault(a => a.PlayerId == currentPlayer.Id)
+        : null;
+    var isAttending = myAttendance?.IsAttending ?? false;
 
     string GetPositionIconClass(Position position)
         => position switch
@@ -20,6 +41,102 @@
             Data.Data.Position.Forward => "fa-solid fa-shoe-prints",
             _ => "fa-solid fa-user"
         };
+}
+
+@section Scripts {
+<script>
+let _finalizeIsEdit = false;
+
+function openFinalizeModal(isEdit) {
+  _finalizeIsEdit = !!isEdit;
+  if (isEdit && window._existingMatchData) {
+    document.getElementById('fin-goals-a').value = window._existingMatchData.goalsA;
+    document.getElementById('fin-goals-b').value = window._existingMatchData.goalsB;
+    const rows = document.querySelectorAll('#finalize-players-grid .finalize-player-row');
+    rows.forEach(row => {
+      const pid = row.dataset.playerId;
+      const existing = window._existingMatchData.players.find(p => p.playerId === pid);
+      const val = existing ? (existing.team === 0 ? 'A' : 'B') : 'none';
+      const radio = row.querySelector(`input[value="${val}"]`);
+      if (radio) radio.checked = true;
+    });
+  }
+  document.getElementById('finalize-modal-overlay')?.removeAttribute('hidden');
+  document.body.classList.add('modal-open');
+}
+function closeFinalizeModal() {
+  document.getElementById('finalize-modal-overlay')?.setAttribute('hidden', '');
+  document.body.classList.remove('modal-open');
+}
+document.getElementById('finalize-modal-overlay')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('finalize-modal-overlay')) closeFinalizeModal();
+});
+
+async function submitFinalize(partyId) {
+  const goalsA = parseInt(document.getElementById('fin-goals-a').value, 10);
+  const goalsB = parseInt(document.getElementById('fin-goals-b').value, 10);
+  if (isNaN(goalsA) || isNaN(goalsB) || goalsA < 0 || goalsB < 0) {
+    Notify.error('Unesite ispravan rezultat.'); return;
+  }
+
+  const rows = document.querySelectorAll('#finalize-players-grid .finalize-player-row');
+  const players = [];
+  rows.forEach(row => {
+    const playerId = row.dataset.playerId;
+    const selected = row.querySelector('input[type="radio"]:checked');
+    if (selected && selected.value !== 'none') {
+      players.push({ playerId, team: selected.value === 'A' ? 0 : 1 });
+    }
+  });
+
+  if (players.length === 0) { Notify.error('Dodijelite barem jednog igrača ekipi.'); return; }
+
+  const btn = document.getElementById('finalize-submit-btn');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/partyapi/${partyId}/finalize-match`, {
+      method: _finalizeIsEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goalsTeamA: goalsA, goalsTeamB: goalsB, players }),
+    });
+    if (res.ok) {
+      Notify.success(_finalizeIsEdit ? 'Rezultat je ažuriran!' : 'Rezultat je uspješno evidentiran!');
+      closeFinalizeModal();
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      const err = await res.json().catch(() => null);
+      Notify.error(err?.message ?? 'Greška pri evidentiranju.');
+      btn.disabled = false;
+    }
+  } catch {
+    Notify.error('Greška pri slanju zahtjeva.');
+    btn.disabled = false;
+  }
+}
+
+async function toggleAttendance(partyId, currentlyAttending) {
+  const nowAttending = !JSON.parse(currentlyAttending);
+  const btn = document.getElementById('attendance-btn');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/partyapi/${partyId}/attendance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isAttending: nowAttending }),
+    });
+    if (res.ok) {
+      Notify.success(nowAttending ? 'Označili ste da dolazite!' : 'Otkazali ste svoj dolazak.');
+      setTimeout(() => location.reload(), 900);
+    } else {
+      Notify.error('Greška pri ažuriranju dolaska.');
+      btn.disabled = false;
+    }
+  } catch {
+    Notify.error('Greška pri slanju zahtjeva.');
+    btn.disabled = false;
+  }
+}
+</script>
 }
 
 <div class="party-details-page">
@@ -33,59 +150,216 @@
             <h1>@Model.PartyDescription</h1>
         </div>
 
-        <div class="party-details-sections">
-            <section class="party-details-section">
-                <h2 class="party-section-title"><i class="fa-solid fa-medal" aria-hidden="true"></i> Organizator</h2>
-                <div class="party-person">
-                    <div class="party-avatar" aria-hidden="true">@DataUtility.GetInitials(Model.PlayerCreated.Username, "P")</div>
-                    <div class="party-person-meta">
-                        <span class="party-person-name">@Model.PlayerCreated.Username</span>
-                        <span class="party-person-role"><i class="fa-solid fa-award" aria-hidden="true"></i> Organizator</span>
+        <div class="party-details-layout">
+
+            @* LEFT: organizer / locations / preferred dates *@
+            <div class="party-details-left">
+
+                <section class="party-details-section">
+                    <h2 class="party-section-title"><i class="fa-solid fa-medal" aria-hidden="true"></i> Organizator</h2>
+                    <div class="party-person">
+                        <div class="party-avatar" aria-hidden="true">@DataUtility.GetInitials(Model.PlayerCreated.User?.UserName, "P")</div>
+                        <div class="party-person-meta">
+                            <span class="party-person-name">@Model.PlayerCreated.User?.UserName</span>
+                            <span class="party-person-role"><i class="fa-solid fa-award" aria-hidden="true"></i> Organizator</span>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="party-details-section">
-                <h2 class="party-section-title"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Lokacije</h2>
-                <div class="party-tags">
-                    @foreach (var location in Model.PreferredLocations.Split(','))
-                    {
-                        <span class="party-tag"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> @location.Trim()</span>
-                    }
-                </div>
-            </section>
+                <section class="party-details-section">
+                    <h2 class="party-section-title"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Lokacije</h2>
+                    <div class="party-tags">
+                        @foreach (var location in Model.PreferredLocations.Split(','))
+                        {
+                            <span class="party-tag"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> @location.Trim()</span>
+                        }
+                    </div>
+                </section>
 
-            <section class="party-details-section">
-                <h2 class="party-section-title"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Preferirani termini</h2>
-                <ul class="party-details-list">
-                    @foreach (var date in Model.PreferredPlayingDates.OrderBy(d => d.Date))
-                    {
-                        var localDate = date.Date.ToLocalTime();
-                        var dayLabel = localDate.ToString("dddd, dd.MM.", new System.Globalization.CultureInfo("hr-HR")).ToUpperInvariant();
-                        <li>
-                            <span class="party-date-primary"><i class="fa-regular fa-clock" aria-hidden="true"></i> @localDate.ToString("dd.MM.yyyy. HH:mm")</span>
-                            <span class="party-date-day">@dayLabel</span>
-                        </li>
-                    }
-                </ul>
-            </section>
+                <section class="party-details-section">
+                    <h2 class="party-section-title"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Preferirani termini</h2>
+                    <ul class="party-details-list">
+                        @foreach (var date in Model.PreferredPlayingDates.OrderBy(d => d.Date))
+                        {
+                            var localDate = date.Date.ToLocalTime();
+                            var dayLabel = localDate.ToString("dddd, dd.MM.", new System.Globalization.CultureInfo("hr-HR")).ToUpperInvariant();
+                            <li>
+                                <span class="party-date-primary"><i class="fa-regular fa-clock" aria-hidden="true"></i> @localDate.ToString("dd.MM.yyyy. HH:mm")</span>
+                                <span class="party-date-day">@dayLabel</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
 
-            <section class="party-details-section">
-                <h2 class="party-section-title"><i class="fa-solid fa-users" aria-hidden="true"></i> Clanovi</h2>
-                <ul class="party-members-list">
-                    @foreach (var member in Model.Members)
-                    {
-                        var positionClass = member.PreferredPosition.ToString().ToLowerInvariant();
-                        <li>
-                            <div class="party-avatar" aria-hidden="true">@DataUtility.GetInitials(member.Username, "P")</div>
-                            <div class="party-member-meta">
-                                <span class="party-member-name">@member.Username</span>
-                                <span class="party-member-position @positionClass">@member.PreferredPosition <i class="@GetPositionIconClass(member.PreferredPosition)" aria-hidden="true"></i></span>
+            </div>
+
+            @* RIGHT: members + match card + attendance *@
+            <div class="party-details-right">
+
+                <section class="party-details-section">
+                    <h2 class="party-section-title"><i class="fa-solid fa-users" aria-hidden="true"></i> Clanovi (@Model.Members.Count / @Model.MaxMembers)</h2>
+                    <ul class="party-members-list party-members-list--scrollable">
+                        @foreach (var member in Model.Members)
+                        {
+                            var positionClass = member.PreferredPosition.ToString().ToLowerInvariant();
+                            <li>
+                                <div class="party-avatar" aria-hidden="true">@DataUtility.GetInitials(member.User?.UserName, "P")</div>
+                                <div class="party-member-meta">
+                                    <span class="party-member-name">@member.User?.UserName</span>
+                                    <span class="party-member-position @positionClass">@member.PreferredPosition <i class="@GetPositionIconClass(member.PreferredPosition)" aria-hidden="true"></i></span>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </section>
+
+                @if (Model.ScheduledMatch != null)
+                {
+                    var match = Model.ScheduledMatch;
+
+                    <div class="party-details-section party-match-block">
+                        <h2 class="party-section-title" style="margin-bottom:0.85rem;">
+                            <i class="fa-solid fa-circle-check" style="color:#61de6f;"></i> Meč je organiziran!
+                        </h2>
+
+                        <div class="party-match-inner">
+                            <div class="party-match-card-wrap">
+                                <partial name="_ScheduledMatchSummaryCard" model="match" />
                             </div>
-                        </li>
-                    }
-                </ul>
-            </section>
+
+                            <div class="party-attendance-list">
+                                <h3 class="party-section-title" style="margin-bottom:0.75rem;">
+                                    <i class="fa-solid fa-clipboard-list"></i> Dolasci
+                                </h3>
+                                @foreach (var member in Model.Members)
+                                {
+                                    var att = match.ScheduledMatchAttendances.FirstOrDefault(a => a.PlayerId == member.Id);
+                                    string icon, colorClass;
+                                    if (att == null)          { icon = "fa-solid fa-circle-minus";  colorClass = "attendance-unknown"; }
+                                    else if (att.IsAttending) { icon = "fa-solid fa-circle-check";  colorClass = "attendance-going"; }
+                                    else                      { icon = "fa-solid fa-circle-xmark";  colorClass = "attendance-notgoing"; }
+
+                                    <div class="party-attendance-row">
+                                        <div class="party-avatar">@DataUtility.GetInitials(member.User?.UserName, "P")</div>
+                                        <span class="party-member-name">@member.User?.UserName</span>
+                                        <i class="@icon @colorClass party-attendance-icon"></i>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        @if (isMember)
+                        {
+                            <button id="attendance-btn"
+                                    class="party-attendance-btn @(isAttending ? "party-attendance-btn--going" : "party-attendance-btn--default")"
+                                    onclick="toggleAttendance('@Model.Id', @(isAttending ? "true" : "false"))">
+                                @if (isAttending)
+                                {
+                                    <i class="fa-solid fa-circle-xmark"></i> <span>Otkaži svoj dolazak</span>
+                                }
+                                else
+                                {
+                                    <i class="fa-solid fa-circle-check"></i> <span>Označi svoj dolazak</span>
+                                }
+                            </button>
+                        }
+
+                        @if (canFinalize)
+                        {
+                            <button class="party-attendance-btn party-finalize-btn"
+                                    onclick="openFinalizeModal()">
+                                <i class="fa-solid fa-flag-checkered"></i>
+                                <span>Unesi rezultat meča</span>
+                            </button>
+                        }
+                        @if (canEdit)
+                        {
+                            <button class="party-attendance-btn party-finalize-btn party-finalized-edit-btn"
+                                    onclick="openFinalizeModal(true)">
+                                <i class="fa-solid fa-circle-check finalized-icon"></i>
+                                <span class="finalized-label">Rezultat zabilježen</span>
+                                <span class="finalized-edit-label"><i class="fa-solid fa-pen"></i> Uredi</span>
+                            </button>
+                        }
+                    </div>
+                }
+
+            </div>
         </div>
     </div>
+
+    @* ── Finalize match modal ── *@
+    @if ((canFinalize || canEdit) && Model.ScheduledMatch != null)
+    {
+        var attendingPlayers = Model.ScheduledMatch.ScheduledMatchAttendances
+            .Where(a => a.IsAttending)
+            .Select(a => a.Player)
+            .ToList();
+
+        @if (canEdit && Model.ScheduledMatch.MatchRecord != null)
+        {
+            var mr = Model.ScheduledMatch.MatchRecord;
+            var existingPlayersJson = System.Text.Json.JsonSerializer.Serialize(
+                mr.MatchPlayers.Select(mp => new { playerId = mp.PlayerId.ToString(), team = (int)mp.Team })
+            );
+            <script>
+            window._existingMatchData = {
+                goalsA: @mr.GoalsTeamA,
+                goalsB: @mr.GoalsTeamB,
+                players: @Html.Raw(existingPlayersJson)
+            };
+            </script>
+        }
+
+        <div id="finalize-modal-overlay" class="mt-modal-overlay" hidden>
+            <div class="mt-modal finalize-modal" role="dialog" aria-modal="true" aria-labelledby="finalize-modal-title">
+                <button class="mt-modal-close" onclick="closeFinalizeModal()" aria-label="Zatvori">&times;</button>
+                <h2 id="finalize-modal-title" class="mt-modal-title">
+                    <i class="fa-solid fa-flag-checkered"></i> Unesi rezultat meča
+                </h2>
+
+                <div class="finalize-score-row">
+                    <div class="finalize-score-field">
+                        <label>Ekipa A – Golovi</label>
+                        <input type="number" id="fin-goals-a" min="0" max="99" value="0" class="mt-modal-input finalize-score-input" />
+                    </div>
+                    <span class="finalize-score-sep">:</span>
+                    <div class="finalize-score-field">
+                        <label>Ekipa B – Golovi</label>
+                        <input type="number" id="fin-goals-b" min="0" max="99" value="0" class="mt-modal-input finalize-score-input" />
+                    </div>
+                </div>
+
+                <h3 class="finalize-section-title">Dodjela igrača ekipama</h3>
+                <div class="finalize-players-grid" id="finalize-players-grid">
+                    @foreach (var p in attendingPlayers)
+                    {
+                        <div class="finalize-player-row" data-player-id="@p.Id">
+                            <div class="party-avatar">@DataUtility.GetInitials(p.User?.UserName, "P")</div>
+                            <span class="finalize-player-name">@p.User?.UserName</span>
+                            <div class="finalize-team-toggle">
+                                <label class="finalize-team-btn">
+                                    <input type="radio" name="team_@p.Id" value="A" checked /> Ekipa A
+                                </label>
+                                <label class="finalize-team-btn">
+                                    <input type="radio" name="team_@p.Id" value="B" /> Ekipa B
+                                </label>
+                                <label class="finalize-team-btn finalize-team-btn--none">
+                                    <input type="radio" name="team_@p.Id" value="none" /> Ne igra
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-modal-actions">
+                    <button type="button" class="mt-modal-btn mt-modal-btn--cancel" onclick="closeFinalizeModal()">Odustani</button>
+                    <button type="button" id="finalize-submit-btn" class="mt-modal-btn mt-modal-btn--submit"
+                            onclick="submitFinalize('@Model.Id')">
+                        <i class="fa-solid fa-flag-checkered"></i> Spremi rezultat
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
 </div>

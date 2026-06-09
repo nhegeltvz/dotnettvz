@@ -2,11 +2,10 @@ using Data.Data;
 using Data.Data.Common;
 using Data.Models;
 using Data.Services.Validation.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace Data.Services.Validation
 {
-    public class PlayerValidator : IValidator<AppUser>
+    public class PlayerValidator : IValidator<Player>
     {
         private readonly MatchTrackerDbContext _dbContext;
 
@@ -15,59 +14,31 @@ namespace Data.Services.Validation
             _dbContext = dbContext;
         }
 
-        public Result Validate(AppUser entity)
+        public Result Validate(Player entity)
         {
             var errors = new List<Error>();
 
-            if (string.IsNullOrWhiteSpace(entity.Username))
+            if (string.IsNullOrWhiteSpace(entity.Bio))
             {
-                errors.Add(new Error(ErrorType.Validation, "Username is required."));
+                errors.Add(new Error(ErrorType.Validation, "Bio is required."));
             }
-            else if (entity.Username.Trim().Length < 3)
+            else if (entity.Bio.Trim().Length < 10)
             {
-                errors.Add(new Error(ErrorType.Validation, "Username must be at least 3 characters."));
+                errors.Add(new Error(ErrorType.Validation, "Bio must be at least 10 characters."));
             }
 
-            if (string.IsNullOrWhiteSpace(entity.Email))
+            if (entity.DateOfBirth == default)
             {
-                errors.Add(new Error(ErrorType.Validation, "Email is required."));
+                errors.Add(new Error(ErrorType.Validation, "Date of birth is required."));
             }
             else
             {
-                var email = entity.Email.Trim();
-                var atIndex = email.IndexOf('@');
-                var dotIndex = email.LastIndexOf('.');
-                if (atIndex <= 0 || dotIndex <= atIndex + 1 || dotIndex == email.Length - 1)
-                {
-                    errors.Add(new Error(ErrorType.Validation, "Email format is invalid."));
-                }
-            }
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                var age = today.Year - entity.DateOfBirth.Year;
+                if (entity.DateOfBirth > today.AddYears(-age)) age--;
 
-            if (entity.Age.HasValue && (entity.Age.Value < 18 || entity.Age.Value > 100))
-            {
-                errors.Add(new Error(ErrorType.Validation, "Age must be between 18 and 100."));
-            }
-
-            if (!string.IsNullOrWhiteSpace(entity.Username))
-            {
-                var username = entity.Username.Trim();
-                var usernameExists = _dbContext.Users.Any(player =>
-                    player.Id != entity.Id && EF.Functions.Like(player.Username, username));
-                if (usernameExists)
-                {
-                    errors.Add(new Error(ErrorType.Validation, "Username is already in use."));
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(entity.Email))
-            {
-                var email = entity.Email.Trim();
-                var emailExists = _dbContext.Users.Any(player =>
-                    player.Id != entity.Id && EF.Functions.Like(player.Email, email));
-                if (emailExists)
-                {
-                    errors.Add(new Error(ErrorType.Validation, "Email is already in use."));
-                }
+                if (age < 18 || age > 100)
+                    errors.Add(new Error(ErrorType.Validation, "Player must be between 18 and 100 years old."));
             }
 
             return errors.Count == 0 ? Result.Success() : Result.Failure(errors);

@@ -23,6 +23,9 @@ function fetchForm(callback) {
   $.get("/players/form", function (html) {
     $("#form-container").html(html);
     $.validator.unobtrusive.parse("#player-form");
+    if (window.initDatetimePickers) {
+      initDatetimePickers(document.getElementById("player-form"));
+    }
     if (callback) callback();
   });
 }
@@ -133,7 +136,8 @@ function injectHtmlToTable(players, tableBody) {
     injectedHtml += `
                     <tr>
                         <td>${player.username}</td>
-                        <td>${player.email}</td>
+                        <td>${player.bio}</td>
+                        <td>${player.preferredPosition}</td>
                         <td>
                             <button class="dashboard-row-button dashboard-row-button--danger dashboard-row-button-delete" onclick="deletePlayer('${player.id}')">Delete</button>
                             <button class="dashboard-row-button dashboard-row-button--edit dashboard-row-button-edit" data-player='${JSON.stringify(player)}'>Edit</button>
@@ -165,15 +169,11 @@ function submitForm() {
     method: method,
     contentType: "application/json",
     data: JSON.stringify({
-      id: $("#player-id").val() || null,
-      username: $("#Username").val(),
-      email: $("#Email").val(),
-      password: $("#Password").val() || null,
-      oib: $("#OIB").val(),
-      jmbg: $("#JMBG").val(),
-      bio: $("#Bio").val(),
-      age: $("#Age").val(),
-      preferredPosition: $("#PreferredPosition").val(),
+      id: id || null,
+      userId: $("#Form_UserId").val(),
+      bio: $("#Form_Bio").val(),
+      preferredPosition: parseInt($("#Form_PreferredPosition").val()),
+      dateOfBirth: $("#Form_DateOfBirth").val(),
     }),
     success: function () {
       cancelForm();
@@ -205,15 +205,14 @@ function deletePlayer(id) {
 
 //Edit
 function editPlayer(player) {
-  fetchForm(() => {
+  // Fetch the form pre-populated by the server (keeps the UserId in the dropdown)
+  $.get(`/players/form?id=${player.id}`, function (html) {
+    $("#form-container").html(html);
+    $.validator.unobtrusive.parse("#player-form");
+    if (window.initDatetimePickers) {
+      initDatetimePickers(document.getElementById("player-form"));
+    }
     $("#player-id").val(player.id);
-    $("#Username").val(player.username);
-    $("#Email").val(player.email);
-    $("#OIB").val(player.oib);
-    $("#JMBG").val(player.jmbg);
-    $("#Bio").val(player.bio);
-    $("#Age").val(player.age);
-    $("#PreferredPosition").val(player.preferredPosition);
     setEditState(true, player.username);
   });
 }

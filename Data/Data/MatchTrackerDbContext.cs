@@ -9,6 +9,7 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
 {
     public MatchTrackerDbContext(DbContextOptions<MatchTrackerDbContext> options) : base(options) { }
 
+    public DbSet<Player> Players { get; set; } = null!;
     public DbSet<MatchPlayer> MatchPlayers { get; set; } = null!;
     public DbSet<MatchRecord> MatchRecords { get; set; } = null!;
     public DbSet<MatchVote> MatchVotes { get; set; } = null!;
@@ -24,95 +25,125 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
     {
         base.OnModelCreating(modelBuilder);
 
+        // AppUser → Player (1-to-0..1)
+        modelBuilder.Entity<AppUser>()
+            .HasOne(u => u.Player)
+            .WithOne(p => p.User)
+            .HasForeignKey<Player>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Party → PlayerCreated (Player)
         modelBuilder.Entity<Party>()
             .HasOne(party => party.PlayerCreated)
             .WithMany(player => player.CreatedParties)
             .HasForeignKey(party => party.PlayerCreatedId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Party ↔ Members (many-to-many Player)
         modelBuilder.Entity<Party>()
             .HasMany(party => party.Members)
             .WithMany(player => player.JoinedParties)
             .UsingEntity(join => join.ToTable("PartyMembers"));
 
+        // MatchRecord → ScheduledMatch (1-to-1, nullable)
+        modelBuilder.Entity<MatchRecord>()
+            .HasOne(mr => mr.ScheduledMatch)
+            .WithOne(sm => sm.MatchRecord)
+            .HasForeignKey<MatchRecord>(mr => mr.ScheduledMatchId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // MatchRecord → PlayingField
         modelBuilder.Entity<MatchRecord>()
             .HasOne(record => record.PlayingField)
             .WithMany(field => field.MatchRecords)
             .HasForeignKey(record => record.PlayingFieldId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // MatchPlayer → MatchRecord
         modelBuilder.Entity<MatchPlayer>()
             .HasOne(matchPlayer => matchPlayer.MatchRecord)
             .WithMany(matchRecord => matchRecord.MatchPlayers)
             .HasForeignKey(matchPlayer => matchPlayer.MatchRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // MatchPlayer → Player
         modelBuilder.Entity<MatchPlayer>()
             .HasOne(matchPlayer => matchPlayer.Player)
             .WithMany(player => player.MatchPlayers)
             .HasForeignKey(matchPlayer => matchPlayer.PlayerId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // MatchVote → MatchRecord
         modelBuilder.Entity<MatchVote>()
             .HasOne(matchVote => matchVote.MatchRecord)
             .WithMany(matchRecord => matchRecord.MatchVotes)
             .HasForeignKey(matchVote => matchVote.MatchRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // MatchVote → Player
         modelBuilder.Entity<MatchVote>()
             .HasOne(matchVote => matchVote.Player)
             .WithMany(player => player.MatchVotes)
             .HasForeignKey(matchVote => matchVote.PlayerId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // PlayerRating → MatchPlayer
         modelBuilder.Entity<PlayerRating>()
             .HasOne(rating => rating.MatchPlayer)
             .WithOne(matchPlayer => matchPlayer.PlayerRating)
             .HasForeignKey<PlayerRating>(rating => rating.MatchPlayerId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // PlayerRating → PlayerGivingRating (Player)
         modelBuilder.Entity<PlayerRating>()
             .HasOne(rating => rating.PlayerGivingRating)
             .WithMany(player => player.RatingsGiven)
             .HasForeignKey(rating => rating.PlayerGivingRatingId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // PlayerRating → PlayerReceivingRating (Player)
         modelBuilder.Entity<PlayerRating>()
             .HasOne(rating => rating.PlayerReceivingRating)
             .WithMany(player => player.RatingsReceived)
             .HasForeignKey(rating => rating.PlayerReceivingRatingId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // PreferredPlayingDate → Party
         modelBuilder.Entity<PreferredPlayingDate>()
             .HasOne(preferredDate => preferredDate.Party)
             .WithMany(party => party.PreferredPlayingDates)
             .HasForeignKey(preferredDate => preferredDate.PartyId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // ScheduledMatch → PlayingField
         modelBuilder.Entity<ScheduledMatch>()
             .HasOne(scheduledMatch => scheduledMatch.PlayingField)
             .WithMany(field => field.ScheduledMatches)
             .HasForeignKey(scheduledMatch => scheduledMatch.PlayingFieldId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // ScheduledMatch → Party (1-to-1)
         modelBuilder.Entity<ScheduledMatch>()
-            .HasOne(ScheduledMatch => ScheduledMatch.Party)
+            .HasOne(scheduledMatch => scheduledMatch.Party)
             .WithOne(party => party.ScheduledMatch)
             .HasForeignKey<ScheduledMatch>(scheduledMatch => scheduledMatch.PartyId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // ScheduledMatchAttendance → ScheduledMatch
         modelBuilder.Entity<ScheduledMatchAttendance>()
             .HasOne(attendance => attendance.ScheduledMatch)
             .WithMany(scheduledMatch => scheduledMatch.ScheduledMatchAttendances)
             .HasForeignKey(attendance => attendance.ScheduledMatchId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // ScheduledMatchAttendance → Player
         modelBuilder.Entity<ScheduledMatchAttendance>()
             .HasOne(attendance => attendance.Player)
             .WithMany(player => player.ScheduledMatchAttendances)
             .HasForeignKey(attendance => attendance.PlayerId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // ImageResource → PlayingField
         modelBuilder.Entity<ImageResource>()
             .HasOne(img => img.PlayingField)
             .WithMany(pf => pf.Images)

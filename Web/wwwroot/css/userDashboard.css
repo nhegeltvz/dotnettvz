@@ -126,6 +126,271 @@
   color: #ef5350;
 }
 
+.user-info-item--full {
+  grid-column: 1 / -1;
+}
+
+.profile-input {
+  font-size: 1rem;
+  color: var(--mt-text);
+  background: var(--mt-bg-medium);
+  border: 1px solid var(--mt-border-strong);
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 120ms ease;
+}
+
+.profile-input:focus {
+  outline: none;
+  border-color: var(--mt-highlight);
+}
+
+.profile-input--textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ── My party card header ── */
+.my-party-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.my-party-card-header h2 {
+  margin: 0;
+}
+
+.my-party-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.my-party-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 120ms ease;
+  background: transparent;
+}
+
+.my-party-action-btn--edit {
+  border-color: var(--mt-border-strong);
+  color: var(--mt-text-subtle);
+}
+
+.my-party-action-btn--edit:hover {
+  border-color: var(--mt-highlight);
+  color: var(--mt-highlight);
+}
+
+.my-party-action-btn--delete {
+  border-color: rgba(239, 83, 80, 0.35);
+  color: #ef9a9a;
+}
+
+.my-party-action-btn--delete:hover {
+  background: rgba(239, 83, 80, 0.1);
+  border-color: #ef5350;
+  color: #ef5350;
+}
+
+/* ── My Parties layout ── */
+.my-parties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.my-party-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.my-party-number {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--mt-highlight);
+  line-height: 1;
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.my-party-details {
+  min-width: 0;
+}
+
+.my-party-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--mt-bg-medium);
+  border: 1px solid var(--mt-border-strong);
+  border-radius: 6px;
+}
+
+.kick-btn {
+  background: transparent;
+  border: 1px solid rgba(239, 83, 80, 0.4);
+  color: #ef9a9a;
+  border-radius: 6px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.kick-btn:hover {
+  background: rgba(239, 83, 80, 0.12);
+  border-color: #ef5350;
+  color: #ef5350;
+}
+
+/* ── Schedule section ── */
+.my-party-schedule {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  min-width: 180px;
+}
+
+.schedule-match-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 160px;
+  height: 160px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 2px dashed rgba(76, 175, 80, 0.4);
+  border-radius: 20px;
+  color: #a5d6a7;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.schedule-match-btn:hover {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.7);
+  color: #c8e6c9;
+  box-shadow: 0 0 18px rgba(76, 175, 80, 0.25);
+}
+
+.schedule-match-btn__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #3f51b5;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.my-party-edit-schedule-btn {
+  width: 100%;
+}
+
+/* ── Scheduled match summary card ── */
+.sms-card {
+  background: var(--mt-surface);
+  border: 1px solid var(--mt-border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 180px;
+}
+
+.sms-card__image-link {
+  display: block;
+  text-decoration: none;
+}
+
+.sms-card__image-link:hover .sms-card__image,
+.sms-card__image-link:hover .sms-card__image--placeholder {
+  opacity: 0.85;
+}
+
+.sms-card__image {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+}
+
+.sms-card__image--placeholder {
+  background: var(--mt-bg-medium);
+  display: grid;
+  place-items: center;
+  color: var(--mt-text-faint);
+  font-size: 2rem;
+}
+
+.sms-card__body {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sms-card__field {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--mt-text);
+}
+
+.sms-card__date,
+.sms-card__time,
+.sms-card__attendance {
+  font-size: 0.8rem;
+  color: var(--mt-text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sms-card__attendance {
+  color: #a5d6a7;
+}
+
+@media (max-width: 900px) {
+  .my-party-row {
+    grid-template-columns: 2.5rem 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .my-party-schedule {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-top: 0;
+  }
+}
+
 @media (max-width: 768px) {
   .user-dashboard-page {
     padding: 1rem;
@@ -147,4 +412,68 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* ── FAB stack ── */
+.dashboard-fab-stack {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.75rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+/* ── My-parties floating button ── */
+.my-parties-fab {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.1rem;
+  background: var(--mt-surface-soft);
+  color: var(--mt-text);
+  border: 1px solid var(--mt-border-strong);
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  transition: all 140ms ease;
+}
+
+.my-parties-fab i {
+  font-size: 1rem;
+  color: var(--mt-highlight);
+}
+
+.my-parties-fab:hover {
+  background: var(--mt-surface-mid);
+  border-color: var(--mt-highlight);
+  color: var(--mt-highlight);
+  box-shadow: 0 4px 22px var(--mt-highlight-glow);
+}
+
+.profile-feedback {
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-feedback--error {
+  background: rgba(239, 83, 80, 0.1);
+  border: 1px solid rgba(239, 83, 80, 0.35);
+  color: #ef9a9a;
+}
+
+.profile-feedback--success {
+  background: rgba(97, 222, 111, 0.1);
+  border: 1px solid rgba(97, 222, 111, 0.35);
+  color: #81c784;
 }

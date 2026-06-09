@@ -37,7 +37,7 @@ namespace Data.Dto.CRUD.MatchRecord
                         {
                             Id = matchPlayer.Id,
                             PlayerId = matchPlayer.PlayerId,
-                            PlayerUsername = matchPlayer.Player == null ? string.Empty : matchPlayer.Player.Username,
+                            PlayerUsername = matchPlayer.Player == null ? string.Empty : matchPlayer.Player.User.UserName ?? string.Empty,
                             Team = matchPlayer.Team,
                             Goals = matchPlayer.Goals,
                             Assists = matchPlayer.Assists,
@@ -46,7 +46,7 @@ namespace Data.Dto.CRUD.MatchRecord
                                 ? string.Empty
                                 : matchPlayer.PlayerRating.PlayerGivingRating == null
                                     ? string.Empty
-                                    : matchPlayer.PlayerRating.PlayerGivingRating.Username
+                                    : matchPlayer.PlayerRating.PlayerGivingRating.User.UserName ?? string.Empty
                         })
                         .ToList(),
                 MatchVotes = matchRecord.MatchVotes == null

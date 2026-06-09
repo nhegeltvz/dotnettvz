@@ -42,7 +42,7 @@ namespace Data
                 .AddScoped<IValidator<MatchRecord>, MatchRecordValidator>()
                 .AddScoped<IValidator<MatchVote>, MatchVoteValidator>()
                 .AddScoped<IValidator<Party>, PartyValidator>()
-                .AddScoped<IValidator<AppUser>, PlayerValidator>()
+                .AddScoped<IValidator<Player>, PlayerValidator>()
                 .AddScoped<IValidator<PlayerRating>, PlayerRatingValidator>()
                 .AddScoped<IValidator<PlayingField>, PlayingFieldValidator>()
                 .AddScoped<IValidator<PreferredPlayingDate>, PreferredPlayingDateValidator>()

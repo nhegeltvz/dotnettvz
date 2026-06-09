@@ -22,13 +22,16 @@ namespace Data.Services.Stores
         public async Task<List<Party>> GetAllPartiesAsync()
             => await _dbContext.Parties
                 .Include(party => party.PlayerCreated)
+                .Include(party => party.Members)
                 .AsNoTracking()
                 .ToListAsync();
 
         public IQueryable<Party> QueryPartiesAsync()
             => _dbContext.Parties
                 .Include(party => party.PlayerCreated)
+                    .ThenInclude(p => p.User)
                 .Include(party => party.Members)
+                    .ThenInclude(m => m.User)
                 .Include(party => party.PreferredPlayingDates)
                 .Include(party => party.ScheduledMatch)
                     .ThenInclude(match => match.PlayingField)
@@ -45,7 +48,7 @@ namespace Data.Services.Stores
                 PlayerCreatedId = party.PlayerCreatedId,
                 PartyDescription = party.PartyDescription,
                 DateCreated = party.DateCreated,
-                PlayerCreatedUsername= party.PlayerCreated.Username,
+                PlayerCreatedUsername = party.PlayerCreated.User.UserName ?? string.Empty,
                 NumberOfMembers = party.Members.Count,
                 MaxMembers = party.MaxMembers,
                 PreferredLocations = party.PreferredLocations
@@ -57,11 +60,19 @@ namespace Data.Services.Stores
         {
             var party = await _dbContext.Parties
                 .Include(p => p.PlayerCreated)
+                    .ThenInclude(p => p.User)
                 .Include(p => p.Members)
+                    .ThenInclude(m => m.User)
                 .Include(p => p.PreferredPlayingDates)
                 .Include(p => p.ScheduledMatch)
+                    .ThenInclude(sm => sm.PlayingField)
+                        .ThenInclude(pf => pf.Images)
+                .Include(p => p.ScheduledMatch)
                     .ThenInclude(sm => sm.ScheduledMatchAttendances)
-                        .ThenInclude(attendance => attendance.Player)
+                        .ThenInclude(a => a.Player)
+                .Include(p => p.ScheduledMatch)
+                    .ThenInclude(sm => sm.MatchRecord)
+                        .ThenInclude(mr => mr.MatchPlayers)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             return party != null
@@ -120,7 +131,7 @@ namespace Data.Services.Stores
             if (party == null)
                 return;
 
-            var players = await _dbContext.Users
+            var players = await _dbContext.Players
                 .Where(p => memberIds.Contains(p.Id))
                 .ToListAsync();
 

@@ -1,15 +1,34 @@
 @using Data.Models
+@using Web.Models
 @inject Microsoft.AspNetCore.Identity.UserManager<AppUser> UserManager
+@inject Data.Services.Stores.PlayerStore PlayerStore
 
 @{
     ViewData["Title"] = "Moj profil";
     var user = await UserManager.GetUserAsync(User);
+    var playerResult = user != null ? await PlayerStore.FindByUserIdAsync(user.Id) : null;
+    var player = playerResult?.Value;
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
         new("Home", "/home"),
         new("Moj profil")
     };
+
+    var dobValue = player?.DateOfBirth != null && player.DateOfBirth != default
+        ? player.DateOfBirth.ToString("yyyy-MM-dd")
+        : null;
 }
+
+<div class="dashboard-fab-stack">
+    <a href="/user-dashboard/my-matches" class="my-parties-fab" title="Odigrani mečevi">
+        <i class="fa-solid fa-futbol"></i>
+        <span>Odigrani mečevi</span>
+    </a>
+    <a href="/user-dashboard/my-parties" class="my-parties-fab" title="Moje grupe">
+        <i class="fa-solid fa-people-group"></i>
+        <span>Moje grupe</span>
+    </a>
+</div>
 
 <div class="user-dashboard-page">
     <div class="user-dashboard-header">
@@ -20,6 +39,10 @@
         <section class="user-info-card">
             <h2><i class="fa-solid fa-user-circle"></i> Osnovni podaci</h2>
             <div class="user-info-grid">
+                <div class="user-info-item">
+                    <label>Korisničko ime</label>
+                    <span>@user?.UserName</span>
+                </div>
                 <div class="user-info-item">
                     <label>Email</label>
                     <span>@user?.Email</span>
@@ -33,6 +56,57 @@
                     <span>@user?.JMBG</span>
                 </div>
             </div>
+        </section>
+
+        <section class="user-info-card">
+            <h2><i class="fa-solid fa-futbol"></i> Profil igrača</h2>
+
+            @if (TempData["PlayerProfileError"] is string errorMsg)
+            {
+                <p class="profile-feedback profile-feedback--error">
+                    <i class="fa-solid fa-circle-exclamation"></i> @errorMsg
+                </p>
+            }
+            @if (TempData["PlayerProfileSuccess"] is string successMsg)
+            {
+                <p class="profile-feedback profile-feedback--success">
+                    <i class="fa-solid fa-circle-check"></i> @successMsg
+                </p>
+            }
+
+            <form method="post" action="/user-dashboard/player-profile">
+                @Html.AntiForgeryToken()
+                <div class="user-info-grid">
+                    <div class="user-info-item">
+                        <label for="dateOfBirth">Datum rođenja</label>
+                        @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+                        {
+                            FieldName = "dateOfBirth",
+                            EnableTime = false,
+                            Value = dobValue,
+                        })
+                    </div>
+                    <div class="user-info-item">
+                        <label for="preferredPosition">Preferirana pozicija</label>
+                        <select id="preferredPosition" name="preferredPosition" class="profile-input">
+                            @foreach (var pos in Enum.GetValues<Data.Data.Position>())
+                            {
+                                <option value="@pos" selected="@(player?.PreferredPosition == pos)">@pos</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="user-info-item user-info-item--full">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" name="bio" class="profile-input profile-input--textarea"
+                                  maxlength="500">@player?.Bio</textarea>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button type="submit" class="user-action-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Spremi
+                    </button>
+                </div>
+            </form>
         </section>
 
         <section class="user-actions-card">
@@ -50,3 +124,13 @@
         </section>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.initDatetimePickers) {
+                initDatetimePickers(document.querySelector(".user-info-card:nth-child(2)"));
+            }
+        });
+    </script>
+}

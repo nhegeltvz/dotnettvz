@@ -1,0 +1,252 @@
+@model List<Data.Models.MatchPlayer>
+@using Data.Data
+@using Data.Models
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/userDashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/myMatches.css" asp-append-version="true" />
+}
+
+@{
+    ViewData["Title"] = "Odigrani mečevi";
+    ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
+    {
+        new("Home", "/home"),
+        new("Moj profil", "/user-dashboard"),
+        new("Odigrani mečevi")
+    };
+}
+
+<div class="user-dashboard-page my-matches-page">
+    <div class="user-dashboard-header">
+        <h1 class="page-title">Odigrani mečevi</h1>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="user-info-card">
+            <p style="color: var(--mt-text-subtle); margin: 0;">
+                Niste još sudjelovali ni u jednom evidentiranom meču.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="my-matches-list">
+            @foreach (var mp in Model)
+            {
+                var mr = mp.MatchRecord;
+                var allPlayers = mr.MatchPlayers.ToList();
+                var teamAPlayers = allPlayers.Where(x => x.Team == Team.A).ToList();
+                var teamBPlayers = allPlayers.Where(x => x.Team == Team.B).ToList();
+                var hasRated = mp.PlayerRating != null;
+
+                <div class="my-match-card" data-match-player-id="@mp.Id">
+                    <div class="my-match-header">
+                        <div class="my-match-meta">
+                            <span class="my-match-field"><i class="fa-solid fa-location-dot"></i> @mr.PlayingField.Name</span>
+                            <span class="my-match-date"><i class="fa-regular fa-calendar"></i> @mr.MatchHeld.ToLocalTime().ToString("dd.MM.yyyy. HH:mm")</span>
+                        </div>
+                        <div class="my-match-score">
+                            <span class="@(mp.Team == Team.A ? "my-match-score--own" : "")">@mr.GoalsTeamA</span>
+                            <span class="my-match-score-sep">:</span>
+                            <span class="@(mp.Team == Team.B ? "my-match-score--own" : "")">@mr.GoalsTeamB</span>
+                        </div>
+                        <span class="my-match-team-badge my-match-team-badge--@(mp.Team.ToString().ToLowerInvariant())">
+                            Ekipa @mp.Team
+                        </span>
+                    </div>
+
+                    <div class="my-match-body">
+                        <div class="my-match-teams">
+                            <div class="my-match-team">
+                                <h4 class="my-match-team-title my-match-team-title--a">Ekipa A</h4>
+                                @foreach (var p in teamAPlayers)
+                                {
+                                    <div class="my-match-player @(p.Id == mp.Id ? "my-match-player--self" : "")">
+                                        <div class="party-avatar">@DataUtility.GetInitials(p.Player.User?.UserName, "P")</div>
+                                        <span>@p.Player.User?.UserName</span>
+                                        <span class="my-match-player-stats">@p.Goals G / @p.Assists A</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="my-match-team">
+                                <h4 class="my-match-team-title my-match-team-title--b">Ekipa B</h4>
+                                @foreach (var p in teamBPlayers)
+                                {
+                                    <div class="my-match-player @(p.Id == mp.Id ? "my-match-player--self" : "")">
+                                        <div class="party-avatar">@DataUtility.GetInitials(p.Player.User?.UserName, "P")</div>
+                                        <span>@p.Player.User?.UserName</span>
+                                        <span class="my-match-player-stats">@p.Goals G / @p.Assists A</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="my-match-actions">
+                            <div class="my-match-stats-form">
+                                <h4 class="my-match-section-label"><i class="fa-solid fa-pen-to-square"></i> Moji golovi i asistencije</h4>
+                                <div class="my-match-stats-inputs">
+                                    <div class="my-match-stat-field">
+                                        <label>Golovi</label>
+                                        <input type="number" class="mp-goals mt-modal-input" min="0" max="99"
+                                               value="@mp.Goals" data-match-player-id="@mp.Id" />
+                                    </div>
+                                    <div class="my-match-stat-field">
+                                        <label>Asistencije</label>
+                                        <input type="number" class="mp-assists mt-modal-input" min="0" max="99"
+                                               value="@mp.Assists" data-match-player-id="@mp.Id" />
+                                    </div>
+                                    <button class="mt-modal-btn mt-modal-btn--submit mp-stats-save-btn"
+                                            data-match-player-id="@mp.Id"
+                                            onclick="saveStats('@mp.Id', this)">
+                                        Spremi
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="my-match-rating-section">
+                                <h4 class="my-match-section-label"><i class="fa-solid fa-star"></i> Ocijeni igrača</h4>
+                                @if (hasRated)
+                                {
+                                    <p class="my-match-rated-notice">
+                                        <i class="fa-solid fa-circle-check"></i> Već ste ocijenili igrača.
+                                    </p>
+                                }
+                                else
+                                {
+                                    <button class="mt-modal-btn mt-modal-btn--submit"
+                                            onclick="loadRatingTarget('@mp.Id', this)">
+                                        <i class="fa-solid fa-star"></i> Ocijeni igrača
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* ── Rating modal ── *@
+<div id="rating-modal-overlay" class="mt-modal-overlay" hidden>
+    <div class="mt-modal" role="dialog" aria-modal="true" aria-labelledby="rating-modal-title">
+        <button class="mt-modal-close" onclick="closeRatingModal()" aria-label="Zatvori">&times;</button>
+        <h2 id="rating-modal-title" class="mt-modal-title"><i class="fa-solid fa-star"></i> Ocijeni igrača</h2>
+        <div id="rating-modal-body">
+            <p style="color: var(--mt-text-subtle);">Učitavanje...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// ── Stats save ──────────────────────────────────────────────
+async function saveStats(matchPlayerId, btn) {
+  const card = btn.closest('.my-match-card');
+  const goals   = parseInt(card.querySelector('.mp-goals').value,   10);
+  const assists = parseInt(card.querySelector('.mp-assists').value, 10);
+
+  if (isNaN(goals) || isNaN(assists) || goals < 0 || assists < 0) {
+    Notify.error('Unesite ispravne vrijednosti.'); return;
+  }
+
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/matchplayerapi/${matchPlayerId}/stats`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goals, assists }),
+    });
+    if (res.ok) {
+      Notify.success('Statistika je spremljena!');
+    } else {
+      const err = await res.json().catch(() => null);
+      Notify.error(err?.message ?? 'Greška pri spremanju.');
+    }
+  } catch {
+    Notify.error('Greška pri slanju zahtjeva.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Rating ────────────────────────────────────────────────
+let _ratingMatchPlayerId = null;
+let _ratingTargetMatchPlayerId = null;
+
+function closeRatingModal() {
+  document.getElementById('rating-modal-overlay').setAttribute('hidden', '');
+  document.body.classList.remove('modal-open');
+}
+
+async function loadRatingTarget(matchPlayerId, btn) {
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/matchplayerapi/${matchPlayerId}/rating-target`);
+    const data = await res.json();
+
+    if (data.alreadyRated) { Notify.info('Već ste ocijenili igrača za ovaj meč.'); btn.disabled = false; return; }
+    if (data.noTarget)     { Notify.info('Nema drugih igrača za ocjenjivanje.'); btn.disabled = false; return; }
+
+    _ratingMatchPlayerId = matchPlayerId;
+    _ratingTargetMatchPlayerId = data.targetMatchPlayerId;
+
+    document.getElementById('rating-modal-body').innerHTML = `
+      <p style="color:var(--mt-text); margin-bottom:1.25rem;">
+        Vaš slučajno odabrani igrač za ocjenu:<br>
+        <strong style="font-size:1.15rem; color:var(--mt-highlight)">${data.targetPlayerName}</strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <label style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06rem;color:var(--mt-text-subtle);">
+          Ocjena (1–10)
+        </label>
+        <input type="range" id="rating-slider" min="1" max="10" value="7"
+               style="accent-color:var(--mt-highlight);width:100%;"
+               oninput="document.getElementById('rating-value').textContent = this.value" />
+        <span id="rating-value"
+              style="text-align:center;font-family:var(--font-heading);font-size:2rem;color:var(--mt-highlight);">7</span>
+      </div>
+      <div class="mt-modal-actions" style="margin-top:1.25rem;">
+        <button class="mt-modal-btn mt-modal-btn--cancel" onclick="closeRatingModal()">Odustani</button>
+        <button class="mt-modal-btn mt-modal-btn--submit" onclick="submitRating()">
+          <i class="fa-solid fa-star"></i> Pošalji ocjenu
+        </button>
+      </div>`;
+
+    document.getElementById('rating-modal-overlay').removeAttribute('hidden');
+    document.body.classList.add('modal-open');
+  } catch {
+    Notify.error('Greška pri dohvaćanju cilja.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function submitRating() {
+  const rating = parseInt(document.getElementById('rating-slider').value, 10);
+  try {
+    const res = await fetch(`/api/matchplayerapi/${_ratingMatchPlayerId}/rate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetMatchPlayerId: _ratingTargetMatchPlayerId, rating }),
+    });
+    if (res.ok) {
+      Notify.success('Ocjena je uspješno poslana!');
+      closeRatingModal();
+      setTimeout(() => location.reload(), 900);
+    } else {
+      const err = await res.json().catch(() => null);
+      Notify.error(err?.message ?? 'Greška pri slanju ocjene.');
+    }
+  } catch {
+    Notify.error('Greška pri slanju zahtjeva.');
+  }
+}
+
+document.getElementById('rating-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('rating-modal-overlay')) closeRatingModal();
+});
+</script>
+}

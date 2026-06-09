@@ -1,4 +1,5 @@
-﻿@using Data.Models
+﻿@using Data.Data
+@using Data.Models
 @inject Microsoft.AspNetCore.Identity.SignInManager<AppUser> SignInManager
 
 <!DOCTYPE html>
@@ -30,7 +31,7 @@
         </nav>
         <div class="header-side header-right">
             <partial name="_LoginPartial" />
-            @if (SignInManager.IsSignedIn(User))
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole(AppRoles.ADMIN_ROLE))
             {
                 <a class="header-link @Html.IsActive("Dashboard", "Index")" asp-area="" asp-controller="Dashboard" asp-action="Index">  <i class="fa-solid fa-gauge-high user-profile-icon" aria-hidden="true"></i> </a>
             }
@@ -45,6 +46,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+    <script src="~/js/parties-user.js" asp-append-version="true"></script>
     <script src="~/js/dashboard-spinner.js" asp-append-version="true"></script>
     <script src="~/js/customDateControl.js" asp-append-version="true"></script>
     <script src="~/js/dashboard-autocomplete.js" asp-append-version="true"></script>

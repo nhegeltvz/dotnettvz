@@ -1,32 +1,25 @@
-@model Data.Models.AppUser
+@model Data.Models.Player
 
 @{
-    var matches = Model.MatchPlayers.Count;
-    var goals = Model.MatchPlayers.Sum(match => match.Goals);
-    var assists = Model.MatchPlayers.Sum(match => match.Assists);
-    var ageLabel = Model.Age.HasValue ? Model.Age.Value.ToString() : "-";
-    var initials = string.Join(
-        string.Empty,
-        Model.Username
-            .Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(part => char.ToUpperInvariant(part[0])));
-    var avatarSrc = Model.ProfilePicture.Length > 0
-        ? $"data:image/svg+xml;base64,{Convert.ToBase64String(Model.ProfilePicture)}"
-        : null;
+    var matches  = Model.MatchPlayers.Count;
+    var goals    = Model.MatchPlayers.Sum(m => m.Goals);
+    var assists  = Model.MatchPlayers.Sum(m => m.Assists);
+    var username = Model.User?.UserName ?? string.Empty;
+    var age = Model.DateOfBirth != default
+        ? (DateTime.Today.Year - Model.DateOfBirth.Year).ToString()
+        : "-";
+    var initials = string.IsNullOrWhiteSpace(username)
+        ? "P"
+        : string.Join(string.Empty,
+            username.Split(['_', '-', '.'], StringSplitOptions.RemoveEmptyEntries)
+                    .Select(part => char.ToUpperInvariant(part[0])));
 }
 
 <article class="player-card-lite">
-    @if (!string.IsNullOrWhiteSpace(avatarSrc))
-    {
-        <img class="player-card-lite__avatar player-card-lite__avatar--image" src="@avatarSrc" alt="@Model.Username avatar" loading="lazy" />
-    }
-    else
-    {
-        <div class="player-card-lite__avatar" aria-hidden="true">@initials</div>
-    }
+    <div class="player-card-lite__avatar" aria-hidden="true">@initials</div>
     <div class="player-card-lite__header">
-        <span class="player-card-lite__name">@Model.Username</span>
-        <span class="player-card-lite__meta">@Model.PreferredPosition • @ageLabel</span>
+        <span class="player-card-lite__name">@username</span>
+        <span class="player-card-lite__meta">@Model.PreferredPosition • @age</span>
     </div>
     <div class="player-card-lite__stats">
         <span class="player-card-lite__stat">G @goals</span>

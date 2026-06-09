@@ -9,4 +9,5 @@ public interface IMatchRecord
     Guid PlayingFieldId { get; }
     int GoalsTeamA { get; }
     int GoalsTeamB { get; }
+    Guid? ScheduledMatchId { get; }
 }

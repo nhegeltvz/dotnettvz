@@ -1,4 +1,4 @@
-@model Data.Models.AppUser
+@model Data.Models.Player
 
 @{
     ViewData["Title"] = "Detalji igraca";
@@ -6,9 +6,8 @@
     {
         new("Home", "/home"),
         new("Players", "/Players"),
-        new(Model.Username)
+        new(Model.User?.UserName ?? "Player")
     };
-
 
     var matches = Model.MatchPlayers.Count;
     var goals = Model.MatchPlayers.Sum(match => match.Goals);
@@ -16,7 +15,9 @@
     var averageRating = Model.RatingsReceived.Count == 0
         ? 0
         : Model.RatingsReceived.Average(rating => rating.Rating);
-    var ageLabel = Model.Age.HasValue ? Model.Age.Value.ToString() : "-";
+    var age = Model.DateOfBirth != default
+        ? (DateTime.Today.Year - Model.DateOfBirth.Year).ToString()
+        : "-";
 }
 
 <div class="player-details-page">
@@ -27,11 +28,11 @@
 
     <article class="player-details-card">
         <div class="player-details-header">
-            <div class="player-details-avatar" aria-hidden="true">@DataUtility.GetInitials(Model.Username,"P")</div>
+            <div class="player-details-avatar" aria-hidden="true">@DataUtility.GetInitials(Model.User?.UserName, "P")</div>
 
             <div class="player-details-identity">
-                <h1>@Model.Username</h1>
-                <p>@Model.PreferredPosition • @ageLabel god</p>
+                <h1>@Model.User?.UserName</h1>
+                <p>@Model.PreferredPosition • @age god</p>
             </div>
         </div>
 
@@ -61,7 +62,7 @@
 
         <section class="player-details-section">
             <h2>Kontakt</h2>
-            <p>@Model.Email</p>
+            <p>@Model.User?.Email</p>
         </section>
     </article>
 </div>

@@ -17,21 +17,6 @@ namespace Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.27");
 
-            modelBuilder.Entity("AppUserParty", b =>
-                {
-                    b.Property<Guid>("JoinedPartiesId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("MembersId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("JoinedPartiesId", "MembersId");
-
-                    b.HasIndex("MembersId");
-
-                    b.ToTable("PartyMembers", (string)null);
-                });
-
             modelBuilder.Entity("Data.Models.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -40,13 +25,6 @@ namespace Data.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("INTEGER");
-
-                    b.Property<int?>("Age")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -92,13 +70,6 @@ namespace Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PreferredPosition")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte[]>("ProfilePicture")
-                        .IsRequired()
-                        .HasColumnType("BLOB");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
@@ -108,11 +79,6 @@ namespace Data.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("PlayerUsername");
 
                     b.HasKey("Id");
 
@@ -208,12 +174,18 @@ namespace Data.Migrations
                     b.Property<Guid>("PlayingFieldId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("ScheduledMatchId")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("WasMatchHeld")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PlayingFieldId");
+
+                    b.HasIndex("ScheduledMatchId")
+                        .IsUnique();
 
                     b.ToTable("MatchRecords");
                 });
@@ -270,6 +242,33 @@ namespace Data.Migrations
                     b.HasIndex("PlayerCreatedId");
 
                     b.ToTable("Parties");
+                });
+
+            modelBuilder.Entity("Data.Models.Player", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PreferredPosition")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Data.Models.PlayerRating", b =>
@@ -541,19 +540,19 @@ namespace Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AppUserParty", b =>
+            modelBuilder.Entity("PartyPlayer", b =>
                 {
-                    b.HasOne("Data.Models.Party", null)
-                        .WithMany()
-                        .HasForeignKey("JoinedPartiesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<Guid>("JoinedPartiesId")
+                        .HasColumnType("TEXT");
 
-                    b.HasOne("Data.Models.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("MembersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<Guid>("MembersId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("JoinedPartiesId", "MembersId");
+
+                    b.HasIndex("MembersId");
+
+                    b.ToTable("PartyMembers", (string)null);
                 });
 
             modelBuilder.Entity("Data.Models.ImageResource", b =>
@@ -574,7 +573,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Data.Models.AppUser", "Player")
+                    b.HasOne("Data.Models.Player", "Player")
                         .WithMany("MatchPlayers")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -593,7 +592,14 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Data.Models.ScheduledMatch", "ScheduledMatch")
+                        .WithOne("MatchRecord")
+                        .HasForeignKey("Data.Models.MatchRecord", "ScheduledMatchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("PlayingField");
+
+                    b.Navigation("ScheduledMatch");
                 });
 
             modelBuilder.Entity("Data.Models.MatchVote", b =>
@@ -604,7 +610,7 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Data.Models.AppUser", "Player")
+                    b.HasOne("Data.Models.Player", "Player")
                         .WithMany("MatchVotes")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -617,13 +623,24 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Models.Party", b =>
                 {
-                    b.HasOne("Data.Models.AppUser", "PlayerCreated")
+                    b.HasOne("Data.Models.Player", "PlayerCreated")
                         .WithMany("CreatedParties")
                         .HasForeignKey("PlayerCreatedId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("PlayerCreated");
+                });
+
+            modelBuilder.Entity("Data.Models.Player", b =>
+                {
+                    b.HasOne("Data.Models.AppUser", "User")
+                        .WithOne("Player")
+                        .HasForeignKey("Data.Models.Player", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Data.Models.PlayerRating", b =>
@@ -634,13 +651,13 @@ namespace Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Data.Models.AppUser", "PlayerGivingRating")
+                    b.HasOne("Data.Models.Player", "PlayerGivingRating")
                         .WithMany("RatingsGiven")
                         .HasForeignKey("PlayerGivingRatingId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Data.Models.AppUser", "PlayerReceivingRating")
+                    b.HasOne("Data.Models.Player", "PlayerReceivingRating")
                         .WithMany("RatingsReceived")
                         .HasForeignKey("PlayerReceivingRatingId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -685,7 +702,7 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Models.ScheduledMatchAttendance", b =>
                 {
-                    b.HasOne("Data.Models.AppUser", "Player")
+                    b.HasOne("Data.Models.Player", "Player")
                         .WithMany("ScheduledMatchAttendances")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -753,19 +770,24 @@ namespace Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PartyPlayer", b =>
+                {
+                    b.HasOne("Data.Models.Party", null)
+                        .WithMany()
+                        .HasForeignKey("JoinedPartiesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.Models.Player", null)
+                        .WithMany()
+                        .HasForeignKey("MembersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Data.Models.AppUser", b =>
                 {
-                    b.Navigation("CreatedParties");
-
-                    b.Navigation("MatchPlayers");
-
-                    b.Navigation("MatchVotes");
-
-                    b.Navigation("RatingsGiven");
-
-                    b.Navigation("RatingsReceived");
-
-                    b.Navigation("ScheduledMatchAttendances");
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("Data.Models.MatchPlayer", b =>
@@ -787,6 +809,21 @@ namespace Data.Migrations
                     b.Navigation("ScheduledMatch");
                 });
 
+            modelBuilder.Entity("Data.Models.Player", b =>
+                {
+                    b.Navigation("CreatedParties");
+
+                    b.Navigation("MatchPlayers");
+
+                    b.Navigation("MatchVotes");
+
+                    b.Navigation("RatingsGiven");
+
+                    b.Navigation("RatingsReceived");
+
+                    b.Navigation("ScheduledMatchAttendances");
+                });
+
             modelBuilder.Entity("Data.Models.PlayingField", b =>
                 {
                     b.Navigation("Images");
@@ -798,6 +835,8 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Models.ScheduledMatch", b =>
                 {
+                    b.Navigation("MatchRecord");
+
                     b.Navigation("ScheduledMatchAttendances");
                 });
 #pragma warning restore 612, 618

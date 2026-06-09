@@ -1,0 +1,37 @@
+@model Data.Models.ScheduledMatch
+
+@{
+    var field = Model.PlayingField;
+    var confirmedCount = Model.ScheduledMatchAttendances.Count(a => a.IsAttending);
+    var firstImage = field.Images.FirstOrDefault();
+}
+
+<div class="sms-card">
+    <a href="/stadiums/details/@field.Id" class="sms-card__image-link">
+        @if (firstImage != null)
+        {
+            <img src="@firstImage.Path" alt="@field.Name" class="sms-card__image" />
+        }
+        else
+        {
+            <div class="sms-card__image sms-card__image--placeholder">
+                <i class="fa-solid fa-futbol"></i>
+            </div>
+        }
+    </a>
+    <div class="sms-card__body">
+        <div class="sms-card__field">@field.Name</div>
+        <div class="sms-card__date">
+            <i class="fa-regular fa-calendar"></i>
+            @Model.MatchDate.ToString("dd.MM.yyyy.")
+        </div>
+        <div class="sms-card__time">
+            <i class="fa-regular fa-clock"></i>
+            @Model.MatchDate.ToString("HH:mm")
+        </div>
+        <div class="sms-card__attendance">
+            <i class="fa-solid fa-user-check"></i>
+            @confirmedCount potvrđenih dolazaka
+        </div>
+    </div>
+</div>
