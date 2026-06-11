@@ -2,6 +2,7 @@
 using Data.Dto.CRUD.MatchRecord;
 using Data.Models;
 using Data.Services.Stores;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ namespace Web.Controllers.api
         {
             _matchStore = store;
         }
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MatchRecordDto>>> Get([FromQuery] QueryOptions<MatchRecord> queryOptions)
         {
@@ -33,6 +35,7 @@ namespace Web.Controllers.api
             return Ok(matches);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<MatchRecordDto>> GetById(Guid id)
         {
@@ -41,10 +44,18 @@ namespace Web.Controllers.api
             {
                 return NotFound();
             }
-
-            return Ok(MatchRecordDto.ToDto().Compile()(entity.Value));
+            try
+            {
+                var dto = MatchRecordDto.ToDto().Compile()(entity.Value);
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message + " | " + ex.InnerException?.Message);
+            }
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<MatchRecordDto>> Post([FromBody] MatchRecordFormDto model)
         {
@@ -70,6 +81,7 @@ namespace Web.Controllers.api
             return CreatedAtAction(nameof(GetById), new { id = matchRecord.Id }, createdDto);
         }
 
+        [Authorize]
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<MatchRecordDto>> Put(Guid id, [FromBody] MatchRecordFormDto model)
         {
@@ -94,6 +106,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
+        [Authorize]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {

@@ -45,6 +45,7 @@ namespace Web.Controllers.api
             return result.IsSuccess ? result.Value : null;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PartyDto>>> Get([FromQuery] QueryOptions<Party> queryOptions)
         {
@@ -62,19 +63,20 @@ namespace Web.Controllers.api
             return Ok(parties);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<PartyDto>> GetById(Guid id)
         {
-            var entity = await _store.FindByIdAsync(id);
-            if (!entity.IsSuccess || entity.Value == null)
+            var result = await _store.FindByIdAsync(id);
+            if (!result.IsSuccess || result.Value == null)
             {
                 return NotFound();
             }
 
-            return Ok(PartyDto.ToDto().Compile()(entity.Value));
+            return Ok(PartyDto.ToDto().Compile()(result.Value));
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("can-create")]
         public async Task<IActionResult> CanCreate()
         {
@@ -99,7 +101,7 @@ namespace Web.Controllers.api
             return Ok(new { canCreate = true, message = (string?)null });
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("user-create")]
         public async Task<IActionResult> UserCreate([FromBody] UserCreatePartyDto model)
         {
@@ -140,7 +142,7 @@ namespace Web.Controllers.api
             return CreatedAtAction(nameof(GetById), new { id = partyId }, new { id = partyId });
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("{partyId:guid}/schedule")]
         public async Task<IActionResult> ScheduleMatch(Guid partyId, [FromBody] ScheduleMatchDto model)
         {
@@ -165,7 +167,7 @@ namespace Web.Controllers.api
             return Ok(new { id = result.Value });
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPut("{partyId:guid}/schedule/{matchId:guid}")]
         public async Task<IActionResult> UpdateScheduleMatch(Guid partyId, Guid matchId, [FromBody] ScheduleMatchDto model)
         {
@@ -189,7 +191,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPut("{partyId:guid}/user-edit")]
         public async Task<IActionResult> UserEditParty(Guid partyId, [FromBody] UserCreatePartyDto model)
         {
@@ -224,7 +226,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpDelete("{partyId:guid}/close")]
         public async Task<IActionResult> UserDeleteParty(Guid partyId)
         {
@@ -241,7 +243,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("{partyId:guid}/attendance")]
         public async Task<IActionResult> ToggleAttendance(Guid partyId, [FromBody] AttendanceToggleDto model)
         {
@@ -277,7 +279,7 @@ namespace Web.Controllers.api
             return Ok();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("{partyId:guid}/join")]
         public async Task<IActionResult> JoinParty(Guid partyId)
         {
@@ -303,7 +305,7 @@ namespace Web.Controllers.api
             return Ok();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpDelete("{partyId:guid}/leave")]
         public async Task<IActionResult> LeaveParty(Guid partyId)
         {
@@ -326,7 +328,7 @@ namespace Web.Controllers.api
             return Ok();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpDelete("{partyId:guid}/kick/{memberId:guid}")]
         public async Task<IActionResult> KickMember(Guid partyId, Guid memberId)
         {
@@ -347,7 +349,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("{partyId:guid}/finalize-match")]
         public async Task<IActionResult> FinalizeMatch(Guid partyId, [FromBody] FinalizeMatchDto model)
         {
@@ -400,7 +402,7 @@ namespace Web.Controllers.api
             return Ok(new { matchRecordId });
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpPut("{partyId:guid}/finalize-match")]
         public async Task<IActionResult> UpdateFinalizedMatch(Guid partyId, [FromBody] FinalizeMatchDto model)
         {
@@ -444,6 +446,7 @@ namespace Web.Controllers.api
             return Ok(new { matchRecordId = matchRecord.Id });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<PartyDto>> Post([FromBody] PartyListDto model)
         {
@@ -469,6 +472,7 @@ namespace Web.Controllers.api
             return CreatedAtAction(nameof(GetById), new { id = party.Id }, createdDto);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<PartyDto>> Put(Guid id, [FromBody] PartyListDto model)
         {
@@ -493,6 +497,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {

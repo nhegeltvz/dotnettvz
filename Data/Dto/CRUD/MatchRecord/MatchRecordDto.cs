@@ -1,9 +1,7 @@
 ﻿using Data.Data;
+using Data.Dto.CRUD.PlayingField;
 using System.Linq.Expressions;
-using MatchPlayerModel = Data.Models.MatchPlayer;
 using MatchRecordModel = Data.Models.MatchRecord;
-using MatchVoteModel = Data.Models.MatchVote;
-using PlayingFieldModel = Data.Models.PlayingField;
 
 namespace Data.Dto.CRUD.MatchRecord
 {
@@ -15,21 +13,21 @@ namespace Data.Dto.CRUD.MatchRecord
         public DateTime MatchHeld { get; set; }
         public int GoalsTeamA { get; set; }
         public int GoalsTeamB { get; set; }
-        public PlayingFieldModel PlayingField { get; set; } = null!;
+        public PlayingFieldDto PlayingField { get; set; } = null!;
         public List<MatchPlayerSummaryDto> MatchPlayers { get; set; } = new();
         public List<MatchVoteDto> MatchVotes { get; set; } = new();
 
 
         public static Expression<Func<MatchRecordModel, MatchRecordDto>> ToDto()
         {
-            return matchRecord => new MatchRecordDto
+            Expression<Func<MatchRecordModel, MatchRecordDto>> function = matchRecord => new MatchRecordDto
             {
                 Id = matchRecord.Id,
                 WasMatchHeld = matchRecord.WasMatchHeld,
                 MatchHeld = matchRecord.MatchHeld,
                 GoalsTeamA = matchRecord.GoalsTeamA,        
                 GoalsTeamB = matchRecord.GoalsTeamB,
-                PlayingField = matchRecord.PlayingField,
+                PlayingField = matchRecord.PlayingField == null ? null! : PlayingFieldDto.ToDto().Compile()(matchRecord.PlayingField),
                 MatchPlayers = matchRecord.MatchPlayers == null
                     ? new List<MatchPlayerSummaryDto>()
                     : matchRecord.MatchPlayers
@@ -59,6 +57,7 @@ namespace Data.Dto.CRUD.MatchRecord
                         })
                         .ToList(),
             };
+            return function;
         }
     }
 

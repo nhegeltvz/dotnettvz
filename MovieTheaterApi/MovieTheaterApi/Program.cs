@@ -1,16 +1,18 @@
+using MovieTheaterApi;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddHttpClient("RapidApi", (serviceProvider, client) =>
+builder.Services.AddHttpClient("TMDBApi", (serviceProvider, client) =>
 {
     var config = serviceProvider.GetRequiredService<IConfiguration>();
-    client.BaseAddress = new Uri(config["RapidApi:BaseUrl"]);
-    client.DefaultRequestHeaders.Add("x-rapidapi-key", config["RapidApi:Key"]);
-    client.DefaultRequestHeaders.Add("x-rapidapi-host", config["RapidApi:Host"]);
+    client.BaseAddress = new Uri(config["TMDB:BaseUrl"]);
+    client.DefaultRequestHeaders.Add("accept", "application/json");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {config["TMDB:ReadAccessToken"]}");
 });
 
-builder.Services.AddSingleton<HnlService>();
+builder.Services.AddSingleton<TMDBService>();
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
@@ -28,12 +30,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseStaticFiles();
-
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run("http://0.0.0.0:5208");
+app.Run();

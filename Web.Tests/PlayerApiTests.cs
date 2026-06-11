@@ -97,7 +97,6 @@ public class PlayerApiTests : IClassFixture<MatchTrackerWebApplicationFactory>, 
     [Fact]
     public async Task Post_WithoutAuth_Returns401()
     {
-        // POST requires [Authorize(Roles = "Admin")]
         var response = await _client.PostAsJsonAsync("/api/playerapi/", new PlayerFormDto
         {
             UserId = Guid.NewGuid(),
