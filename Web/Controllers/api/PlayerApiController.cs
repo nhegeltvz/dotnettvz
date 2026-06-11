@@ -20,6 +20,7 @@ namespace Web.Controllers.api
             _store = store;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PlayerDto>>> Get()
         {
@@ -30,6 +31,7 @@ namespace Web.Controllers.api
             return Ok(players);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<PlayerDto>> GetById(Guid id)
         {

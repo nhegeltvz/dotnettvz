@@ -90,12 +90,11 @@ namespace Data.Services.Stores
 
         public async Task<Result> DeleteByIdAsync(Guid id)
         {
-            var rowsAffected = await _dbContext.PlayingFields
-                .Where(x => x.Id == id)
-                .ExecuteDeleteAsync()
-                .ConfigureAwait(false);
-
-            return rowsAffected == 0 ? Result.Failure(PlayingFieldErrors.PlayingFieldNotDeleted) : Result.Success();
+            var entity = await _dbContext.PlayingFields.FindAsync(id);
+            if (entity is null) return Result.Failure(PlayingFieldErrors.PlayingFieldNotDeleted);
+            _dbContext.PlayingFields.Remove(entity);
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
         }
 
         public async Task<List<PlayingField>> SearchByNameAsync(string search)

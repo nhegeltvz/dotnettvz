@@ -4,6 +4,7 @@ using Data.Dto.CRUD.PlayingField;
 using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Stores;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,7 @@ namespace Web.Controllers.api
             _store = store;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PlayingFieldDto>>> Get([FromQuery] QueryOptions<PlayingField> queryOptions)
         {
@@ -37,6 +39,7 @@ namespace Web.Controllers.api
             return Ok(playingFields);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<PlayingFieldDto>> GetById(Guid id)
         {
@@ -49,6 +52,7 @@ namespace Web.Controllers.api
             return Ok(PlayingFieldDto.ToDto().Compile()(entity.Value));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<PlayingFieldDto>> Post([FromBody] StadiumFormDto model)
         {
@@ -84,6 +88,7 @@ namespace Web.Controllers.api
             return CreatedAtAction(nameof(GetById), new { id = playingField.Id }, createdDto);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<PlayingFieldDto>> Put(Guid id, [FromBody] StadiumFormDto model)
         {
@@ -113,6 +118,7 @@ namespace Web.Controllers.api
             return NoContent(); // or Ok(updatedDto)
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {

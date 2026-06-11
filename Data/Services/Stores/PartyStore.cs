@@ -144,12 +144,11 @@ namespace Data.Services.Stores
 
         public async Task<Result> DeleteByIdAsync(Guid id)
         {
-            var rowsAffected = await _dbContext.Parties
-                .Where(x => x.Id == id)
-                .ExecuteDeleteAsync()
-                .ConfigureAwait(false);
-
-            return rowsAffected == 0 ? Result.Failure(PartyErrors.PartyNotDeleted) : Result.Success();
+            var entity = await _dbContext.Parties.FindAsync(id);
+            if (entity is null) return Result.Failure(PartyErrors.PartyNotDeleted);
+            _dbContext.Parties.Remove(entity);
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
         }
     }
 }

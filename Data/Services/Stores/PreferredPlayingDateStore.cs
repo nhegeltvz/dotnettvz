@@ -76,20 +76,29 @@ namespace Data.Services.Stores
 
         public async Task<Result> DeleteByIdAsync(Guid id)
         {
-            var rowsAffected = await _dbContext.PreferredPlayingDates
-                .Where(x => x.Id == id)
-                .ExecuteDeleteAsync()
-                .ConfigureAwait(false);
+            var entity = await _dbContext.PreferredPlayingDates.FindAsync(id).ConfigureAwait(false);
 
-            return rowsAffected == 0 ? Result.Failure(PreferredPlayingDateErrors.PreferredPlayingDateNotDeleted) : Result.Success();
+            if (entity is null)
+                return Result.Failure(PreferredPlayingDateErrors.PreferredPlayingDateNotDeleted);
+
+            _dbContext.PreferredPlayingDates.Remove(entity);
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            return Result.Success();
         }
 
         public async Task<Result> DeleteByPartyIdAsync(Guid partyId)
         {
-            var rowsAffected = await _dbContext.PreferredPlayingDates
+            var dates = await _dbContext.PreferredPlayingDates
                 .Where(x => x.PartyId == partyId)
-                .ExecuteDeleteAsync()
+                .ToListAsync()
                 .ConfigureAwait(false);
+
+            if (dates.Count == 0)
+                return Result.Failure(PreferredPlayingDateErrors.PreferredPlayingDateNotDeleted);
+
+            _dbContext.PreferredPlayingDates.RemoveRange(dates);
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             return Result.Success();
         }

@@ -49,8 +49,8 @@ namespace Data.Services.Stores
         {
             var matchRecord = await _dbContext.MatchRecords
                 .Include(mr => mr.PlayingField)
-                .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.Player)
-                .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.PlayerRating)
+                .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.Player).ThenInclude(p => p.User)
+                .Include(mr => mr.MatchPlayers).ThenInclude(mp => mp.PlayerRating).ThenInclude(pr => pr.PlayerGivingRating).ThenInclude(p => p.User)
                 .Include(mr => mr.MatchVotes).ThenInclude(mv => mv.Player)
                 .FirstOrDefaultAsync(mr => mr.Id == id);
 
@@ -105,12 +105,11 @@ namespace Data.Services.Stores
 
         public async Task<Result> DeleteByIdAsync(Guid id)
         {
-            var rowsAffected = await _dbContext.MatchRecords
-                .Where(x => x.Id == id)
-                .ExecuteDeleteAsync()
-                .ConfigureAwait(false);
-
-            return rowsAffected == 0 ? Result.Failure(MatchRecordErrors.MatchRecordNotDeleted) : Result.Success();
+            var entity = await _dbContext.MatchRecords.FindAsync(id);
+            if (entity is null) return Result.Failure(MatchRecordErrors.MatchRecordNotDeleted);
+            _dbContext.MatchRecords.Remove(entity);
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
         }
     }
 }

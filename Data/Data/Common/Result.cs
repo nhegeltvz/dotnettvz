@@ -5,15 +5,19 @@ namespace Data.Data.Common
     public record Result
     {
         public bool IsSuccess { get; }
+        public string Message { get; init; }
+
         public IReadOnlyCollection<Error>? Errors { get; }
 
-        protected Result(bool isSuccess, IReadOnlyCollection<Error>? errors)
+        protected Result(bool isSuccess, IReadOnlyCollection<Error>? errors, string message = null)
         {
             IsSuccess = isSuccess;
             Errors = errors;
+            Message = message;
         }
 
         public static Result Success() => new(true, errors: null);
+        public static Result SuccessWithMessage(string infoMessage) => new(true, errors: null, message: infoMessage);
         public static Result Failure(IReadOnlyCollection<Error> errors) => new(false, errors);
         public static Result Failure(Error error) => new(false, [error]);
 
