@@ -121,8 +121,8 @@ function renderValidationSummary(formId, messages) {
 function loadParties(search = "") {
   dashboardSpinner.show();
   const url = search
-    ? `/parties/data?search=${encodeURIComponent(search)}`
-    : "/parties/data";
+      ? `/api/parties?search=${encodeURIComponent(search)}`
+      : "/api/parties";
   $.ajax({
     url,
     method: "GET",
@@ -134,7 +134,7 @@ function loadParties(search = "") {
 							<td>${party.playerCreatedUsername}</td>
 							<td>${party.dateCreated}</td>
 							<td>${party.partyDescription}</td>
-							<td>${party.numberOfMembers}/${party.maxMembers}</td>
+							<td>${party.members.length}/${party.maxMembers}</td>
 							<td>
 								<button class="dashboard-row-button dashboard-row-button--edit dashboard-row-button-edit" data-party='${JSON.stringify(party)}'>Edit</button>
 								<button class="dashboard-row-button dashboard-row-button--danger" onclick="deleteParty('${party.id}')">Delete</button>
@@ -162,8 +162,8 @@ function openCreate() {
 
 function submitForm() {
   const id = $("#party-id").val();
-  const url = id ? `/parties/edit/${id}` : "/parties/create";
-  const method = "POST";
+  const url = id ? `/api/parties/admin-edit/${id}` : "/api/parties/admin-create";
+  const method = id ? "PUT" : "POST";
 
   if (!$("#party-form").valid()) return;
 
@@ -208,7 +208,7 @@ function deleteParty(id) {
   if (!confirm("Are you sure?")) return;
 
   $.ajax({
-    url: `/parties/delete/${id}`,
+    url: `/api/parties/${id}`,
     method: "DELETE",
     beforeSend: function () {
       dashboardSpinner.show();

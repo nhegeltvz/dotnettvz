@@ -6,6 +6,7 @@ namespace Data.Dto.CRUD.PlayingField
 {
     public class PlayingFieldDto
     {
+        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public double Longitude { get; set; }
@@ -20,8 +21,10 @@ namespace Data.Dto.CRUD.PlayingField
 
         public static Expression<Func<PlayingFieldModel, PlayingFieldDto>> ToDto()
         {
+            var now = DateTime.UtcNow;
             return playingField => new PlayingFieldDto
             {
+                Id = playingField.Id,
                 Name = playingField.Name,
                 Description = playingField.Description,
                 Longitude = playingField.Longitude,
@@ -32,7 +35,7 @@ namespace Data.Dto.CRUD.PlayingField
                 SurfaceType = playingField.SurfaceType,
                 Image = playingField.Image,
                 PlayedMatchesCount = playingField.MatchRecords.Count(record => record.WasMatchHeld),
-                UpcomingScheduledMatchesCount = playingField.ScheduledMatches.Count(match => match.MatchDate > DateTime.UtcNow)
+                UpcomingScheduledMatchesCount = playingField.ScheduledMatches.Count(match => match.MatchDate > now)
             };
         }
     }

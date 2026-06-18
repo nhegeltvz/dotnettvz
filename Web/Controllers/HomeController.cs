@@ -9,20 +9,11 @@ namespace Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+        public HomeController(ILogger<HomeController> logger) => _logger = logger;
         [HttpGet("")]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
         [HttpGet("/privacy")]
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [HttpGet("/forbidden")]
         public IActionResult Forbidden() => View();

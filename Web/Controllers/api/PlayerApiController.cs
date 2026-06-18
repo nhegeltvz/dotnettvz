@@ -4,27 +4,38 @@ using Data.Dto.CRUD.Player;
 using Data.Models;
 using Data.Services.Stores;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Web.Controllers.api
 {
-    [Route("api/[controller]")]
+    [Route("api/players")]
     [ApiController]
     public class PlayerApiController : ControllerBase
     {
         private readonly PlayerStore _store;
+        private readonly UserManager<AppUser> _userManager;
 
-        public PlayerApiController(PlayerStore store)
+        public PlayerApiController(PlayerStore store, UserManager<AppUser> userManager)
         {
             _store = store;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PlayerDto>>> Get()
+        public async Task<ActionResult<IEnumerable<PlayerDto>>> Get(string? search)
         {
-            var players = await _store.QueryPlayersAsync()
+            var playersQuery = _store.QueryPlayersAsync();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.Trim();
+                playersQuery = playersQuery.Where(p => string.IsNullOrEmpty(search) || EF.Functions.Like(p.User.UserName, $"%{search}%"));
+            }
+
+            var players = await playersQuery
                 .Select(PlayerDto.ToDto())
                 .ToListAsync();
 
@@ -43,12 +54,20 @@ namespace Web.Controllers.api
         }
 
         // POST creates a Player profile linked to an existing AppUser (admin only)
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ADMIN_ROLE)]
         [HttpPost]
         public async Task<ActionResult<PlayerDto>> Post([FromBody] PlayerFormDto model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var user = await _userManager.FindByIdAsync(model.UserId.ToString());
+            if (user == null)
+                return BadRequest("User not found.");
+
+            var existingPlayer = await _store.FindByUserIdAsync(model.UserId);
+            if (existingPlayer.IsSuccess)
+                return BadRequest("This user already has a player profile.");
 
             var player = new Player
             {
@@ -83,6 +102,7 @@ namespace Web.Controllers.api
                 return NotFound();
 
             var player = foundResult.Value;
+            player.UserId = model.UserId;
             player.Bio = model.Bio;
             player.PreferredPosition = (Position)model.PreferredPosition;
             player.DateOfBirth = model.DateOfBirth;
@@ -94,7 +114,7 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ADMIN_ROLE)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {

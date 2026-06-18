@@ -3,7 +3,6 @@ using Data.Models;
 using Data.Services.Stores;
 using Data.Services.Validation;
 using Data.Services.Validation.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +33,8 @@ namespace Data
                 .AddScoped<PreferredPlayingDateStore>()
                 .AddScoped<ScheduledMatchStore>()
                 .AddScoped<ScheduledMatchAttendanceStore>()
-                .AddScoped<StadiumStore>();
+                .AddScoped<StadiumStore>()
+                .AddScoped<ChatMessageStore>();
 
         private static IServiceCollection AddValidators(this IServiceCollection services)
             => services
@@ -47,6 +47,7 @@ namespace Data
                 .AddScoped<IValidator<PlayingField>, PlayingFieldValidator>()
                 .AddScoped<IValidator<PreferredPlayingDate>, PreferredPlayingDateValidator>()
                 .AddScoped<IValidator<ScheduledMatch>, ScheduledMatchValidator>()
-                .AddScoped<IValidator<ScheduledMatchAttendance>, ScheduledMatchAttendanceValidator>();
+                .AddScoped<IValidator<ScheduledMatchAttendance>, ScheduledMatchAttendanceValidator>()
+                .AddScoped<IValidator<ChatMessage>, ChatMessageValidator>();
     }
 }

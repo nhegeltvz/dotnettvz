@@ -68,17 +68,6 @@ namespace Web.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
-            [Required]
-            [StringLength(11, MinimumLength = 11)]
-            [RegularExpression("^[0-9]*$", ErrorMessage = "OIB smije sadržavati samo brojeve.")]
-            [Display(Name = "OIB")]
-            public string OIB { get; set; }
-
-            [Required]
-            [StringLength(13, MinimumLength = 13)]
-            [RegularExpression("^[0-9]*$", ErrorMessage = "JMBG smije sadržavati samo brojeve.")]
-            [Display(Name = "JMBG")]
-            public string JMBG { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -94,12 +83,6 @@ namespace Web.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                if (await _userManager.Users.AnyAsync(u => u.OIB == Input.OIB))
-                    ModelState.AddModelError("Input.OIB", "OIB je već registriran.");
-
-                if (await _userManager.Users.AnyAsync(u => u.JMBG == Input.JMBG))
-                    ModelState.AddModelError("Input.JMBG", "JMBG je već registriran.");
-
                 if (await _userManager.FindByEmailAsync(Input.Email) != null)
                     ModelState.AddModelError("Input.Email", "Email je već registriran.");
 
@@ -109,7 +92,7 @@ namespace Web.Areas.Identity.Pages.Account
                 if (!ModelState.IsValid)
                     return Page();
 
-                var user = new AppUser { OIB = Input.OIB, JMBG = Input.JMBG };
+                var user = new AppUser();
                 await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 

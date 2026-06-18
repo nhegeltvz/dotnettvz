@@ -20,6 +20,7 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
     public DbSet<ScheduledMatch> ScheduledMatches { get; set; } = null!;
     public DbSet<ScheduledMatchAttendance> ScheduledMatchAttendances { get; set; } = null!;
     public DbSet<ImageResource> Images { get; set; } = null!;
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -149,5 +150,18 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
             .WithMany(pf => pf.Images)
             .HasForeignKey(img => img.PlayingFieldId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ChatMessage>(e =>
+        {
+            e.HasOne(m => m.Party)
+             .WithMany()
+             .HasForeignKey(m => m.PartyId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(m => m.Sender)
+             .WithMany()
+             .HasForeignKey(m => m.SenderUserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

@@ -27,9 +27,9 @@ public class PlayerApiTests : IClassFixture<MatchTrackerWebApplicationFactory>, 
 
         var users = new[]
         {
-            new AppUser { Id = Guid.NewGuid(), UserName = "testplayer1", NormalizedUserName = "TESTPLAYER1", Email = "test1@test.com", NormalizedEmail = "TEST1@TEST.COM", OIB = "12345678901", JMBG = "1234567890123" },
-            new AppUser { Id = Guid.NewGuid(), UserName = "testplayer2", NormalizedUserName = "TESTPLAYER2", Email = "test2@test.com", NormalizedEmail = "TEST2@TEST.COM", OIB = "12345678902", JMBG = "1234567890124" },
-            new AppUser { Id = Guid.NewGuid(), UserName = "testplayer3", NormalizedUserName = "TESTPLAYER3", Email = "test3@test.com", NormalizedEmail = "TEST3@TEST.COM", OIB = "12345678903", JMBG = "1234567890125" },
+            new AppUser { Id = Guid.NewGuid(), UserName = "testplayer1", NormalizedUserName = "TESTPLAYER1", Email = "test1@test.com", NormalizedEmail = "TEST1@TEST.COM" },
+            new AppUser { Id = Guid.NewGuid(), UserName = "testplayer2", NormalizedUserName = "TESTPLAYER2", Email = "test2@test.com", NormalizedEmail = "TEST2@TEST.COM" },
+            new AppUser { Id = Guid.NewGuid(), UserName = "testplayer3", NormalizedUserName = "TESTPLAYER3", Email = "test3@test.com", NormalizedEmail = "TEST3@TEST.COM" },
         };
 
         db.Users.AddRange(users);

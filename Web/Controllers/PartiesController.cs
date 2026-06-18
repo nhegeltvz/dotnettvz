@@ -1,6 +1,8 @@
+using Data.Data;
 using Data.Dto.CRUD.Party;
 using Data.Models;
 using Data.Services.Stores;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -52,27 +54,7 @@ public class PartiesController : Controller
         return View("PartyDetailsView", partyResult.Value);
     }
 
-
-    [HttpGet("data")]
-    public async Task<IActionResult> GetAll(string? search)
-    {
-        var parties = await _store.GetPartiesForTableAsync();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = search.Trim();
-            parties = parties
-                .Where(party =>
-                    (party.PartyDescription ?? string.Empty)
-                        .Contains(term, StringComparison.OrdinalIgnoreCase)
-                    || (party.PlayerCreatedUsername ?? string.Empty)
-                        .Contains(term, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        return Json(parties);
-    }
-
+    [Authorize(Roles = AppRoles.ADMIN_ROLE)]
     [HttpGet("form")]
     public async Task<IActionResult> Form(Guid? id)
     {
@@ -157,176 +139,5 @@ public class PartiesController : Controller
         }
 
         return PartialView("_PartyForm", vm);
-    }
-
-    [HttpGet("getById/{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var partyResult = await _store.FindByIdAsync(id);
-        if (!partyResult.IsSuccess)
-            return NotFound();
-
-        return Json(partyResult.Value);
-    }
-
-
-    [HttpPost("create")]
-    [Consumes("application/json")]
-    public async Task<IActionResult> Create([FromBody] PartyFormDto model)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var party = new Party
-        {
-            Id = Guid.NewGuid(),
-            PlayerCreatedId = model.PlayerCreatedId,
-            DateCreated = model.DateCreated,
-            MaxMembers = model.MaxMembers,
-            PartyDescription = model.PartyDescription,
-            PreferredLocations = model.PreferredLocations,
-        };
-
-        var result = await _store.CreateParty(party);
-        if (!result.IsSuccess)
-            return BadRequest(result.Errors);
-
-        var partyId = result.Value;
-        await _store.SyncMembersAsync(partyId, model.MemberIds);
-        await SyncPreferredDates(partyId, model.PreferredPlayingDates);
-
-        var scheduledMatchId = await SyncScheduledMatch(partyId, model);
-        if (scheduledMatchId.HasValue)
-        {
-            await SyncAttendances(scheduledMatchId.Value, model.ScheduledMatchAttendances);
-        }
-
-        return Ok();
-    }
-
-
-
-    [HttpPost("edit/{id:guid}")]
-    [Consumes("application/json")]
-    public async Task<IActionResult> Edit(Guid id, [FromBody] PartyFormDto model)
-    {
-        if (id != model.Id)
-            return BadRequest();
-
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var partyResult = await _store.FindByIdAsync(id);
-        if (!partyResult.IsSuccess)
-            return NotFound();
-
-        var party = partyResult.Value;
-        party.PlayerCreatedId = model.PlayerCreatedId;
-        party.DateCreated = model.DateCreated;
-        party.MaxMembers = model.MaxMembers;
-        party.PartyDescription = model.PartyDescription;
-        party.PreferredLocations = model.PreferredLocations;
-
-        var result = await _store.UpdateParty(party);
-        if (!result.IsSuccess)
-            return BadRequest(result.Errors);
-
-        await _store.SyncMembersAsync(id, model.MemberIds);
-        await SyncPreferredDates(id, model.PreferredPlayingDates);
-
-        var scheduledMatchId = await SyncScheduledMatch(id, model);
-        if (scheduledMatchId.HasValue)
-        {
-            await SyncAttendances(scheduledMatchId.Value, model.ScheduledMatchAttendances);
-        }
-
-        return Ok();
-    }
-
-
-    [HttpDelete("delete/{id:guid}")]
-    public async Task<IActionResult> DeleteById(Guid id)
-    {
-        var partyResult = await _store.FindByIdAsync(id);
-        if (!partyResult.IsSuccess)
-            return NotFound();
-
-        await _store.DeleteByIdAsync(id);
-        return Ok();
-    }
-
-    private async Task SyncPreferredDates(Guid partyId, List<DateTime> preferredDates)
-    {
-        await _preferredDateStore.DeleteByPartyIdAsync(partyId);
-
-        foreach (var date in preferredDates.Distinct())
-        {
-            if (date == default)
-            {
-                continue;
-            }
-            var preferredDate = new PreferredPlayingDate
-            {
-                Id = Guid.NewGuid(),
-                PartyId = partyId,
-                Date = date,
-            };
-
-            await _preferredDateStore.CreatePreferredPlayingDate(preferredDate);
-        }
-    }
-
-    private async Task<Guid?> SyncScheduledMatch(Guid partyId, PartyFormDto model)
-    {
-        if (!model.ScheduledMatchPlayingFieldId.HasValue || !model.ScheduledMatchDate.HasValue)
-        {
-            return null;
-        }
-
-        if (model.ScheduledMatchId.HasValue)
-        {
-            var scheduledMatchResult = await _scheduledMatchStore.FindByIdAsync(model.ScheduledMatchId.Value);
-            if (!scheduledMatchResult.IsSuccess)
-            {
-                return null;
-            }
-
-            var scheduledMatch = scheduledMatchResult.Value;
-            scheduledMatch.PlayingFieldId = model.ScheduledMatchPlayingFieldId.Value;
-            scheduledMatch.PartyId = partyId;
-            scheduledMatch.MatchDate = model.ScheduledMatchDate.Value;
-
-            var updateResult = await _scheduledMatchStore.UpdateScheduledMatch(scheduledMatch);
-            return updateResult.IsSuccess ? scheduledMatch.Id : null;
-        }
-
-        var newScheduledMatch = new ScheduledMatch
-        {
-            Id = Guid.NewGuid(),
-            PlayingFieldId = model.ScheduledMatchPlayingFieldId.Value,
-            PartyId = partyId,
-            MatchDate = model.ScheduledMatchDate.Value,
-        };
-
-        var createResult = await _scheduledMatchStore.CreateScheduledMatch(newScheduledMatch);
-        return createResult.IsSuccess ? createResult.Value : null;
-    }
-
-    private async Task SyncAttendances(Guid scheduledMatchId, List<PartyScheduledMatchAttendanceDto> attendances)
-    {
-        await _attendanceStore.DeleteByScheduledMatchIdAsync(scheduledMatchId);
-
-        foreach (var attendance in attendances)
-        {
-            var scheduledAttendance = new ScheduledMatchAttendance
-            {
-                Id = Guid.NewGuid(),
-                ScheduledMatchId = scheduledMatchId,
-                PlayerId = attendance.PlayerId,
-                IsAttending = attendance.IsAttending,
-            };
-
-            await _attendanceStore.CreateScheduledMatchAttendance(scheduledAttendance);
-        }
     }
 }

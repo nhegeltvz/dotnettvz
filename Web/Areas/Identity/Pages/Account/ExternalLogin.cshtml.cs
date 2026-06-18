@@ -81,15 +81,6 @@ namespace Web.Areas.Identity.Pages.Account
             [StringLength(20, MinimumLength = 4)]
             public string Username { get; set; }
 
-            [Required]
-            [StringLength(11, MinimumLength = 11)]
-            [RegularExpression("^[0-9]*$", ErrorMessage = "OIB must be 11 digits.")]
-            public string OIB { get; set; }
-
-            [Required]
-            [StringLength(13, MinimumLength = 13)]
-            [RegularExpression("^[0-9]*$", ErrorMessage = "JMBG must be 13 digits.")]
-            public string JMBG { get; set; }
         }
         
         public IActionResult OnGet() => RedirectToPage("./Login");
@@ -161,8 +152,6 @@ namespace Web.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                user.OIB = Input.OIB;
-                user.JMBG = Input.JMBG;
 
                 var result = await _userManager.CreateAsync(user);
                 await _userManager.AddToRoleAsync(user, "User");

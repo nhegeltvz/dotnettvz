@@ -11,7 +11,7 @@ async function deleteParty(partyId) {
   if (!confirm('Jeste li sigurni da želite izbrisati ovu grupu? Ova radnja je nepovratna.')) return;
 
   try {
-    const res = await fetch(`/api/partyapi/${partyId}/close`, { method: 'DELETE' });
+    const res = await fetch(`/api/parties/${partyId}/close`, { method: 'DELETE' });
     if (res.ok) {
       Notify.success('Grupa je izbrisana.');
       setTimeout(() => location.reload(), 1000);
@@ -58,7 +58,7 @@ scheduleForm?.addEventListener('submit', async e => {
   if (!matchDate)      { Notify.error('Odaberite datum i vrijeme.'); return; }
 
   const isEdit    = !!matchId;
-  const url       = isEdit ? `/api/partyapi/${partyId}/schedule/${matchId}` : `/api/partyapi/${partyId}/schedule`;
+  const url       = isEdit ? `/api/parties/${partyId}/schedule/${matchId}` : `/api/parties/${partyId}/schedule`;
   const submitBtn = scheduleForm.querySelector('[type="submit"]');
   submitBtn.disabled = true;
 
@@ -89,7 +89,7 @@ async function kickMember(partyId, memberId, btn) {
   btn.disabled = true;
 
   try {
-    const res = await fetch(`/api/partyapi/${partyId}/kick/${memberId}`, { method: 'DELETE' });
+    const res = await fetch(`/api/parties/${partyId}/kick/${memberId}`, { method: 'DELETE' });
     if (res.ok) {
       Notify.success('Igrač je izbačen.');
       btn.closest('.my-party-member-row').remove();

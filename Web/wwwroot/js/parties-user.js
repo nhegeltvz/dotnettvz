@@ -2,7 +2,7 @@
 async function joinParty(partyId, btn) {
   btn.disabled = true;
   try {
-    const res = await fetch(`/api/partyapi/${partyId}/join`, { method: 'POST' });
+    const res = await fetch(`/api/parties/${partyId}/join`, { method: 'POST' });
     const data = await res.json().catch(() => null);
     if (res.ok) {
       Notify.success('Uspješno ste se pridružili grupi!');
@@ -21,7 +21,7 @@ async function leaveParty(partyId, btn) {
   if (!confirm('Napustiti ovu grupu?')) return;
   btn.disabled = true;
   try {
-    const res = await fetch(`/api/partyapi/${partyId}/leave`, { method: 'DELETE' });
+    const res = await fetch(`/api/parties/${partyId}/leave`, { method: 'DELETE' });
     const data = await res.json().catch(() => null);
     if (res.ok) {
       Notify.success('Napustili ste grupu.');
@@ -70,7 +70,7 @@ async function openCreatePartyModal() {
   }
 
   try {
-    const res = await fetch('/api/partyapi/can-create');
+    const res = await fetch('/api/parties/can-create');
     if (res.status === 401) { Notify.info('Morate biti prijavljeni kako biste otvorili meč.'); return; }
     const data = await res.json();
     if (!data.canCreate) { Notify.info(data.message); return; }
@@ -156,7 +156,7 @@ userPartyForm?.addEventListener('submit', async e => {
   if (preferredLocations.length < 5) { Notify.error('Lokacija mora imati najmanje 5 znakova.'); return; }
 
   const isEdit = !!partyId;
-  const url    = isEdit ? `/api/partyapi/${partyId}/user-edit` : '/api/partyapi/user-create';
+  const url    = isEdit ? `/api/parties/user-edit/${partyId}` : '/api/parties/user-create';
   const method = isEdit ? 'PUT' : 'POST';
 
   const submitBtn = userPartyForm.querySelector('[type="submit"]');

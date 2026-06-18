@@ -114,8 +114,8 @@ function renderValidationSummary(formId, messages) {
 function loadPlayers(search = "") {
   dashboardSpinner.show();
   const url = search
-    ? `/players/data?search=${encodeURIComponent(search)}`
-    : "/players/data";
+    ? `/api/players?search=${encodeURIComponent(search)}`
+    : "/api/players";
   $.ajax({
     url,
     method: "GET",
@@ -159,7 +159,7 @@ function openCreate() {
 
 function submitForm() {
   const id = $("#player-id").val();
-  const url = id ? `/players/edit/${id}` : "/players/create";
+  const url = id ? `/api/players/${id}` : "/api/players";
   const method = id ? "PUT" : "POST";
 
   if (!$("#player-form").valid()) return;
@@ -191,7 +191,7 @@ function deletePlayer(id) {
   if (!confirm("Are you sure?")) return;
 
   $.ajax({
-    url: `/players/delete/${id}`,
+    url: `/api/players/${id}`,
     method: "DELETE",
     success: function () {
       loadPlayers();

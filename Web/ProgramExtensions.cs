@@ -1,7 +1,46 @@
-﻿namespace Web
+﻿using Data.Data;
+using Data.Models;
+using Microsoft.AspNetCore.Identity;
+
+namespace Web
 {
     public static class ProgramExtensions
     {
+        public static IServiceCollection AddIdentity(this IServiceCollection services)
+        {
+            services.AddDefaultIdentity<AppUser>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedAccount = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+            })
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<MatchTrackerDbContext>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddGoogleAuth(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddAuthentication().AddGoogle(options =>
+            {
+                options.ClientId = configuration["Authentication:Google:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddLiveMessaggingSignalR(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddSignalR();
+
+            return services;
+        }
+
         public static IServiceCollection BundleAndMinify(this IServiceCollection services)
         {
             services.AddWebOptimizer(pipeline =>

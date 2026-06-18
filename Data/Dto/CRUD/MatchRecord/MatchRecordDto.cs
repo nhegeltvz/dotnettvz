@@ -22,12 +22,24 @@ namespace Data.Dto.CRUD.MatchRecord
         {
             Expression<Func<MatchRecordModel, MatchRecordDto>> function = matchRecord => new MatchRecordDto
             {
+
                 Id = matchRecord.Id,
                 WasMatchHeld = matchRecord.WasMatchHeld,
                 MatchHeld = matchRecord.MatchHeld,
                 GoalsTeamA = matchRecord.GoalsTeamA,        
                 GoalsTeamB = matchRecord.GoalsTeamB,
-                PlayingField = matchRecord.PlayingField == null ? null! : PlayingFieldDto.ToDto().Compile()(matchRecord.PlayingField),
+                PlayingField = matchRecord.PlayingField == null ? null! : new PlayingFieldDto
+                {
+                    Id = matchRecord.PlayingField.Id,
+                    Name = matchRecord.PlayingField.Name,
+                    Description = matchRecord.PlayingField.Description,
+                    Longitude = matchRecord.PlayingField.Longitude,
+                    Latitude = matchRecord.PlayingField.Latitude,
+                    ContactNumber = matchRecord.PlayingField.ContactNumber,
+                    Status = matchRecord.PlayingField.Status,
+                    IsOutdoor = matchRecord.PlayingField.IsOutdoor,
+                    SurfaceType = matchRecord.PlayingField.SurfaceType,
+                },
                 MatchPlayers = matchRecord.MatchPlayers == null
                     ? new List<MatchPlayerSummaryDto>()
                     : matchRecord.MatchPlayers

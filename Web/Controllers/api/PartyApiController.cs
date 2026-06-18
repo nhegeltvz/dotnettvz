@@ -1,6 +1,7 @@
 ﻿using Data.Data;
-using Data.Data.Common;
+using Data.Dto;
 using Data.Dto.CRUD.Party;
+using Data.Dto.CRUD.PlayingField;
 using Data.Models;
 using Data.Services.Stores;
 using Microsoft.AspNetCore.Authorization;
@@ -11,11 +12,12 @@ using Web.Models.Dto;
 
 namespace Web.Controllers.api
 {
-    [Route("api/[controller]")]
+    [Route("api/parties")]
     [ApiController]
     public class PartyApiController : ControllerBase
     {
         private readonly PartyStore _store;
+        private readonly ChatMessageStore _chatMessageStore;
         private readonly UserManager<AppUser> _userManager;
         private readonly PlayerStore _playerStore;
         private readonly ScheduledMatchStore _scheduledMatchStore;
@@ -24,7 +26,7 @@ namespace Web.Controllers.api
         private readonly MatchStore _matchStore;
         private readonly MatchPlayerStore _matchPlayerStore;
 
-        public PartyApiController(PartyStore store, UserManager<AppUser> userManager, PlayerStore playerStore, ScheduledMatchStore scheduledMatchStore, PreferredPlayingDateStore preferredDateStore, ScheduledMatchAttendanceStore attendanceStore, MatchStore matchStore, MatchPlayerStore matchPlayerStore)
+        public PartyApiController(PartyStore store, UserManager<AppUser> userManager, PlayerStore playerStore, ScheduledMatchStore scheduledMatchStore, PreferredPlayingDateStore preferredDateStore, ScheduledMatchAttendanceStore attendanceStore, MatchStore matchStore, MatchPlayerStore matchPlayerStore, ChatMessageStore chatMessageStore)
         {
             _store = store;
             _playerStore = playerStore;
@@ -34,6 +36,7 @@ namespace Web.Controllers.api
             _attendanceStore = attendanceStore;
             _matchStore = matchStore;
             _matchPlayerStore = matchPlayerStore;
+            _chatMessageStore = chatMessageStore;
         }
 
         // Helper — gets the Player for the currently authenticated AppUser
@@ -45,15 +48,23 @@ namespace Web.Controllers.api
             return result.IsSuccess ? result.Value : null;
         }
 
+        #region BasicCrud
+
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PartyDto>>> Get([FromQuery] QueryOptions<Party> queryOptions)
+        public async Task<ActionResult<IEnumerable<PartyDto>>> Get(string? search)
         {
             var partiesQuery = _store.QueryPartiesAsync();
 
-            foreach (var filter in queryOptions.Filters)
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                partiesQuery = partiesQuery.Where(filter);
+                var term = search.Trim();
+                partiesQuery = partiesQuery
+                    .Where(party =>
+                        (party.PartyDescription ?? string.Empty)
+                            .Contains(term, StringComparison.OrdinalIgnoreCase)
+                        || (party.PlayerCreated.User.UserName ?? string.Empty)
+                            .Contains(term, StringComparison.OrdinalIgnoreCase));
             }
 
             var parties = await partiesQuery
@@ -128,71 +139,51 @@ namespace Web.Controllers.api
 
             var partyId = result.Value;
             await _store.SyncMembersAsync(partyId, [player.Id]);
+            await SyncPreferredDates(partyId, model.PreferredPlayingDates);
+            return CreatedAtAction(nameof(GetById), new { id = partyId }, new { id = partyId });
+        }
 
-            foreach (var date in model.PreferredPlayingDates.Distinct().Where(d => d != default))
+        [Authorize(Roles = AppRoles.ADMIN_ROLE)]
+        [HttpPost("admin-create")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> AdminCreate([FromBody] PartyFormDto model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var party = new Party
             {
-                await _preferredDateStore.CreatePreferredPlayingDate(new PreferredPlayingDate
-                {
-                    Id = Guid.NewGuid(),
-                    PartyId = partyId,
-                    Date = date,
-                });
+                Id = Guid.NewGuid(),
+                PlayerCreatedId = model.PlayerCreatedId,
+                DateCreated = model.DateCreated,
+                MaxMembers = model.MaxMembers,
+                PartyDescription = model.PartyDescription,
+                PreferredLocations = model.PreferredLocations,
+            };
+
+            var result = await _store.CreateParty(party);
+            if (!result.IsSuccess)
+                return BadRequest(result.Errors);
+
+            var partyId = result.Value;
+            await _store.SyncMembersAsync(partyId, model.MemberIds);
+            await SyncPreferredDates(partyId, model.PreferredPlayingDates);
+
+            var scheduledMatchId = await SyncScheduledMatch(partyId, model);
+            if (scheduledMatchId.HasValue)
+            {
+                await SyncAttendances(scheduledMatchId.Value, model.ScheduledMatchAttendances);
             }
 
             return CreatedAtAction(nameof(GetById), new { id = partyId }, new { id = partyId });
         }
 
-        [Authorize(Roles = "User,Admin")]
-        [HttpPost("{partyId:guid}/schedule")]
-        public async Task<IActionResult> ScheduleMatch(Guid partyId, [FromBody] ScheduleMatchDto model)
-        {
-            var player = await GetCurrentPlayerAsync();
-            if (player == null) return Unauthorized();
 
-            var partyResult = await _store.FindByIdAsync(partyId);
-            if (!partyResult.IsSuccess) return NotFound();
-            if (partyResult.Value!.PlayerCreatedId != player.Id) return Forbid();
 
-            var match = new ScheduledMatch
-            {
-                Id = Guid.NewGuid(),
-                PartyId = partyId,
-                PlayingFieldId = model.PlayingFieldId,
-                MatchDate = model.MatchDate,
-            };
 
-            var result = await _scheduledMatchStore.CreateScheduledMatch(match);
-            if (!result.IsSuccess) return BadRequest(result.Errors);
-
-            return Ok(new { id = result.Value });
-        }
 
         [Authorize(Roles = "User,Admin")]
-        [HttpPut("{partyId:guid}/schedule/{matchId:guid}")]
-        public async Task<IActionResult> UpdateScheduleMatch(Guid partyId, Guid matchId, [FromBody] ScheduleMatchDto model)
-        {
-            var player = await GetCurrentPlayerAsync();
-            if (player == null) return Unauthorized();
-
-            var partyResult = await _store.FindByIdAsync(partyId);
-            if (!partyResult.IsSuccess) return NotFound();
-            if (partyResult.Value!.PlayerCreatedId != player.Id) return Forbid();
-
-            var matchResult = await _scheduledMatchStore.FindByIdAsync(matchId);
-            if (!matchResult.IsSuccess) return NotFound();
-
-            var match = matchResult.Value!;
-            match.PlayingFieldId = model.PlayingFieldId;
-            match.MatchDate = model.MatchDate;
-
-            var result = await _scheduledMatchStore.UpdateScheduledMatch(match);
-            if (!result.IsSuccess) return BadRequest(result.Errors);
-
-            return NoContent();
-        }
-
-        [Authorize(Roles = "User,Admin")]
-        [HttpPut("{partyId:guid}/user-edit")]
+        [HttpPut("user-edit/{partyId:guid}")]
         public async Task<IActionResult> UserEditParty(Guid partyId, [FromBody] UserCreatePartyDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -226,6 +217,46 @@ namespace Web.Controllers.api
             return NoContent();
         }
 
+        [Authorize(Roles = AppRoles.ADMIN_ROLE)]
+        [HttpPut("admin-edit/{id:guid}")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> AdminEditParty(Guid id, [FromBody] PartyFormDto model)
+        {
+            if (id != model.Id)
+                return BadRequest();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var partyResult = await _store.FindByIdAsync(id);
+            if (!partyResult.IsSuccess)
+                return NotFound();
+
+            var party = partyResult.Value;
+            party.PlayerCreatedId = model.PlayerCreatedId;
+            party.DateCreated = model.DateCreated;
+            party.MaxMembers = model.MaxMembers;
+            party.PartyDescription = model.PartyDescription;
+            party.PreferredLocations = model.PreferredLocations;
+
+            var result = await _store.UpdateParty(party);
+            if (!result.IsSuccess)
+                return BadRequest(result.Errors);
+
+            await _store.SyncMembersAsync(id, model.MemberIds);
+            await SyncPreferredDates(id, model.PreferredPlayingDates);
+
+            var scheduledMatchId = await SyncScheduledMatch(id, model);
+            if (scheduledMatchId.HasValue)
+            {
+                await SyncAttendances(scheduledMatchId.Value, model.ScheduledMatchAttendances);
+            }
+
+            return NoContent();
+        }
+
+
+
         [Authorize(Roles = "User,Admin")]
         [HttpDelete("{partyId:guid}/close")]
         public async Task<IActionResult> UserDeleteParty(Guid partyId)
@@ -238,6 +269,47 @@ namespace Web.Controllers.api
             if (partyResult.Value!.PlayerCreatedId != player.Id) return Forbid();
 
             var result = await _store.DeleteByIdAsync(partyId);
+            if (!result.IsSuccess) return BadRequest(result.Errors);
+
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _store.DeleteByIdAsync(id);
+            if (!result.IsSuccess)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        #endregion
+
+        #region UserActions
+
+        [Authorize(Roles = "User,Admin")]
+        [HttpPut("{partyId:guid}/schedule/{matchId:guid}")]
+        public async Task<IActionResult> UpdateScheduleMatch(Guid partyId, Guid matchId, [FromBody] ScheduleMatchDto model)
+        {
+            var player = await GetCurrentPlayerAsync();
+            if (player == null) return Unauthorized();
+
+            var partyResult = await _store.FindByIdAsync(partyId);
+            if (!partyResult.IsSuccess) return NotFound();
+            if (partyResult.Value!.PlayerCreatedId != player.Id) return Forbid();
+
+            var matchResult = await _scheduledMatchStore.FindByIdAsync(matchId);
+            if (!matchResult.IsSuccess) return NotFound();
+
+            var match = matchResult.Value!;
+            match.PlayingFieldId = model.PlayingFieldId;
+            match.MatchDate = model.MatchDate;
+
+            var result = await _scheduledMatchStore.UpdateScheduledMatch(match);
             if (!result.IsSuccess) return BadRequest(result.Errors);
 
             return NoContent();
@@ -277,6 +349,31 @@ namespace Web.Controllers.api
             }
 
             return Ok();
+        }
+
+        [Authorize(Roles = "User,Admin")]
+        [HttpPost("{partyId:guid}/schedule")]
+        public async Task<IActionResult> ScheduleMatch(Guid partyId, [FromBody] ScheduleMatchDto model)
+        {
+            var player = await GetCurrentPlayerAsync();
+            if (player == null) return Unauthorized();
+
+            var partyResult = await _store.FindByIdAsync(partyId);
+            if (!partyResult.IsSuccess) return NotFound();
+            if (partyResult.Value!.PlayerCreatedId != player.Id) return Forbid();
+
+            var match = new ScheduledMatch
+            {
+                Id = Guid.NewGuid(),
+                PartyId = partyId,
+                PlayingFieldId = model.PlayingFieldId,
+                MatchDate = model.MatchDate,
+            };
+
+            var result = await _scheduledMatchStore.CreateScheduledMatch(match);
+            if (!result.IsSuccess) return BadRequest(result.Errors);
+
+            return Ok(new { id = result.Value });
         }
 
         [Authorize(Roles = "User,Admin")]
@@ -446,68 +543,100 @@ namespace Web.Controllers.api
             return Ok(new { matchRecordId = matchRecord.Id });
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public async Task<ActionResult<PartyDto>> Post([FromBody] PartyListDto model)
+        #endregion
+
+        #region Messaging
+
+        [HttpGet("{partyId:guid}/chat")]
+        public async Task<IActionResult> GetChatHistory(Guid partyId, [FromQuery] int skip = 0)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var chatMessagesQuery = _chatMessageStore.QueryPartyChatHistory(partyId, skip: skip);
 
-            var party = new Party
-            {
-                Id = Guid.NewGuid()
-            };
+            var chatMessages = await chatMessagesQuery
+                .Select(ChatMessageDto.ToDto())
+                .ToListAsync();
 
-            party.PlayerCreatedId = model.PlayerCreatedId;
-            party.DateCreated = model.DateCreated;
-            party.MaxMembers = model.MaxMembers;
-            party.PartyDescription = model.PartyDescription;
-            party.PreferredLocations = model.PreferredLocations;
-
-            var result = await _store.CreateParty(party);
-            if (!result.IsSuccess)
-                return BadRequest(result.Errors);
-
-            var createdDto = PartyDto.ToDto().Compile()(party);
-            return CreatedAtAction(nameof(GetById), new { id = party.Id }, createdDto);
+            return Ok(chatMessages.OrderBy(m => m.SentAt));
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPut("{id:guid}")]
-        public async Task<ActionResult<PartyDto>> Put(Guid id, [FromBody] PartyListDto model)
+        #endregion
+
+
+        private async Task SyncPreferredDates(Guid partyId, List<DateTime> preferredDates)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            await _preferredDateStore.DeleteByPartyIdAsync(partyId);
 
-            var foundResult = await _store.FindByIdAsync(id);
-            if (!foundResult.IsSuccess || foundResult.Value == null)
-                return NotFound();
+            foreach (var date in preferredDates.Distinct())
+            {
+                if (date == default)
+                {
+                    continue;
+                }
+                var preferredDate = new PreferredPlayingDate
+                {
+                    Id = Guid.NewGuid(),
+                    PartyId = partyId,
+                    Date = date,
+                };
 
-            var party = foundResult.Value;
-            party.PlayerCreatedId = model.PlayerCreatedId;
-            party.DateCreated = model.DateCreated;
-            party.MaxMembers = model.MaxMembers;
-            party.PartyDescription = model.PartyDescription;
-            party.PreferredLocations = model.PreferredLocations;
-
-            var updateResult = await _store.UpdateParty(party);
-            if (!updateResult.IsSuccess)
-                return BadRequest(updateResult.Errors);
-
-            return NoContent();
+                await _preferredDateStore.CreatePreferredPlayingDate(preferredDate);
+            }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id)
+
+
+        private async Task<Guid?> SyncScheduledMatch(Guid partyId, PartyFormDto model)
         {
-            var result = await _store.DeleteByIdAsync(id);
-            if (!result.IsSuccess)
+            if (!model.ScheduledMatchPlayingFieldId.HasValue || !model.ScheduledMatchDate.HasValue)
             {
-                return NotFound();
+                return null;
             }
 
-            return NoContent();
+            if (model.ScheduledMatchId.HasValue)
+            {
+                var scheduledMatchResult = await _scheduledMatchStore.FindByIdAsync(model.ScheduledMatchId.Value);
+                if (!scheduledMatchResult.IsSuccess)
+                {
+                    return null;
+                }
+
+                var scheduledMatch = scheduledMatchResult.Value;
+                scheduledMatch.PlayingFieldId = model.ScheduledMatchPlayingFieldId.Value;
+                scheduledMatch.PartyId = partyId;
+                scheduledMatch.MatchDate = model.ScheduledMatchDate.Value;
+
+                var updateResult = await _scheduledMatchStore.UpdateScheduledMatch(scheduledMatch);
+                return updateResult.IsSuccess ? scheduledMatch.Id : null;
+            }
+
+            var newScheduledMatch = new ScheduledMatch
+            {
+                Id = Guid.NewGuid(),
+                PlayingFieldId = model.ScheduledMatchPlayingFieldId.Value,
+                PartyId = partyId,
+                MatchDate = model.ScheduledMatchDate.Value,
+            };
+
+            var createResult = await _scheduledMatchStore.CreateScheduledMatch(newScheduledMatch);
+            return createResult.IsSuccess ? createResult.Value : null;
+        }
+
+        private async Task SyncAttendances(Guid scheduledMatchId, List<PartyScheduledMatchAttendanceDto> attendances)
+        {
+            await _attendanceStore.DeleteByScheduledMatchIdAsync(scheduledMatchId);
+
+            foreach (var attendance in attendances)
+            {
+                var scheduledAttendance = new ScheduledMatchAttendance
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduledMatchId = scheduledMatchId,
+                    PlayerId = attendance.PlayerId,
+                    IsAttending = attendance.IsAttending,
+                };
+
+                await _attendanceStore.CreateScheduledMatchAttendance(scheduledAttendance);
+            }
         }
     }
 }

@@ -23,8 +23,8 @@ function fetchForm(callback) {
   dashboardSpinner.show();
   $.get("/stadiums/form", function (html) {
     $("#form-container").html(html);
-    $.validator.unobtrusive.parse("#stadium-form");
-
+      $.validator.unobtrusive.parse("#stadium-form");
+      initDropzone();
     if (callback) callback();
   }).always(function () {
     dashboardSpinner.hide();
@@ -115,8 +115,8 @@ function renderValidationSummary(formId, messages) {
 function loadStadiums(search = "") {
   dashboardSpinner.show();
   const url = search
-    ? `/stadiums/data?search=${encodeURIComponent(search)}`
-    : "/stadiums/data";
+      ? `/api/playing-fields?search=${encodeURIComponent(search)}`
+    : "/api/playing-fields";
   $.ajax({
     url,
     method: "GET",
@@ -156,8 +156,8 @@ function openCreate() {
 
 function submitForm() {
   const id = $("#stadium-id").val();
-  const url = id ? `/stadiums/edit/${id}` : "/stadiums/create";
-    const method = "POST";
+  const url = id ? `/api/playing-fields/${id}` : "/api/playing-fields";
+    const method = id ? "PUT" : "POST";
 
     if (!$("#stadium-form").valid()) return;
 
@@ -201,7 +201,7 @@ function deleteStadium(id) {
   if (!confirm("Are you sure?")) return;
 
   $.ajax({
-    url: `/stadiums/delete/${id}`,
+    url: `/api/playing-fields/${id}`,
     method: "DELETE",
     beforeSend: function () {
       dashboardSpinner.show();
@@ -234,10 +234,64 @@ function editStadium(stadium) {
 
     setEditState(true, stadium.name);
 
-    $.getJSON("/stadiums/" + stadium.id + "/images", function (images) {
+    $.getJSON("/api/playing-fields/" + stadium.id + "/images", function (images) {
       if (images && images.length > 0 && typeof window.preloadDropzoneImages === "function") {
         window.preloadDropzoneImages(images);
       }
     });
   });
+}
+
+
+//dropzone + image handling
+
+function initDropzone() {
+    var uploadedImageIds = [];
+
+    var myDropzone = new Dropzone("#stadium-dropzone", {
+        url: function () {
+            var stadiumId = document.getElementById("stadium-id").value;
+            return stadiumId ? "/api/playing-fields/upload?stadiumId=" + stadiumId : "/api/playing-fields/upload";
+        },
+        paramName: "file",
+        maxFilesize: 10,
+        acceptedFiles: "image/jpeg,image/png,image/webp,image/gif",
+        addRemoveLinks: true,
+        dictRemoveFile: "✕",
+        autoProcessQueue: true,
+        init: function () {
+            var dz = this;
+
+            dz.on("success", function (file, response) {
+                file.imageId = response.id;
+                uploadedImageIds.push(response.id);
+            });
+
+            dz.on("removedfile", function (file) {
+                if (!file.imageId) return;
+                uploadedImageIds = uploadedImageIds.filter(function (id) { return id !== file.imageId; });
+                $.ajax({ url: "/api/playing-fields/image/" + file.imageId, method: "DELETE" });
+            });
+        }
+    });
+
+    window.stadiumDropzone = myDropzone;
+    window.getUploadedImageIds = function () { return uploadedImageIds.slice(); };
+
+    window.preloadDropzoneImages = function (images) {
+        images.forEach(function (img) {
+            var mockFile = {
+                name: img.fileName,
+                size: img.sizeBytes,
+                imageId: img.id,
+                status: Dropzone.SUCCESS,
+                accepted: true
+            };
+            myDropzone.emit("addedfile", mockFile);
+            myDropzone.files.push(mockFile);
+            myDropzone.emit("thumbnail", mockFile, img.path);
+            myDropzone.emit("complete", mockFile);
+            uploadedImageIds.push(img.id);
+        });
+    };
 }

@@ -1,38 +1,19 @@
 using Data;
-using Data.Data;
-using Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Web;
+using Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services
     .AddCoreServices(builder.Configuration)
+    .AddIdentity()
+    .AddGoogleAuth(builder.Configuration)
+    .AddLiveMessaggingSignalR(builder.Configuration)
     .BundleAndMinify()
     .AddControllersWithViews();
 
-builder.Services.AddDefaultIdentity<AppUser>(options =>
-{
-    options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 6;
 
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 8;
-})
-    .AddRoles<IdentityRole<Guid>>()
-    .AddEntityFrameworkStores<MatchTrackerDbContext>();
-
-builder.Services.AddAuthentication().AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
-});
 
 builder.Services.AddRazorPages();
 
@@ -74,6 +55,7 @@ app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = contentTypeProv
 
 app.UseRouting();
 
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.UseAuthentication();
 app.UseAuthorization();

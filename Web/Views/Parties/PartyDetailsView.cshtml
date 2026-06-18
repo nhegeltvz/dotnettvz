@@ -44,6 +44,8 @@
 }
 
 @section Scripts {
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script src="~/js/chat.js"></script>
 <script>
 let _finalizeIsEdit = false;
 
@@ -94,7 +96,7 @@ async function submitFinalize(partyId) {
   const btn = document.getElementById('finalize-submit-btn');
   btn.disabled = true;
   try {
-    const res = await fetch(`/api/partyapi/${partyId}/finalize-match`, {
+    const res = await fetch(`/api/parties/${partyId}/finalize-match`, {
       method: _finalizeIsEdit ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ goalsTeamA: goalsA, goalsTeamB: goalsB, players }),
@@ -114,12 +116,31 @@ async function submitFinalize(partyId) {
   }
 }
 
+const _partyId = '@Model.Id';
+
+startChat(_partyId);
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.value.trim()) {
+        sendMessage(_partyId, e.target.value.trim());
+        e.target.value = '';
+    }
+});
+
+document.getElementById('chat-send-btn').addEventListener('click', () => {
+    const input = document.getElementById('chat-input');
+    if (input.value.trim()) {
+        sendMessage(_partyId, input.value.trim());
+        input.value = '';
+    }
+});
+
 async function toggleAttendance(partyId, currentlyAttending) {
   const nowAttending = !JSON.parse(currentlyAttending);
   const btn = document.getElementById('attendance-btn');
   btn.disabled = true;
   try {
-    const res = await fetch(`/api/partyapi/${partyId}/attendance`, {
+    const res = await fetch(`/api/parties/${partyId}/attendance`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isAttending: nowAttending }),
@@ -283,6 +304,17 @@ async function toggleAttendance(partyId, currentlyAttending) {
                         }
                     </div>
                 }
+
+                <section class="party-details-section">
+                    <h2 class="party-section-title"><i class="fa-solid fa-comments" aria-hidden="true"></i> Chat</h2>
+                    <div id="chat-messages" class="party-chat-messages"></div>
+                    <div class="party-chat-input-row">
+                        <input id="chat-input" type="text" maxlength="500" placeholder="Napiši poruku..." class="party-chat-input" />
+                        <button id="chat-send-btn" class="party-chat-send-btn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </section>
 
             </div>
         </div>

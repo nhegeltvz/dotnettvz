@@ -26,13 +26,13 @@ namespace Web.Tests
 
             var users = new[]
             {
-                new AppUser { Id = Guid.NewGuid(), UserName = "partyowner1",  NormalizedUserName = "PARTYOWNER1",  Email = "owner1@test.com", NormalizedEmail = "OWNER1@TEST.COM", OIB = "11111111111", JMBG = "1111111111111" },
-                new AppUser { Id = Guid.NewGuid(), UserName = "partymember1", NormalizedUserName = "PARTYMEMBER1", Email = "member1@test.com", NormalizedEmail = "MEMBER1@TEST.COM", OIB = "22222222222", JMBG = "2222222222222" },
-                new AppUser { Id = Guid.NewGuid(), UserName = "partymember2", NormalizedUserName = "PARTYMEMBER2", Email = "member2@test.com", NormalizedEmail = "MEMBER2@TEST.COM", OIB = "33333333333", JMBG = "3333333333333" },
-                new AppUser { Id = Guid.NewGuid(), UserName = "partyowner2",  NormalizedUserName = "PARTYOWNER2",  Email = "owner2@test.com", NormalizedEmail = "OWNER2@TEST.COM", OIB = "44444444444", JMBG = "4444444444444" },
-                new AppUser { Id = Guid.NewGuid(), UserName = "partymember3", NormalizedUserName = "PARTYMEMBER3", Email = "member3@test.com", NormalizedEmail = "MEMBER3@TEST.COM", OIB = "55555555555", JMBG = "5555555555555" },
-                new AppUser { Id = Guid.NewGuid(), UserName = "partymember4", NormalizedUserName = "PARTYMEMBER4", Email = "member4@test.com", NormalizedEmail = "MEMBER4@TEST.COM", OIB = "66666666666", JMBG = "6666666666666" },
-                new AppUser { Id = Guid.NewGuid(), UserName = "partymember5", NormalizedUserName = "PARTYMEMBER5", Email = "member5@test.com", NormalizedEmail = "MEMBER5@TEST.COM", OIB = "77777777777", JMBG = "7777777777777" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partyowner1",  NormalizedUserName = "PARTYOWNER1",  Email = "owner1@test.com", NormalizedEmail = "OWNER1@TEST.COM" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partymember1", NormalizedUserName = "PARTYMEMBER1", Email = "member1@test.com", NormalizedEmail = "MEMBER1@TEST.COM" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partymember2", NormalizedUserName = "PARTYMEMBER2", Email = "member2@test.com", NormalizedEmail = "MEMBER2@TEST.COM" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partyowner2",  NormalizedUserName = "PARTYOWNER2",  Email = "owner2@test.com", NormalizedEmail = "OWNER2@TEST.COM" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partymember3", NormalizedUserName = "PARTYMEMBER3", Email = "member3@test.com", NormalizedEmail = "MEMBER3@TEST.COM" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partymember4", NormalizedUserName = "PARTYMEMBER4", Email = "member4@test.com", NormalizedEmail = "MEMBER4@TEST.COM" },
+                new AppUser { Id = Guid.NewGuid(), UserName = "partymember5", NormalizedUserName = "PARTYMEMBER5", Email = "member5@test.com", NormalizedEmail = "MEMBER5@TEST.COM" },
             };
 
             db.Users.AddRange(users);

@@ -123,8 +123,8 @@ function renderValidationSummary(formId, messages) {
 function loadMatchRecords(search = "") {
   dashboardSpinner.show();
   const url = search
-    ? `/matches/data?search=${encodeURIComponent(search)}`
-    : "/matches/data";
+    ? `/api/match-records?search=${encodeURIComponent(search)}`
+    : "/api/match-records";
   $.ajax({
     url,
     method: "GET",
@@ -135,7 +135,7 @@ function loadMatchRecords(search = "") {
                         <tr>
                             <td>${record.goalsTeamA}</td>
                             <td>${record.goalsTeamB}</td>
-                            <td>${record.playingFieldName}</td>
+                            <td>${record.playingField.name}</td>
                             <td>${record.matchHeld}</td>
                             <td>${record.wasMatchHeld}</td>
                             <td>
@@ -166,8 +166,8 @@ function openCreate() {
 
 function submitForm() {
   const id = $("#match-record-id").val();
-  const url = id ? `/matches/edit/${id}` : "/matches/create";
-  const method = "POST";
+  const url = id ? `/api/match-records/${id}` : "/api/match-records";
+    const method = id ? "PUT" : "POST";
 
   if (!$("#match-record-form").valid()) return;
 
@@ -210,7 +210,7 @@ function deleteRecord(id) {
   if (!confirm("Are you sure?")) return;
 
   $.ajax({
-    url: `/matches/delete/${id}`,
+    url: `/api/match-records/${id}`,
     method: "DELETE",
     beforeSend: function () {
       dashboardSpinner.show();
