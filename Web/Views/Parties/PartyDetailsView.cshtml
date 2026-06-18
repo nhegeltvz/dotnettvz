@@ -117,23 +117,11 @@ async function submitFinalize(partyId) {
 }
 
 const _partyId = '@Model.Id';
+const _currentUsername = '@UserManager.GetUserName(User)';
 
-startChat(_partyId);
-
-document.getElementById('chat-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.target.value.trim()) {
-        sendMessage(_partyId, e.target.value.trim());
-        e.target.value = '';
-    }
-});
-
-document.getElementById('chat-send-btn').addEventListener('click', () => {
-    const input = document.getElementById('chat-input');
-    if (input.value.trim()) {
-        sendMessage(_partyId, input.value.trim());
-        input.value = '';
-    }
-});
+if (document.getElementById('chat-messages')) {
+  initChat(_partyId, _currentUsername);
+} // end isMember chat guard
 
 async function toggleAttendance(partyId, currentlyAttending) {
   const nowAttending = !JSON.parse(currentlyAttending);
@@ -305,16 +293,6 @@ async function toggleAttendance(partyId, currentlyAttending) {
                     </div>
                 }
 
-                <section class="party-details-section">
-                    <h2 class="party-section-title"><i class="fa-solid fa-comments" aria-hidden="true"></i> Chat</h2>
-                    <div id="chat-messages" class="party-chat-messages"></div>
-                    <div class="party-chat-input-row">
-                        <input id="chat-input" type="text" maxlength="500" placeholder="Napiši poruku..." class="party-chat-input" />
-                        <button id="chat-send-btn" class="party-chat-send-btn">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </section>
 
             </div>
         </div>
@@ -395,3 +373,27 @@ async function toggleAttendance(partyId, currentlyAttending) {
         </div>
     }
 </div>
+
+@if (isMember)
+{
+    <!-- Chat FAB — direct child of layout, no positioned ancestor -->
+    <button id="chat-fab" class="chat-fab" title="Otvori chat" aria-label="Otvori chat">
+        <i class="fa-solid fa-comments"></i>
+    </button>
+
+    <div id="chat-overlay" class="chat-overlay"></div>
+
+    <div id="chat-modal" class="chat-modal" hidden>
+        <div class="chat-modal__header">
+            <span class="chat-modal__title"><i class="fa-solid fa-comments"></i> Razgovor</span>
+            <button id="chat-close" class="chat-modal__close" aria-label="Zatvori">&times;</button>
+        </div>
+        <div id="chat-messages" class="chat-modal__messages"></div>
+        <div class="chat-modal__input-row">
+            <input id="chat-input" type="text" maxlength="500" placeholder="Napiši poruku..." class="chat-modal__input" />
+            <button id="chat-send-btn" class="chat-modal__send-btn" aria-label="Pošalji">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+}
