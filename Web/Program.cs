@@ -10,6 +10,7 @@ builder.Services
     .AddIdentity()
     .AddGoogleAuth(builder.Configuration)
     .AddLiveMessaggingSignalR(builder.Configuration)
+    .AddAiSupport()
     .BundleAndMinify()
     .AddControllersWithViews();
 
@@ -67,6 +68,7 @@ app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.Run();
 

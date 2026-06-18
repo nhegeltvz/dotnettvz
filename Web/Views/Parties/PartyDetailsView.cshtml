@@ -46,6 +46,7 @@
 @section Scripts {
 <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
 <script src="~/js/chat.js"></script>
+<script src="~/js/ai.js"></script>
 <script>
 let _finalizeIsEdit = false;
 
@@ -122,6 +123,8 @@ const _currentUsername = '@UserManager.GetUserName(User)';
 if (document.getElementById('chat-messages')) {
   initChat(_partyId, _currentUsername);
 } // end isMember chat guard
+
+initAi(_partyId);
 
 async function toggleAttendance(partyId, currentlyAttending) {
   const nowAttending = !JSON.parse(currentlyAttending);
@@ -397,3 +400,21 @@ async function toggleAttendance(partyId, currentlyAttending) {
         </div>
     </div>
 }
+
+<!-- AI FAB -->
+<button id="ai-fab" class="ai-fab" title="Zakaži meč s AI" aria-label="AI asistent">
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+</button>
+
+<div id="ai-panel" class="ai-panel" hidden>
+    <div class="ai-panel__header">
+        <span class="ai-panel__title"><i class="fa-solid fa-wand-magic-sparkles"></i> AI asistent</span>
+        <button id="ai-close" class="ai-panel__close" aria-label="Zatvori">&times;</button>
+    </div>
+    <textarea id="ai-input" class="ai-panel__textarea" placeholder='npr. "Sutra u 18h na Šalati"' rows="3"></textarea>
+    <div class="ai-panel__footer">
+        <button id="ai-send" class="ai-panel__send">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+</div>

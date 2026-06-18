@@ -1,5 +1,6 @@
 ﻿using Data.Data;
 using Data.Models;
+using Data.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace Web
@@ -20,6 +21,11 @@ namespace Web
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<MatchTrackerDbContext>();
 
+            return services;
+        }
+        public static IServiceCollection AddAiSupport(this IServiceCollection services)
+        {
+            services.AddHttpClient<AiMatchParserService>();
             return services;
         }
 
