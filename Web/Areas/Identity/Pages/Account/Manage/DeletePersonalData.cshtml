@@ -1,0 +1,66 @@
+@page
+@model DeletePersonalDataModel
+@{
+    ViewData["Title"] = "Obriši račun";
+}
+
+<div class="manage-page">
+    <nav>
+        <partial name="_ManageNav" />
+    </nav>
+
+    <div class="manage-content">
+        <div class="manage-heading">
+            <h1 class="manage-heading__title">Obriši račun</h1>
+            <p class="manage-heading__sub">Ova radnja je trajna i ne može se poništiti</p>
+        </div>
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-triangle-exclamation"></i> Upozorenje</h2>
+
+            <div class="manage-alert manage-alert--danger" style="margin-bottom: 1.25rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Brisanjem računa trajno se uklanjaju svi tvoji podaci. Ova radnja <strong>ne može se poništiti</strong>.
+                @if (Model.IsGoogleUser)
+                {
+                    <br /><span style="margin-top:0.4rem; display:block;">Tvoja Google prijava bit će odpojena.</span>
+                }
+            </div>
+
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="manage-alert manage-alert--danger" style="margin-bottom:1rem;"></div>
+
+                @if (Model.RequirePassword)
+                {
+                    <div class="manage-field">
+                        <label asp-for="Input.Password">Potvrdi lozinkom</label>
+                        <input asp-for="Input.Password" type="password" autocomplete="current-password"
+                               placeholder="Unesi svoju lozinku za potvrdu" />
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                }
+
+                <div class="manage-btn-row">
+                    <a asp-page="./PersonalData" class="manage-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Odustani
+                    </a>
+                    <button type="submit" class="manage-btn manage-btn--danger">
+                        <i class="fa-solid fa-trash"></i>
+                        @if (Model.IsGoogleUser)
+                        {
+                            <span>Obriši račun i odspoji Google</span>
+                        }
+                        else
+                        {
+                            <span>Obriši račun</span>
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

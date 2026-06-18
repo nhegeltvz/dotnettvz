@@ -1,0 +1,73 @@
+@page
+@model TwoFactorAuthenticationModel
+@{
+    ViewData["Title"] = "Dvofaktorska autentifikacija";
+}
+
+<div class="manage-page">
+    <nav>
+        <partial name="_ManageNav" />
+    </nav>
+
+    <div class="manage-content">
+        <div class="manage-heading">
+            <h1 class="manage-heading__title">Dvofaktorska autentifikacija</h1>
+            <p class="manage-heading__sub">Upravljaj sigurnošću svog računa</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="manage-alert manage-alert--info">@Model.StatusMessage</div>
+        }
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-shield-halved"></i> Status 2FA</h2>
+
+            <div class="manage-info-row">
+                <span class="manage-info-label">Dvofaktorska autentifikacija</span>
+                @if (Model.Is2faEnabled)
+                {
+                    <span class="manage-badge manage-badge--on"><i class="fa-solid fa-circle-check"></i> Uključena</span>
+                }
+                else
+                {
+                    <span class="manage-badge manage-badge--off"><i class="fa-solid fa-circle-xmark"></i> Isključena</span>
+                }
+            </div>
+
+            @if (Model.Is2faEnabled)
+            {
+                <div class="manage-info-row">
+                    <span class="manage-info-label">Preostali kodovi za oporavak</span>
+                    <span class="manage-info-value">@Model.RecoveryCodesLeft</span>
+                </div>
+            }
+
+            <div class="manage-btn-row">
+                @if (Model.IsMachineRemembered)
+                {
+                    <form method="post">
+                        <button type="submit" class="manage-btn">
+                            <i class="fa-solid fa-rotate-left"></i> Zaboravi ovaj preglednik
+                        </button>
+                    </form>
+                }
+                @if (!Model.HasAuthenticator)
+                {
+                    <a asp-page="./EnableAuthenticator" class="manage-btn manage-btn--primary">
+                        <i class="fa-solid fa-plus"></i> Dodaj aplikaciju za autentifikaciju
+                    </a>
+                }
+                else
+                {
+                    <a asp-page="./EnableAuthenticator" class="manage-btn">
+                        <i class="fa-solid fa-pen"></i> Postavi aplikaciju za autentifikaciju
+                    </a>
+                    <a asp-page="./ResetAuthenticator" class="manage-btn manage-btn--danger">
+                        <i class="fa-solid fa-rotate"></i> Resetiraj aplikaciju
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

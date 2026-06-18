@@ -1,0 +1,55 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Upravljaj računom";
+}
+
+<div class="manage-page">
+    <nav>
+        <partial name="_ManageNav" />
+    </nav>
+
+    <div class="manage-content">
+        <div class="manage-heading">
+            <h1 class="manage-heading__title">Upravljaj računom</h1>
+            <p class="manage-heading__sub">Uredi svoje korisničke podatke</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="manage-alert manage-alert--info">
+                <i class="fa-solid fa-circle-check"></i> @Model.StatusMessage
+            </div>
+        }
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-user"></i> Profil</h2>
+
+            <div class="manage-field">
+                <label>Email</label>
+                <input type="text" value="@Model.Email" readonly />
+                @if (Model.IsGoogleUser)
+                {
+                    <small style="font-size:0.75rem; color:var(--mt-text-faint);">Prijavljeni ste putem Google računa.</small>
+                }
+            </div>
+
+            <form method="post">
+                <div class="manage-field">
+                    <label asp-for="Input.Username"></label>
+                    <input asp-for="Input.Username" />
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+                <div class="manage-btn-row">
+                    <button type="submit" class="manage-btn manage-btn--primary">
+                        <i class="fa-solid fa-floppy-disk"></i> Spremi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

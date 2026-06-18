@@ -148,6 +148,14 @@ namespace Web.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                if (await _userManager.FindByNameAsync(Input.Username) != null)
+                {
+                    ModelState.AddModelError("Input.Username", "Korisničko ime je već zauzeto.");
+                    ProviderDisplayName = info.ProviderDisplayName;
+                    ReturnUrl = returnUrl;
+                    return Page();
+                }
+
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
@@ -181,12 +189,12 @@ namespace Web.Areas.Identity.Pages.Account
                         }
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
-                        return LocalRedirect(returnUrl);
+                        return LocalRedirect("/home");
                     }
                 }
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    ModelState.AddModelError("Input.Username", error.Description);
                 }
             }
 

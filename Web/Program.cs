@@ -60,6 +60,8 @@ app.MapHub<ChatHub>("/hubs/chat");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Redirect("/home", permanent: true));
+
 app.MapRazorPages();
 app.MapControllers();
 app.MapControllerRoute(

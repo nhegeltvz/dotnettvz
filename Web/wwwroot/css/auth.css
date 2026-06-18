@@ -7,9 +7,9 @@
 
 .auth-split {
   display: grid;
-  grid-template-columns: 3fr 7fr;
+  grid-template-columns: 1fr 1fr;
   gap: 3rem;
-  max-width: 1300px;
+  max-width: 960px;
   width: 100%;
   margin: 0 auto;
   align-items: center;
@@ -20,6 +20,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  align-items: center;
+  text-align: center;
 }
 
 .auth-hero__kicker {
@@ -53,7 +55,7 @@
   color: var(--mt-text-muted);
   font-size: 1rem;
   line-height: 1.6;
-  max-width: 360px;
+  max-width: 340px;
 }
 
 /* ── Form card ── */
@@ -106,6 +108,14 @@
   outline: none;
   border-color: var(--mt-highlight-active);
   box-shadow: 0 0 0 3px var(--mt-highlight-soft);
+}
+
+.auth-field__input--readonly {
+  background: var(--mt-bg-dark) !important;
+  color: var(--mt-text-subtle) !important;
+  border-color: var(--mt-border-strong) !important;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .auth-field .text-danger {
@@ -218,6 +228,32 @@
   margin: 0;
   padding-left: 1.2rem;
 }
+
+/* ── Registration progress bars ── */
+.auth-progress {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.auth-progress__bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--mt-border-strong);
+  transition: background-color 250ms ease;
+}
+
+.auth-progress__bar--active {
+  background: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+}
+
+.auth-progress__bar--server-error {
+  background: #d4ff00;
+  box-shadow: 0 0 8px rgba(212, 255, 0, 0.6);
+}
+
 
 @media (max-width: 900px) {
   .auth-split {

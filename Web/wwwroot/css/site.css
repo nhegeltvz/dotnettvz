@@ -1427,11 +1427,101 @@ body {
   color: var(--mt-highlight);
 }
 
+.user-logout-btn--danger {
+  border-color: rgba(239, 83, 80, 0.35);
+  color: #ef9a9a;
+}
+
+.user-logout-btn--danger:hover {
+  background: rgba(239, 83, 80, 0.1);
+  border-color: rgba(239, 83, 80, 0.6);
+  color: #ef5350;
+}
+
 /******************LOGIN*************************/
 
 
 
 /******************REGISTER*************************/
+
+/* ──────────────────────────────────────────────────────────
+   #component — Reusable MT component styles
+   Naming convention: mt--<style-name>
+   ────────────────────────────────────────────────────────── */
+
+/* Primary button — solid highlight fill. Use for the main CTA (e.g. Login). */
+.mt--btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.1rem;
+  background: var(--mt-highlight);
+  color: var(--mt-bg-dark);
+  border: 1px solid var(--mt-highlight);
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.mt--btn-primary:hover {
+  background: var(--mt-highlight-active);
+  border-color: var(--mt-highlight-active);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--mt-highlight-glow);
+}
+
+.mt--btn-primary:active {
+  transform: translateY(0);
+}
+
+.mt--btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ghost button — outlined, transparent fill. Use for secondary actions (e.g. Register). */
+.mt--btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.1rem;
+  background: transparent;
+  color: var(--mt-highlight);
+  border: 1px solid var(--mt-highlight);
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.mt--btn-ghost:hover {
+  background: var(--mt-highlight-soft);
+  color: var(--mt-highlight-active);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--mt-highlight-glow);
+}
+
+.mt--btn-ghost:active {
+  transform: translateY(0);
+}
+
+.mt--btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Modal date chips ── */
 .mt-date-chip-row {

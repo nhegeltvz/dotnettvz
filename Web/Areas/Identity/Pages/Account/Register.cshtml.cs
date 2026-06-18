@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Web.Areas.Identity.Pages.Account
@@ -46,17 +47,17 @@ namespace Web.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
-            [StringLength(50, MinimumLength = 3)]
+            [Required(ErrorMessage = "Korisničko ime je obavezno.")]
+            [StringLength(50, MinimumLength = 3, ErrorMessage = "Korisničko ime mora imati između 3 i 50 znakova.")]
             [Display(Name = "Korisničko ime")]
             public string Username { get; set; }
 
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "Email je obavezan.")]
+            [EmailAddress(ErrorMessage = "Neispravan format email adrese.")]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
-            [Required]
+            [Required(ErrorMessage = "Lozinka je obavezna.")]
             [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
                     ErrorMessage = "Lozinka mora imati najmanje 8 znakova, jedno veliko slovo, malo slovo i broj.")]
             [DataType(DataType.Password)]
@@ -65,7 +66,7 @@ namespace Web.Areas.Identity.Pages.Account
 
             [DataType(DataType.Password)]
             [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            [Compare("Password", ErrorMessage = "Lozinke se ne podudaraju.")]
             public string ConfirmPassword { get; set; }
 
         }

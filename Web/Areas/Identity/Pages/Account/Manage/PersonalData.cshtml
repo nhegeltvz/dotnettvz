@@ -1,0 +1,59 @@
+@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Osobni podaci";
+}
+
+<div class="manage-page">
+    <nav>
+        <partial name="_ManageNav" />
+    </nav>
+
+    <div class="manage-content">
+        <div class="manage-heading">
+            <h1 class="manage-heading__title">Osobni podaci</h1>
+            <p class="manage-heading__sub">Preuzmi ili izbriši svoje podatke</p>
+        </div>
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-download"></i> Preuzmi podatke</h2>
+            <p style="font-size:0.9rem; color:var(--mt-text-muted); margin-bottom:1rem;">
+                Preuzmi kopiju svih osobnih podataka vezanih uz tvoj račun.
+            </p>
+            <form asp-page="./DownloadPersonalData" method="post">
+                <button type="submit" class="manage-btn">
+                    <i class="fa-solid fa-download"></i> Preuzmi moje podatke
+                </button>
+            </form>
+        </div>
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-trash"></i> Izbriši račun</h2>
+            <div class="manage-alert manage-alert--danger" style="margin-bottom:1rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <strong>Upozorenje:</strong> brisanje računa je trajno i ne može se poništiti.
+            </div>
+            <p style="font-size:0.9rem; color:var(--mt-text-muted); margin-bottom:1rem;">
+                @if (Model.IsGoogleUser)
+                {
+                    <span>Ovo će obrisati tvoj račun i odspojiti Google prijavu.</span>
+                }
+                else
+                {
+                    <span>Ovo će trajno obrisati tvoj račun i sve podatke.</span>
+                }
+            </p>
+            <a asp-page="./DeletePersonalData" class="manage-btn manage-btn--danger">
+                <i class="fa-solid fa-trash"></i>
+                @if (Model.IsGoogleUser)
+                {
+                    <span>Obriši svoj račun i odspoji Google</span>
+                }
+                else
+                {
+                    <span>Obriši račun</span>
+                }
+            </a>
+        </div>
+    </div>
+</div>
