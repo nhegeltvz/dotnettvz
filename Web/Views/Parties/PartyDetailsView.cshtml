@@ -19,14 +19,16 @@
 
     var currentUserId = UserManager.GetUserId(User);
 
-    // After AppUser/Player split: m.UserId is the FK to AppUser, currentUserId is AppUser.Id
     var currentPlayer = Model.Members.FirstOrDefault(m => m.UserId.ToString() == currentUserId);
-    var isMember = currentPlayer != null;
-    var isOwner = currentUserId != null && Model.PlayerCreated.UserId.ToString() == currentUserId;
-    var canFinalize = isOwner && Model.ScheduledMatch != null && Model.ScheduledMatch.MatchRecord == null;
-    var canEdit    = isOwner && Model.ScheduledMatch?.MatchRecord != null;
+    var isMember  = currentPlayer != null;
+    var isOwner   = currentUserId != null && Model.PlayerCreated.UserId.ToString() == currentUserId;
 
-    // Attendance is keyed by Player.Id, so use currentPlayer.Id
+    var hasScheduled  = Model.ScheduledMatch != null;
+    var hasRecord     = Model.ScheduledMatch?.MatchRecord != null;
+    var canFinalize   = isOwner && hasScheduled && !hasRecord;
+    var canEdit       = isOwner && hasRecord;
+    var attendanceLocked = hasRecord;
+
     var myAttendance = currentPlayer != null
         ? Model.ScheduledMatch?.ScheduledMatchAttendances.FirstOrDefault(a => a.PlayerId == currentPlayer.Id)
         : null;
@@ -36,10 +38,10 @@
         => position switch
         {
             Data.Data.Position.Goalkeeper => "fa-solid fa-hand",
-            Data.Data.Position.Defender => "fa-solid fa-shield-halved",
+            Data.Data.Position.Defender   => "fa-solid fa-shield-halved",
             Data.Data.Position.Midfielder => "fa-solid fa-wand-magic-sparkles",
-            Data.Data.Position.Forward => "fa-solid fa-shoe-prints",
-            _ => "fa-solid fa-user"
+            Data.Data.Position.Forward    => "fa-solid fa-shoe-prints",
+            _                             => "fa-solid fa-user"
         };
 }
 
@@ -122,7 +124,7 @@ const _currentUsername = '@UserManager.GetUserName(User)';
 
 if (document.getElementById('chat-messages')) {
   initChat(_partyId, _currentUsername);
-} // end isMember chat guard
+}
 
 initAi(_partyId);
 
@@ -157,6 +159,94 @@ async function toggleAttendance(partyId, currentlyAttending) {
         Natrag na sve partije.
     </a>
 
+    @* ── PHASE 3: Match was played ── *@
+    @if (hasRecord)
+    {
+        var mr = Model.ScheduledMatch!.MatchRecord!;
+        <a asp-controller="Matches" asp-action="Details" asp-route-id="@mr.Id" class="party-phase3-hero">
+            <div class="party-phase3-hero__text">
+                <p class="party-phase3-hero__title">Utakmica je <span class="party-phase3-hero__underline">odigrana</span></p>
+                <p class="party-phase3-hero__sub">klikni za više detalja</p>
+            </div>
+            <div class="party-phase3-hero__score">
+                <span class="party-phase3-hero__team">Ekipa A</span>
+                <span class="party-phase3-hero__goals">@mr.GoalsTeamA : @mr.GoalsTeamB</span>
+                <span class="party-phase3-hero__team">Ekipa B</span>
+            </div>
+            <div class="party-phase3-hero__meta">
+                <i class="fa-regular fa-calendar"></i> @mr.MatchHeld.ToString("dd.MM.yyyy. HH:mm")
+                &nbsp;&nbsp;
+                <i class="fa-solid fa-location-dot"></i> @Model.ScheduledMatch.PlayingField.Name
+            </div>
+        </a>
+    }
+
+    @* ── PHASE 2: Match is scheduled ── *@
+    @if (hasScheduled)
+    {
+        var match = Model.ScheduledMatch!;
+        <div class="party-phase2-block">
+            <h2 class="party-phase2-block__title">
+                <i class="fa-solid fa-circle-check" style="color:#61de6f;"></i> Meč je organiziran!
+            </h2>
+            <div class="party-phase2-block__inner">
+                <div class="party-match-card-wrap">
+                    <partial name="_ScheduledMatchSummaryCard" model="match" />
+                </div>
+                <div class="party-attendance-list">
+                    <h3 class="party-section-title"><i class="fa-solid fa-clipboard-list"></i> Dolasci</h3>
+                    @foreach (var member in Model.Members)
+                    {
+                        var att = match.ScheduledMatchAttendances.FirstOrDefault(a => a.PlayerId == member.Id);
+                        string icon, colorClass;
+                        if (att == null)          { icon = "fa-solid fa-circle-minus"; colorClass = "attendance-unknown"; }
+                        else if (att.IsAttending) { icon = "fa-solid fa-circle-check"; colorClass = "attendance-going"; }
+                        else                      { icon = "fa-solid fa-circle-xmark"; colorClass = "attendance-notgoing"; }
+
+                        <div class="party-attendance-row">
+                            <div class="party-avatar">@DataUtility.GetInitials(member.User?.UserName, "P")</div>
+                            <span class="party-member-name">@member.User?.UserName</span>
+                            <i class="@icon @colorClass party-attendance-icon"></i>
+                        </div>
+                    }
+
+                    @if (isMember && !attendanceLocked)
+                    {
+                        <button id="attendance-btn"
+                                class="party-attendance-btn @(isAttending ? "party-attendance-btn--going" : "party-attendance-btn--default")"
+                                onclick="toggleAttendance('@Model.Id', @(isAttending ? "true" : "false"))">
+                            @if (isAttending)
+                            {
+                                <i class="fa-solid fa-circle-xmark"></i> <span>Otkaži svoj dolazak</span>
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-circle-check"></i> <span>Označi svoj dolazak</span>
+                            }
+                        </button>
+                    }
+
+                    @if (canFinalize)
+                    {
+                        <button class="party-attendance-btn party-finalize-btn" onclick="openFinalizeModal()">
+                            <i class="fa-solid fa-flag-checkered"></i>
+                            <span>Unesi rezultat meča</span>
+                        </button>
+                    }
+                    @if (canEdit)
+                    {
+                        <button class="party-attendance-btn party-finalize-btn party-finalized-edit-btn" onclick="openFinalizeModal(true)">
+                            <i class="fa-solid fa-circle-check finalized-icon"></i>
+                            <span class="finalized-label">Rezultat zabilježen</span>
+                            <span class="finalized-edit-label"><i class="fa-solid fa-pen"></i> Uredi</span>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @* ── PHASE 1 (always visible): party info + members ── *@
     <div class="party-details-card">
         <div class="party-details-header">
             <h1>@Model.PartyDescription</h1>
@@ -164,9 +254,7 @@ async function toggleAttendance(partyId, currentlyAttending) {
 
         <div class="party-details-layout">
 
-            @* LEFT: organizer / locations / preferred dates *@
             <div class="party-details-left">
-
                 <section class="party-details-section">
                     <h2 class="party-section-title"><i class="fa-solid fa-medal" aria-hidden="true"></i> Organizator</h2>
                     <div class="party-person">
@@ -202,12 +290,9 @@ async function toggleAttendance(partyId, currentlyAttending) {
                         }
                     </ul>
                 </section>
-
             </div>
 
-            @* RIGHT: members + match card + attendance *@
             <div class="party-details-right">
-
                 <section class="party-details-section">
                     <h2 class="party-section-title"><i class="fa-solid fa-users" aria-hidden="true"></i> Clanovi (@Model.Members.Count / @Model.MaxMembers)</h2>
                     <ul class="party-members-list party-members-list--scrollable">
@@ -224,84 +309,12 @@ async function toggleAttendance(partyId, currentlyAttending) {
                         }
                     </ul>
                 </section>
-
-                @if (Model.ScheduledMatch != null)
-                {
-                    var match = Model.ScheduledMatch;
-
-                    <div class="party-details-section party-match-block">
-                        <h2 class="party-section-title" style="margin-bottom:0.85rem;">
-                            <i class="fa-solid fa-circle-check" style="color:#61de6f;"></i> Meč je organiziran!
-                        </h2>
-
-                        <div class="party-match-inner">
-                            <div class="party-match-card-wrap">
-                                <partial name="_ScheduledMatchSummaryCard" model="match" />
-                            </div>
-
-                            <div class="party-attendance-list">
-                                <h3 class="party-section-title" style="margin-bottom:0.75rem;">
-                                    <i class="fa-solid fa-clipboard-list"></i> Dolasci
-                                </h3>
-                                @foreach (var member in Model.Members)
-                                {
-                                    var att = match.ScheduledMatchAttendances.FirstOrDefault(a => a.PlayerId == member.Id);
-                                    string icon, colorClass;
-                                    if (att == null)          { icon = "fa-solid fa-circle-minus";  colorClass = "attendance-unknown"; }
-                                    else if (att.IsAttending) { icon = "fa-solid fa-circle-check";  colorClass = "attendance-going"; }
-                                    else                      { icon = "fa-solid fa-circle-xmark";  colorClass = "attendance-notgoing"; }
-
-                                    <div class="party-attendance-row">
-                                        <div class="party-avatar">@DataUtility.GetInitials(member.User?.UserName, "P")</div>
-                                        <span class="party-member-name">@member.User?.UserName</span>
-                                        <i class="@icon @colorClass party-attendance-icon"></i>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-
-                        @if (isMember)
-                        {
-                            <button id="attendance-btn"
-                                    class="party-attendance-btn @(isAttending ? "party-attendance-btn--going" : "party-attendance-btn--default")"
-                                    onclick="toggleAttendance('@Model.Id', @(isAttending ? "true" : "false"))">
-                                @if (isAttending)
-                                {
-                                    <i class="fa-solid fa-circle-xmark"></i> <span>Otkaži svoj dolazak</span>
-                                }
-                                else
-                                {
-                                    <i class="fa-solid fa-circle-check"></i> <span>Označi svoj dolazak</span>
-                                }
-                            </button>
-                        }
-
-                        @if (canFinalize)
-                        {
-                            <button class="party-attendance-btn party-finalize-btn"
-                                    onclick="openFinalizeModal()">
-                                <i class="fa-solid fa-flag-checkered"></i>
-                                <span>Unesi rezultat meča</span>
-                            </button>
-                        }
-                        @if (canEdit)
-                        {
-                            <button class="party-attendance-btn party-finalize-btn party-finalized-edit-btn"
-                                    onclick="openFinalizeModal(true)">
-                                <i class="fa-solid fa-circle-check finalized-icon"></i>
-                                <span class="finalized-label">Rezultat zabilježen</span>
-                                <span class="finalized-edit-label"><i class="fa-solid fa-pen"></i> Uredi</span>
-                            </button>
-                        }
-                    </div>
-                }
-
-
             </div>
+
         </div>
     </div>
 
-    @* ── Finalize match modal ── *@
+    @* ── Finalize modal ── *@
     @if ((canFinalize || canEdit) && Model.ScheduledMatch != null)
     {
         var attendingPlayers = Model.ScheduledMatch.ScheduledMatchAttendances
@@ -330,7 +343,6 @@ async function toggleAttendance(partyId, currentlyAttending) {
                 <h2 id="finalize-modal-title" class="mt-modal-title">
                     <i class="fa-solid fa-flag-checkered"></i> Unesi rezultat meča
                 </h2>
-
                 <div class="finalize-score-row">
                     <div class="finalize-score-field">
                         <label>Ekipa A – Golovi</label>
@@ -342,7 +354,6 @@ async function toggleAttendance(partyId, currentlyAttending) {
                         <input type="number" id="fin-goals-b" min="0" max="99" value="0" class="mt-modal-input finalize-score-input" />
                     </div>
                 </div>
-
                 <h3 class="finalize-section-title">Dodjela igrača ekipama</h3>
                 <div class="finalize-players-grid" id="finalize-players-grid">
                     @foreach (var p in attendingPlayers)
@@ -364,7 +375,6 @@ async function toggleAttendance(partyId, currentlyAttending) {
                         </div>
                     }
                 </div>
-
                 <div class="mt-modal-actions">
                     <button type="button" class="mt-modal-btn mt-modal-btn--cancel" onclick="closeFinalizeModal()">Odustani</button>
                     <button type="button" id="finalize-submit-btn" class="mt-modal-btn mt-modal-btn--submit"
@@ -379,13 +389,10 @@ async function toggleAttendance(partyId, currentlyAttending) {
 
 @if (isMember)
 {
-    <!-- Chat FAB — direct child of layout, no positioned ancestor -->
     <button id="chat-fab" class="chat-fab" title="Otvori chat" aria-label="Otvori chat">
         <i class="fa-solid fa-comments"></i>
     </button>
-
     <div id="chat-overlay" class="chat-overlay"></div>
-
     <div id="chat-modal" class="chat-modal" hidden>
         <div class="chat-modal__header">
             <span class="chat-modal__title"><i class="fa-solid fa-comments"></i> Razgovor</span>
@@ -401,11 +408,9 @@ async function toggleAttendance(partyId, currentlyAttending) {
     </div>
 }
 
-<!-- AI FAB -->
 <button id="ai-fab" class="ai-fab" title="Zakaži meč s AI" aria-label="AI asistent">
     <i class="fa-solid fa-wand-magic-sparkles"></i>
 </button>
-
 <div id="ai-panel" class="ai-panel" hidden>
     <div class="ai-panel__header">
         <span class="ai-panel__title"><i class="fa-solid fa-wand-magic-sparkles"></i> AI asistent</span>

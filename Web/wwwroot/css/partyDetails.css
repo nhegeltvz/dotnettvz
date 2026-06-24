@@ -442,6 +442,118 @@ body .party-details-page {
   background: rgba(38, 100, 175, 0.4);
 }
 
+/* ── Phase 2: scheduled match block ── */
+.party-phase2-block {
+  background: rgba(10, 22, 40, 0.72);
+  border: 1px solid rgba(56, 187, 255, 0.25);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  backdrop-filter: blur(6px);
+}
+
+.party-phase2-block__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  color: var(--mt-text);
+  margin: 0 0 1.1rem 0;
+}
+
+.party-phase2-block__inner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── Phase 3: match played hero ── */
+.party-phase3-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(10, 22, 40, 0.80);
+  border: 1px solid rgba(56, 187, 255, 0.35);
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.25rem;
+  backdrop-filter: blur(8px);
+  text-decoration: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+}
+
+.party-phase3-hero:hover {
+  border-color: var(--mt-highlight);
+  box-shadow: 0 0 28px var(--mt-highlight-glow);
+}
+
+.party-phase3-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.party-phase3-hero__title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06rem;
+  color: var(--mt-text);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.party-phase3-hero__underline {
+  text-decoration: underline;
+  text-decoration-color: var(--mt-highlight);
+  text-underline-offset: 5px;
+  color: var(--mt-highlight);
+}
+
+.party-phase3-hero__sub {
+  font-size: 1rem;
+  color: var(--mt-text-subtle);
+  margin: 0;
+  font-weight: 500;
+}
+
+.party-phase3-hero__score {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.party-phase3-hero__goals {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--mt-highlight);
+  letter-spacing: 0.1rem;
+}
+
+.party-phase3-hero__team {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--mt-text-subtle);
+  letter-spacing: 0.06rem;
+}
+
+.party-phase3-hero__meta {
+  font-size: 0.82rem;
+  color: var(--mt-text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .party-details-layout {
@@ -453,6 +565,10 @@ body .party-details-page {
   }
 
   .party-members-list {
+    grid-template-columns: 1fr;
+  }
+
+  .party-phase2-block__inner {
     grid-template-columns: 1fr;
   }
 }
