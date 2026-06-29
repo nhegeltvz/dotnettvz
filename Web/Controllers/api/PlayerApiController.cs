@@ -32,7 +32,8 @@ namespace Web.Controllers.api
             if (!string.IsNullOrEmpty(search))
             {
                 search = search.Trim();
-                playersQuery = playersQuery.Where(p => string.IsNullOrEmpty(search) || EF.Functions.Like(p.User.UserName, $"%{search}%"));
+                var term = search.ToLower();
+                playersQuery = playersQuery.Where(p => p.User.UserName.ToLower().Contains(term));
             }
 
             var players = await playersQuery

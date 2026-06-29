@@ -1,12 +1,13 @@
 @model Data.Models.Player
+@using Data.Services
 
 @{
     ViewData["Title"] = "Detalji igraca";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Players", "/Players"),
-        new(Model.User?.UserName ?? "Player")
+        new("Početna", "/home"),
+        new("Igrači", "/Players"),
+        new("Detalji igrača")
     };
 
     var matches = Model.MatchPlayers.Count;
@@ -32,7 +33,7 @@
 
             <div class="player-details-identity">
                 <h1>@Model.User?.UserName</h1>
-                <p>@Model.PreferredPosition • @age god</p>
+                <p>@Localization.Localize(Model.PreferredPosition) • @age god</p>
             </div>
         </div>
 

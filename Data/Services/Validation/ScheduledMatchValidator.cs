@@ -20,25 +20,25 @@ namespace Data.Services.Validation
 
             if (entity.PlayingFieldId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Playing field is required."));
+                errors.Add(new Error(ErrorType.Validation, "Teren je obavezan."));
             }
             else if (!_dbContext.PlayingFields.Any(field => field.Id == entity.PlayingFieldId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Playing field does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Teren ne postoji."));
             }
 
             if (entity.PartyId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Party is required."));
+                errors.Add(new Error(ErrorType.Validation, "Grupa je obavezna."));
             }
             else if (!_dbContext.Parties.Any(party => party.Id == entity.PartyId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Party does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Grupa ne postoji."));
             }
 
             if (entity.MatchDate < DateTime.UtcNow)
             {
-                errors.Add(new Error(ErrorType.Validation, "Match date must be in the future."));
+                errors.Add(new Error(ErrorType.Validation, "Datum meča mora biti u budućnosti."));
             }
 
             if (entity.PartyId != Guid.Empty)
@@ -47,7 +47,7 @@ namespace Data.Services.Validation
                     match.PartyId == entity.PartyId && match.Id != entity.Id);
                 if (partyAlreadyScheduled)
                 {
-                    errors.Add(new Error(ErrorType.Validation, "Party already has a scheduled match."));
+                    errors.Add(new Error(ErrorType.Validation, "Grupa već ima zakazan meč."));
                 }
             }
 

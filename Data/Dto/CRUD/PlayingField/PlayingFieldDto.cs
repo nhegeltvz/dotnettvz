@@ -33,7 +33,6 @@ namespace Data.Dto.CRUD.PlayingField
                 Status = playingField.Status,
                 IsOutdoor = playingField.IsOutdoor,
                 SurfaceType = playingField.SurfaceType,
-                Image = playingField.Image,
                 PlayedMatchesCount = playingField.MatchRecords.Count(record => record.WasMatchHeld),
                 UpcomingScheduledMatchesCount = playingField.ScheduledMatches.Count(match => match.MatchDate > now)
             };

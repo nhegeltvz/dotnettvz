@@ -1,13 +1,14 @@
 @model Web.Models.StadiumDetailsViewModel
+@using Data.Services
 
 @{
     ViewData["Title"] = "Detalji Stadiona";
     var field = Model.Field;
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Stadiums", "/Stadiums"),
-        new(field.Name)
+        new("Početna", "/home"),
+        new("Stadioni", "/Stadiums"),
+        new("Detalji stadiona")
     };
 }
 
@@ -23,7 +24,7 @@
     <div class="stadium-details-card">
         <div class="stadium-floating-badge" aria-label="Broj odigranih utakmica">
             <span class="stadium-floating-badge__count">@Model.PlayedMatchesCount <i class="fa-solid fa-futbol" aria-hidden="true"></i></span>
-            <span class="stadium-floating-badge__label">Match Played</span>
+            <span class="stadium-floating-badge__label">Odigranih mečeva</span>
         </div>
 
         <div class="stadium-details-first-row">
@@ -50,20 +51,14 @@
                             {
                                 <button class="carousel-control-prev" type="button" data-bs-target="#stadiumCarousel" data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
+                                    <span class="visually-hidden">Prethodno</span>
                                 </button>
                                 <button class="carousel-control-next" type="button" data-bs-target="#stadiumCarousel" data-bs-slide="next">
                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
+                                    <span class="visually-hidden">Sljedeće</span>
                                 </button>
                             }
                         </div>
-                    }
-                    else if (field.Image != null && field.Image.Length > 0)
-                    {
-                        var base64 = Convert.ToBase64String(field.Image);
-                        var imgSrc = $"data:image/jpeg;base64,{base64}";
-                        <img src="@imgSrc" alt="@field.Name" class="stadium-details-image" />
                     }
                     else
                     {
@@ -76,8 +71,8 @@
                 <section class="stadium-info-card">
                     <h2><i class="fa-solid fa-circle-info"></i> Karakteristike</h2>
                     <ul>
-                        <li><i class="fa-solid fa-sun"></i> <strong>Tip:</strong> @(field.IsOutdoor ? "Outdoor" : "Indoor")</li>
-                        <li><i class="fa-solid fa-futbol"></i> <strong>Podloga:</strong> @field.SurfaceType</li>
+                        <li><i class="fa-solid fa-sun"></i> <strong>Tip:</strong> @Localization.LocalizeOutdoor(field.IsOutdoor)</li>
+                        <li><i class="fa-solid fa-futbol"></i> <strong>Podloga:</strong> @Localization.Localize(field.SurfaceType)</li>
                     </ul>
                 </section>
 
@@ -85,7 +80,7 @@
                     <h2>Status</h2>
                     <p class="stadium-status-text">
                         <i class="fa-solid fa-check"></i>
-                        @field.Status
+                        @Localization.Localize(field.Status)
                     </p>
                 </section>
             </div>
@@ -101,7 +96,7 @@
                     <h2><i class="fa-solid fa-phone"></i> Kontakt</h2>
                     <ul>
                         <li><strong>Telefon:</strong> @field.ContactNumber</li>
-                        <li><strong>Match records:</strong> @field.MatchRecords.Count</li>
+                        <li><strong>Odigranih mečeva:</strong> @field.MatchRecords.Count</li>
                     </ul>
                 </section>
             </div>

@@ -12,9 +12,9 @@
     ViewData["Title"] = "Detalji Partije";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Parties", "/Parties"),
-        new(Model.PartyDescription)
+        new("Početna", "/home"),
+        new("Grupe", "/Parties"),
+        new("Detalji grupe")
     };
 
     var currentUserId = UserManager.GetUserId(User);
@@ -95,6 +95,9 @@ async function submitFinalize(partyId) {
   });
 
   if (players.length === 0) { Notify.error('Dodijelite barem jednog igrača ekipi.'); return; }
+  const hasTeamA = players.some(p => p.team === 0);
+  const hasTeamB = players.some(p => p.team === 1);
+  if (!hasTeamA || !hasTeamB) { Notify.error('Svaka ekipa mora imati barem jednog igrača.'); return; }
 
   const btn = document.getElementById('finalize-submit-btn');
   btn.disabled = true;
@@ -243,6 +246,22 @@ async function toggleAttendance(partyId, currentlyAttending) {
                     }
                 </div>
             </div>
+        </div>
+    }
+
+    @* ── No scheduled match notice ── *@
+    @if (!hasScheduled)
+    {
+        <div class="party-no-match-notice">
+            <i class="fa-regular fa-calendar-xmark"></i>
+            @if (isOwner)
+            {
+                <p>Vaša grupa još nije organizirala meč. Za organizaciju meča <a asp-controller="UserDashboard" asp-action="MyParties">kliknite ovdje</a>.</p>
+            }
+            else
+            {
+                <p>Meč još nije organiziran, u međuvremenu možete razgovarati sa ostalima.</p>
+            }
         </div>
     }
 
@@ -407,19 +426,3 @@ async function toggleAttendance(partyId, currentlyAttending) {
         </div>
     </div>
 }
-
-<button id="ai-fab" class="ai-fab" title="Zakaži meč s AI" aria-label="AI asistent">
-    <i class="fa-solid fa-wand-magic-sparkles"></i>
-</button>
-<div id="ai-panel" class="ai-panel" hidden>
-    <div class="ai-panel__header">
-        <span class="ai-panel__title"><i class="fa-solid fa-wand-magic-sparkles"></i> AI asistent</span>
-        <button id="ai-close" class="ai-panel__close" aria-label="Zatvori">&times;</button>
-    </div>
-    <textarea id="ai-input" class="ai-panel__textarea" placeholder='npr. "Sutra u 18h na Šalati"' rows="3"></textarea>
-    <div class="ai-panel__footer">
-        <button id="ai-send" class="ai-panel__send">
-            <i class="fa-solid fa-paper-plane"></i>
-        </button>
-    </div>
-</div>

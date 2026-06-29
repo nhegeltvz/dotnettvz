@@ -27,20 +27,39 @@ async function deleteParty(partyId) {
 const scheduleOverlay = document.getElementById('schedule-modal-overlay');
 const scheduleForm    = document.getElementById('schedule-match-form');
 
+let _smDatePicker = null;
+
 function openScheduleModal(partyId, matchId, playingFieldId, matchDate) {
-  document.getElementById('sm-party-id').value          = partyId;
-  document.getElementById('sm-match-id').value          = matchId ?? '';
-  document.getElementById('sm-playing-field').value     = playingFieldId ?? '';
-  document.getElementById('sm-match-date').value        = matchDate ?? '';
+  document.getElementById('sm-party-id').value      = partyId;
+  document.getElementById('sm-match-id').value      = matchId ?? '';
+  document.getElementById('sm-playing-field').value = playingFieldId ?? '';
 
   scheduleOverlay.removeAttribute('hidden');
   document.body.classList.add('modal-open');
+
+  // Init flatpickr once, then set value
+  const dateInput = document.getElementById('sm-match-date');
+  if (!_smDatePicker) {
+    _smDatePicker = flatpickr(dateInput, {
+      enableTime: true,
+      dateFormat: 'Y-m-dTH:i',
+      time_24hr: true,
+      locale: { firstDayOfWeek: 1 },
+      minDate: 'today',
+    });
+  }
+  if (matchDate) {
+    _smDatePicker.setDate(matchDate, false);
+  } else {
+    _smDatePicker.clear();
+  }
 }
 
 function closeScheduleModal() {
   scheduleOverlay.setAttribute('hidden', '');
   document.body.classList.remove('modal-open');
   scheduleForm.reset();
+  _smDatePicker?.clear();
 }
 
 scheduleOverlay?.addEventListener('click', e => { if (e.target === scheduleOverlay) closeScheduleModal(); });
@@ -49,10 +68,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !scheduleO
 scheduleForm?.addEventListener('submit', async e => {
   e.preventDefault();
 
-  const partyId       = document.getElementById('sm-party-id').value;
-  const matchId       = document.getElementById('sm-match-id').value;
+  const partyId        = document.getElementById('sm-party-id').value;
+  const matchId        = document.getElementById('sm-match-id').value;
   const playingFieldId = document.getElementById('sm-playing-field').value;
-  const matchDate     = document.getElementById('sm-match-date').value;
+  const matchDate      = _smDatePicker?.input?.value ?? document.getElementById('sm-match-date').value;
 
   if (!playingFieldId) { Notify.error('Odaberite teren.'); return; }
   if (!matchDate)      { Notify.error('Odaberite datum i vrijeme.'); return; }

@@ -20,20 +20,20 @@ namespace Data.Services.Validation
 
             if (entity.MatchRecordId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Match record is required."));
+                errors.Add(new Error(ErrorType.Validation, "Utakmica je obavezna."));
             }
             else if (!_dbContext.MatchRecords.Any(record => record.Id == entity.MatchRecordId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Match record does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Utakmica ne postoji."));
             }
 
             if (entity.PlayerId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Player is required."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač je obavezan."));
             }
             else if (!_dbContext.Users.Any(player => player.Id == entity.PlayerId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Player does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač ne postoji."));
             }
 
             if (entity.PlayerId != Guid.Empty && entity.MatchRecordId != Guid.Empty)
@@ -44,7 +44,7 @@ namespace Data.Services.Validation
                     && vote.MatchRecordId == entity.MatchRecordId);
                 if (duplicate)
                 {
-                    errors.Add(new Error(ErrorType.Validation, "Player already voted for this match."));
+                    errors.Add(new Error(ErrorType.Validation, "Igrač je već glasao za ovu utakmicu."));
                 }
             }
 

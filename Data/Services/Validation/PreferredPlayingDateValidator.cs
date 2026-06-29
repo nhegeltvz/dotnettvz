@@ -20,16 +20,16 @@ namespace Data.Services.Validation
 
             if (entity.PartyId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Party is required."));
+                errors.Add(new Error(ErrorType.Validation, "Grupa je obavezna."));
             }
             else if (!_dbContext.Parties.Any(party => party.Id == entity.PartyId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Party does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Grupa ne postoji."));
             }
 
             if (entity.Date.Date < DateTime.UtcNow.Date)
             {
-                errors.Add(new Error(ErrorType.Validation, "Preferred date cannot be in the past."));
+                errors.Add(new Error(ErrorType.Validation, "Preferirani datum ne može biti u prošlosti."));
             }
 
             if (entity.PartyId != Guid.Empty)
@@ -40,7 +40,7 @@ namespace Data.Services.Validation
                     && preferredDate.Date.Date == entity.Date.Date);
                 if (duplicate)
                 {
-                    errors.Add(new Error(ErrorType.Validation, "Preferred date already exists for this party."));
+                    errors.Add(new Error(ErrorType.Validation, "Preferirani datum već postoji za ovu grupu."));
                 }
             }
 

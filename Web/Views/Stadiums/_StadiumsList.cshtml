@@ -1,17 +1,18 @@
 @model List<Data.Models.PlayingField>
+@using Data.Services
 
 <div class="dashboard-panel-header">
-    <h2 class="dashboard-panel-title">Stadiums</h2>
-    <a class="dashboard-action-button" href="#" data-dashboard-action="/stadiums/create" aria-label="Add stadium">
+    <h2 class="dashboard-panel-title">Stadioni</h2>
+    <a class="dashboard-action-button" href="#" data-dashboard-action="/stadiums/create" aria-label="Dodaj stadion">
         <i class="fa-solid fa-plus" aria-hidden="true"></i>
     </a>
 </div>
 
-<table class="dashboard-table" aria-label="Stadiums list">
+<table class="dashboard-table" aria-label="Lista stadiona">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th>Naziv</th>
             <th>Status</th>
             <th></th>
         </tr>
@@ -22,7 +23,7 @@
             <tr>
                 <td>@field.Id</td>
                 <td>@field.Name</td>
-                <td>@field.Status</td>
+                <td>@Localization.Localize(field.Status)</td>
                 <td>
                     <div class="dashboard-table-actions">
                         <a class="dashboard-row-button" href="#" data-dashboard-action="/stadiums/edit/@field.Id" aria-label="Edit stadium">

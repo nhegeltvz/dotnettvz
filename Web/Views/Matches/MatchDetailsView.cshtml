@@ -1,12 +1,13 @@
 @model Data.Models.MatchRecord
+@using Data.Services
 
 @{
     ViewData["Title"] = "Detalji utakmice";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Matches", "/Matches"),
-        new($"{Model.PlayingField.Name} — {Model.MatchHeld.ToLocalTime():dd.MM.yyyy.}")
+        new("Početna", "/home"),
+        new("Utakmice", "/Matches"),
+        new("Detalji utakmice")
     };
 
 
@@ -157,9 +158,9 @@
                     <h2 class="match-panel-title"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Teren</h2>
                     <ul class="match-field-list">
                         <li><strong>Naziv:</strong> @Model.PlayingField.Name</li>
-                        <li><strong>Status:</strong> @Model.PlayingField.Status</li>
-                        <li><strong>Podloga:</strong> @Model.PlayingField.SurfaceType</li>
-                        <li><strong>Tip:</strong> @(Model.PlayingField.IsOutdoor ? "Outdoor" : "Indoor")</li>
+                        <li><strong>Status:</strong> @Localization.Localize(Model.PlayingField.Status)</li>
+                        <li><strong>Podloga:</strong> @Localization.Localize(Model.PlayingField.SurfaceType)</li>
+                        <li><strong>Tip:</strong> @Localization.LocalizeOutdoor(Model.PlayingField.IsOutdoor)</li>
                         <li><strong>Kontakt:</strong> @Model.PlayingField.ContactNumber</li>
                     </ul>
 

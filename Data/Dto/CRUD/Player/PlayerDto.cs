@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Data.Services;
 using PlayerModel = Data.Models.Player;
 
 namespace Data.Dto.CRUD.Player
@@ -7,7 +8,8 @@ namespace Data.Dto.CRUD.Player
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public string Username { get; set; } = string.Empty;   // from Player.User.UserName
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         public string Bio { get; set; } = string.Empty;
         public string PreferredPosition { get; set; } = string.Empty;
         public DateOnly DateOfBirth { get; set; }
@@ -25,8 +27,9 @@ namespace Data.Dto.CRUD.Player
                 Id = player.Id,
                 UserId = player.UserId,
                 Username = player.User.UserName ?? string.Empty,
+                Email = player.User.Email ?? string.Empty,
                 Bio = player.Bio,
-                PreferredPosition = player.PreferredPosition.ToString(),
+                PreferredPosition = Localization.LocalizeShort(player.PreferredPosition),
                 DateOfBirth = player.DateOfBirth,
                 CreatedPartiesCount = player.CreatedParties.Count,
                 JoinedPartiesCount = player.JoinedParties.Count,

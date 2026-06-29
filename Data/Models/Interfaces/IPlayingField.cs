@@ -10,7 +10,6 @@ public interface IPlayingField
     string Description { get; }
     double Longitude { get; }
     double Latitude { get; }
-    byte[]? Image { get; }
     string ContactNumber { get; }
     FieldStatus Status { get; }
     bool IsOutdoor { get; }

@@ -9,4 +9,5 @@ public class PartyFormViewModel
     public List<SelectListItem> Players { get; set; } = new();
     public List<SelectListItem> PlayingFields { get; set; } = new();
     public HegelMultiSelectConfig HmsPartyMembers { get; set; } = new();
+    public bool HasMatchRecord { get; set; }
 }

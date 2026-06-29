@@ -1,4 +1,5 @@
 @model Data.Models.Player
+@using Data.Services
 
 @{
     var matches  = Model.MatchPlayers.Count;
@@ -19,7 +20,7 @@
     <div class="player-card-lite__avatar" aria-hidden="true">@initials</div>
     <div class="player-card-lite__header">
         <span class="player-card-lite__name">@username</span>
-        <span class="player-card-lite__meta">@Model.PreferredPosition • @age</span>
+        <span class="player-card-lite__meta">@Localization.Localize(Model.PreferredPosition) • @age</span>
     </div>
     <div class="player-card-lite__stats">
         <span class="player-card-lite__stat">G @goals</span>

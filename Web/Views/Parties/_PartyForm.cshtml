@@ -53,24 +53,43 @@
             <span asp-validation-for="Form.PreferredLocations" class="text-danger"></span>
         </div>
 
-        <div class="dashboard-form-row">
-            <label asp-for="Form.ScheduledMatchPlayingFieldId">Scheduled match field</label>
-            <select asp-for="Form.ScheduledMatchPlayingFieldId" asp-items="Model.PlayingFields">
-                <option value="">-- Select playing field --</option>
-            </select>
-            <span asp-validation-for="Form.ScheduledMatchPlayingFieldId" class="text-danger"></span>
-        </div>
+        <div class="dashboard-form-section dashboard-scheduled-match-section">
+            <h3 class="dashboard-form-section-title">
+                <i class="fa-solid fa-calendar-check"></i> Zakazani meč
+            </h3>
 
-        <div class="dashboard-form-row">
-            <label asp-for="Form.ScheduledMatchDate">Scheduled match date</label>
-            @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+            @if (Model.HasMatchRecord)
             {
-                FieldName = "Form_ScheduledMatchDate",
-                Value = Model.Form.ScheduledMatchDate.HasValue
-                    ? Model.Form.ScheduledMatchDate.Value.ToString("yyyy-MM-ddTHH:mm")
-                    : string.Empty
-            })
-            <span asp-validation-for="Form.ScheduledMatchDate" class="text-danger"></span>
+                <div class="dashboard-match-locked-notice">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Rezultat meča je već evidentiran — zakazani meč se ne može mijenjati ni ukloniti.</span>
+                </div>
+            }
+
+            <div class="dashboard-form-row">
+                <label asp-for="Form.ScheduledMatchPlayingFieldId">Teren zakazanog meča</label>
+                <select asp-for="Form.ScheduledMatchPlayingFieldId" asp-items="Model.PlayingFields"
+                        @(Model.HasMatchRecord ? "disabled" : "")>
+                    @if (!Model.HasMatchRecord)
+                    {
+                        <option value="">-- Bez zakazanog meča --</option>
+                    }
+                </select>
+                <span asp-validation-for="Form.ScheduledMatchPlayingFieldId" class="text-danger"></span>
+            </div>
+
+            <div class="dashboard-form-row">
+                <label asp-for="Form.ScheduledMatchDate">Datum zakazanog meča</label>
+                @await Html.PartialAsync("_CustomDatePicker", new CustomDatePickerModel
+                {
+                    FieldName = "Form_ScheduledMatchDate",
+                    Value = Model.Form.ScheduledMatchDate.HasValue
+                        ? Model.Form.ScheduledMatchDate.Value.ToString("yyyy-MM-ddTHH:mm")
+                        : string.Empty,
+                    Disabled = Model.HasMatchRecord
+                })
+                <span asp-validation-for="Form.ScheduledMatchDate" class="text-danger"></span>
+            </div>
         </div>
 
         <div class="dashboard-form-row">

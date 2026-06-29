@@ -1,0 +1,108 @@
+.global-search {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.global-search__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.global-search__icon {
+  position: absolute;
+  left: 0.85rem;
+  color: var(--mt-text-subtle);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.global-search__input {
+  width: 100%;
+  padding: 0.75rem 3.5rem 0.75rem 2.4rem;
+  border-radius: 10px;
+  border: 1px solid var(--mt-border-strong);
+  background: var(--mt-surface-deep);
+  color: var(--mt-text);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.global-search__input:focus {
+  outline: none;
+  border-color: var(--mt-gold);
+  box-shadow: 0 0 0 3px var(--mt-overlay-white-20);
+}
+
+.global-search__clear {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--mt-text-subtle);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.global-search__clear:hover {
+  background: var(--mt-overlay-white-20);
+  color: var(--mt-text);
+}
+
+.global-search__results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--mt-border-strong);
+  background: var(--mt-surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: grid;
+  gap: 0.25rem;
+}
+
+.global-search__group {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.global-search__group-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mt-text-subtle);
+  padding: 0.4rem 0.6rem 0.2rem;
+}
+
+.global-search__option {
+  display: block;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  color: var(--mt-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background 0.15s ease;
+}
+
+.global-search__option:hover {
+  background: var(--mt-overlay-white-20);
+  color: var(--mt-text);
+}
+
+.global-search__empty {
+  padding: 0.6rem 0.75rem;
+  color: var(--mt-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}

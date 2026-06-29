@@ -12,7 +12,7 @@ public class PlayerRatingFormDto
 
     public Guid PlayerReceivingRatingId { get; set; }
 
-    [Required]
-    [Range(1, 10)]
+    [Required(ErrorMessage = "Ocjena je obavezna.")]
+    [Range(1, 10, ErrorMessage = "Ocjena mora biti između 1 i 10.")]
     public int Rating { get; set; }
 }

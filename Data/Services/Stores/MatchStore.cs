@@ -5,6 +5,7 @@ using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Data.Services.Stores
 {
@@ -12,11 +13,15 @@ namespace Data.Services.Stores
     {
         private readonly MatchTrackerDbContext _dbContext;
         private readonly IValidator<MatchRecord> _matchRecordValidator;
+        private readonly ILogger<MatchStore> _logger;
+        private readonly CurrentUserService _currentUser;
 
-        public MatchStore(MatchTrackerDbContext dbContext, IValidator<MatchRecord> matchRecordValidator)
+        public MatchStore(MatchTrackerDbContext dbContext, IValidator<MatchRecord> matchRecordValidator, ILogger<MatchStore> logger, CurrentUserService currentUser)
         {
             _dbContext = dbContext;
             _matchRecordValidator = matchRecordValidator;
+            _logger = logger;
+            _currentUser = currentUser;
         }
 
         public async Task<List<MatchRecord>> GetAllMatchRecordsAsync()
@@ -26,6 +31,41 @@ namespace Data.Services.Stores
                 .Include(mr => mr.MatchPlayers)
                 .AsNoTracking()
                 .ToListAsync();
+
+        public async Task<List<MatchRecord>> GetMatchRecordsByDateAsync(DateOnly date)
+        {
+            var start = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var end   = date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            return await _dbContext.MatchRecords
+                .Include(mr => mr.PlayingField)
+                .Include(mr => mr.MatchVotes)
+                .Include(mr => mr.MatchPlayers)
+                .Where(mr => mr.MatchHeld >= start && mr.MatchHeld <= end)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<MatchRecord>> GetMatchRecordsByRangeAsync(DateTime from, DateTime to)
+            => await _dbContext.MatchRecords
+                .Include(mr => mr.PlayingField)
+                .Include(mr => mr.MatchVotes)
+                .Include(mr => mr.MatchPlayers)
+                .Where(mr => mr.MatchHeld >= from && mr.MatchHeld <= to)
+                .OrderByDescending(mr => mr.MatchHeld)
+                .AsNoTracking()
+                .ToListAsync();
+
+        public async Task<(int Last7, int Last14, int Last30)> GetPeriodMatchCountsAsync()
+        {
+            var now = DateTime.UtcNow;
+            var d7  = now.AddDays(-7);
+            var d14 = now.AddDays(-14);
+            var d30 = now.AddDays(-30);
+            var last7  = await _dbContext.MatchRecords.CountAsync(m => m.MatchHeld >= d7);
+            var last14 = await _dbContext.MatchRecords.CountAsync(m => m.MatchHeld >= d14);
+            var last30 = await _dbContext.MatchRecords.CountAsync(m => m.MatchHeld >= d30);
+            return (last7, last14, last30);
+        }
 
         public IQueryable<MatchRecord> QueryMatchesAsync()
                  => _dbContext.MatchRecords;
@@ -65,11 +105,17 @@ namespace Data.Services.Stores
             UpdateMatchRecord(model, matchRecord);
             var validationResult = _matchRecordValidator.Validate(matchRecord);
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Match record creation failed by {UserId}, validation errors: {Errors}",
+                    _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return Result<Guid>.FromResult(validationResult);
+            }
 
             _dbContext.MatchRecords.Add(matchRecord);
             await _dbContext.SaveChangesAsync();
 
+            _logger.LogInformation("Match record created: {MatchId} by {UserId}, Data: {Model}",
+                matchRecord.Id, _currentUser.Id, model);
             return Result<Guid>.Success(matchRecord.Id);
         }
 
@@ -85,10 +131,16 @@ namespace Data.Services.Stores
             var validationResult = _matchRecordValidator.Validate(matchRecord);
 
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Match record update failed for {MatchId} by {UserId}, validation errors: {Errors}",
+                    model.Id, _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return validationResult;
+            }
 
-            var rowsAffected = await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
             _dbContext.ChangeTracker.Clear();
+            _logger.LogInformation("Match record updated: {MatchId} by {UserId}, Data: {Model}",
+                model.Id, _currentUser.Id, model);
             return Result.Success();
         }
 
@@ -109,6 +161,8 @@ namespace Data.Services.Stores
             if (entity is null) return Result.Failure(MatchRecordErrors.MatchRecordNotDeleted);
             _dbContext.MatchRecords.Remove(entity);
             await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Match record deleted: {MatchId} by {UserId}", id, _currentUser.Id);
             return Result.Success();
         }
     }

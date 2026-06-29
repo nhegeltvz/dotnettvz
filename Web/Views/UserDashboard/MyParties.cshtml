@@ -2,20 +2,25 @@
 @using Data.Models
 @using System.Text.Json
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/partyDetails.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/myMatches.css" asp-append-version="true" />
+}
+
 @{
-    ViewData["Title"] = "Moji mečevi";
+    ViewData["Title"] = "Moje grupe";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
+        new("Početna", "/home"),
         new("Moj profil", "/user-dashboard"),
-        new("Moji mečevi")
+        new("Moje grupe")
     };
     var playingFields = ViewBag.PlayingFields as List<PlayingField> ?? [];
 }
 
 <div class="user-dashboard-page">
     <div class="user-dashboard-header">
-        <h1 class="page-title">Moji mečevi</h1>
+        <h1 class="page-title">Moje grupe</h1>
     </div>
 
     @if (!Model.Any())
@@ -23,7 +28,7 @@
         <div class="user-info-card">
             <p style="color: var(--mt-text-subtle); margin: 0;">
                 Trenutno niste vlasnik nijedne grupe.
-                <a href="/parties" style="color: var(--mt-highlight);">Otvorite jedan na stranici mečeva.</a>
+                <a href="/parties" style="color: var(--mt-highlight);">Otvorite jednu na stranici grupa.</a>
             </p>
         </div>
     }
@@ -118,11 +123,45 @@
                     <div class="my-party-schedule">
                         @if (party.ScheduledMatch != null)
                         {
+                            var hasRecord = party.ScheduledMatch.MatchRecord != null;
+
+                            @if (hasRecord)
+                            {
+                                var mr = party.ScheduledMatch.MatchRecord!;
+                                var existingPlayersJson = JsonSerializer.Serialize(
+                                    mr.MatchPlayers.Select(mp => new { playerId = mp.PlayerId.ToString(), team = (int)mp.Team })
+                                );
+                                <script>
+                                window['_matchData_@party.Id'] = {
+                                    goalsA: @mr.GoalsTeamA,
+                                    goalsB: @mr.GoalsTeamB,
+                                    players: @Html.Raw(existingPlayersJson)
+                                };
+                                </script>
+                                <button class="party-attendance-btn party-finalize-btn party-finalized-edit-btn"
+                                        onclick="openFinalizeModalFor('@party.Id', true)">
+                                    <i class="fa-solid fa-circle-check finalized-icon"></i>
+                                    <span class="finalized-label">Rezultat zabilježen</span>
+                                    <span class="finalized-edit-label"><i class="fa-solid fa-pen"></i> Uredi</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="party-attendance-btn party-finalize-btn"
+                                        onclick="openFinalizeModalFor('@party.Id', false)">
+                                    <i class="fa-solid fa-flag-checkered"></i>
+                                    <span>Unesi rezultat meča</span>
+                                </button>
+                            }
+
                             <partial name="_ScheduledMatchSummaryCard" model="party.ScheduledMatch" />
-                            <button class="mt-modal-btn mt-modal-btn--cancel my-party-edit-schedule-btn"
-                                    onclick="openScheduleModal('@party.Id', '@party.ScheduledMatch.Id', '@party.ScheduledMatch.PlayingFieldId', '@party.ScheduledMatch.MatchDate.ToString("yyyy-MM-ddTHH:mm")')">
-                                <i class="fa-solid fa-pen"></i> Uredi
-                            </button>
+                            @if (!hasRecord)
+                            {
+                                <button class="mt-modal-btn mt-modal-btn--cancel my-party-edit-schedule-btn"
+                                        onclick="openScheduleModal('@party.Id', '@party.ScheduledMatch.Id', '@party.ScheduledMatch.PlayingFieldId', '@party.ScheduledMatch.MatchDate.ToString("yyyy-MM-ddTHH:mm")')">
+                                    <i class="fa-solid fa-pen"></i> Uredi
+                                </button>
+                            }
                         }
                         else
                         {
@@ -133,7 +172,67 @@
                                 <span>Zabilježi meč</span>
                             </button>
                         }
+                        <a href="/parties/details/@party.Id"
+                           class="mt-modal-btn mt-modal-btn--cancel my-party-edit-schedule-btn"
+                           style="display:flex;align-items:center;justify-content:center;gap:0.4rem;text-decoration:none;margin-top:0.5rem;">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Vidi grupu
+                        </a>
                     </div>
+
+                    @* ── Finalize modal for this party ── *@
+                    @if (party.ScheduledMatch != null)
+                    {
+                        var attendingPlayers = party.ScheduledMatch.ScheduledMatchAttendances
+                            .Where(a => a.IsAttending)
+                            .Select(a => a.Player)
+                            .ToList();
+
+                        <div id="finalize-modal-@party.Id" class="mt-modal-overlay" hidden>
+                            <div class="mt-modal finalize-modal" role="dialog" aria-modal="true">
+                                <button class="mt-modal-close" onclick="closeFinalizeModalFor('@party.Id')" aria-label="Zatvori">&times;</button>
+                                <h2 class="mt-modal-title"><i class="fa-solid fa-flag-checkered"></i> Unesi rezultat meča</h2>
+                                <div class="finalize-score-row">
+                                    <div class="finalize-score-field">
+                                        <label>Ekipa A – Golovi</label>
+                                        <input type="number" id="fin-goals-a-@party.Id" min="0" max="99" value="0" class="mt-modal-input finalize-score-input" />
+                                    </div>
+                                    <span class="finalize-score-sep">:</span>
+                                    <div class="finalize-score-field">
+                                        <label>Ekipa B – Golovi</label>
+                                        <input type="number" id="fin-goals-b-@party.Id" min="0" max="99" value="0" class="mt-modal-input finalize-score-input" />
+                                    </div>
+                                </div>
+                                <h3 class="finalize-section-title">Dodjela igrača ekipama</h3>
+                                <div class="finalize-players-grid" id="finalize-players-grid-@party.Id">
+                                    @foreach (var p in attendingPlayers)
+                                    {
+                                        <div class="finalize-player-row" data-player-id="@p.Id">
+                                            <div class="party-avatar">@Web.Helpers.DataUtility.GetInitials(p.User?.UserName, "P")</div>
+                                            <span class="finalize-player-name">@p.User?.UserName</span>
+                                            <div class="finalize-team-toggle">
+                                                <label class="finalize-team-btn">
+                                                    <input type="radio" name="team_@(p.Id)_@party.Id" value="A" checked /> Ekipa A
+                                                </label>
+                                                <label class="finalize-team-btn">
+                                                    <input type="radio" name="team_@(p.Id)_@party.Id" value="B" /> Ekipa B
+                                                </label>
+                                                <label class="finalize-team-btn finalize-team-btn--none">
+                                                    <input type="radio" name="team_@(p.Id)_@party.Id" value="none" /> Ne igra
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="mt-modal-actions">
+                                    <button type="button" class="mt-modal-btn mt-modal-btn--cancel" onclick="closeFinalizeModalFor('@party.Id')">Odustani</button>
+                                    <button type="button" id="finalize-submit-btn-@party.Id" class="mt-modal-btn mt-modal-btn--submit"
+                                            onclick="submitFinalizeFor('@party.Id')">
+                                        <i class="fa-solid fa-flag-checkered"></i> Spremi rezultat
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
         </div>
@@ -165,7 +264,7 @@
 
             <div class="mt-modal-field">
                 <label for="sm-match-date">Datum i vrijeme</label>
-                <input type="datetime-local" id="sm-match-date" class="mt-modal-input" required />
+                <input type="text" id="sm-match-date" class="mt-modal-input" placeholder="Odaberi datum i vrijeme" readonly />
             </div>
 
             <div class="mt-modal-actions">
@@ -178,4 +277,80 @@
 
 @section Scripts {
     <script src="~/js/userDashboard/my-parties.js" asp-append-version="true"></script>
+    <script>
+    function openFinalizeModalFor(partyId, isEdit) {
+        if (isEdit && window['_matchData_' + partyId]) {
+            const data = window['_matchData_' + partyId];
+            document.getElementById('fin-goals-a-' + partyId).value = data.goalsA;
+            document.getElementById('fin-goals-b-' + partyId).value = data.goalsB;
+            const rows = document.querySelectorAll('#finalize-players-grid-' + partyId + ' .finalize-player-row');
+            rows.forEach(row => {
+                const pid = row.dataset.playerId;
+                const existing = data.players.find(p => p.playerId === pid);
+                const val = existing ? (existing.team === 0 ? 'A' : 'B') : 'none';
+                const radio = row.querySelector(`input[value="${val}"]`);
+                if (radio) radio.checked = true;
+            });
+        }
+        document.getElementById('finalize-modal-' + partyId)?.removeAttribute('hidden');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeFinalizeModalFor(partyId) {
+        document.getElementById('finalize-modal-' + partyId)?.setAttribute('hidden', '');
+        document.body.classList.remove('modal-open');
+    }
+
+    async function submitFinalizeFor(partyId) {
+        const isEdit = !!window['_matchData_' + partyId];
+        const goalsA = parseInt(document.getElementById('fin-goals-a-' + partyId).value, 10);
+        const goalsB = parseInt(document.getElementById('fin-goals-b-' + partyId).value, 10);
+        if (isNaN(goalsA) || isNaN(goalsB) || goalsA < 0 || goalsB < 0) {
+            Notify.error('Unesite ispravan rezultat.'); return;
+        }
+        const rows = document.querySelectorAll('#finalize-players-grid-' + partyId + ' .finalize-player-row');
+        const players = [];
+        rows.forEach(row => {
+            const playerId = row.dataset.playerId;
+            const selected = row.querySelector('input[type="radio"]:checked');
+            if (selected && selected.value !== 'none') {
+                players.push({ playerId, team: selected.value === 'A' ? 0 : 1 });
+            }
+        });
+        if (players.length === 0) { Notify.error('Dodijelite barem jednog igrača ekipi.'); return; }
+        const hasTeamA = players.some(p => p.team === 0);
+        const hasTeamB = players.some(p => p.team === 1);
+        if (!hasTeamA || !hasTeamB) { Notify.error('Svaka ekipa mora imati barem jednog igrača.'); return; }
+
+        const btn = document.getElementById('finalize-submit-btn-' + partyId);
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/api/parties/${partyId}/finalize-match`, {
+                method: isEdit ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ goalsTeamA: goalsA, goalsTeamB: goalsB, players }),
+            });
+            if (res.ok) {
+                Notify.success(isEdit ? 'Rezultat je ažuriran!' : 'Rezultat je uspješno evidentiran!');
+                closeFinalizeModalFor(partyId);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                const err = await res.json().catch(() => null);
+                Notify.error(err?.message ?? 'Greška pri evidentiranju.');
+                btn.disabled = false;
+            }
+        } catch {
+            Notify.error('Greška pri slanju zahtjeva.');
+            btn.disabled = false;
+        }
+    }
+
+    document.addEventListener('click', e => {
+        const overlay = e.target.closest('.mt-modal-overlay');
+        if (overlay && e.target === overlay) {
+            overlay.setAttribute('hidden', '');
+            document.body.classList.remove('modal-open');
+        }
+    });
+    </script>
 }

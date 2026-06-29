@@ -31,7 +31,8 @@ namespace Web.Controllers.api
              
             if (!string.IsNullOrEmpty(search))
             {
-                playingFieldsQuery = playingFieldsQuery.Where(pf => pf.Name.Contains(search));
+                var term = search.Trim().ToLower();
+                playingFieldsQuery = playingFieldsQuery.Where(pf => pf.Name.ToLower().Contains(term));
             }
 
             var playingFields = await playingFieldsQuery

@@ -58,13 +58,11 @@ namespace Web.Controllers.api
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var term = search.Trim();
+                var term = search.Trim().ToLower();
                 partiesQuery = partiesQuery
                     .Where(party =>
-                        (party.PartyDescription ?? string.Empty)
-                            .Contains(term, StringComparison.OrdinalIgnoreCase)
-                        || (party.PlayerCreated.User.UserName ?? string.Empty)
-                            .Contains(term, StringComparison.OrdinalIgnoreCase));
+                        party.PartyDescription.ToLower().Contains(term)
+                        || party.PlayerCreated.User.UserName.ToLower().Contains(term));
             }
 
             var parties = await partiesQuery

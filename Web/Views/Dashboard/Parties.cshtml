@@ -3,8 +3,8 @@
     ViewData["Title"] = "Dashboard - Parties";
     var autocompleteConfig = new AutocompleteConfig()
     {
-        Label = "Search Parties",
-        Placeholder = "ex. Evening kickoff",
+        Label = "Pretraži grupe",
+        Placeholder = "npr. Večernji kickoff",
         InputId = "partySearch",
         SearchUrl = "/parties/data",
         ListUrl = "/parties/data",
@@ -17,22 +17,22 @@
     <div class="dashboard-search-wrapper">
         <partial name="_AutocompleteSearch" model="autocompleteConfig" />
     </div>
-    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Party</button>
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Dodaj grupu</button>
 </div>
 
 <section class="dashboard-panel">
     <header class="dashboard-panel-header">
-        <h2 class="dashboard-panel-title">Parties</h2>
+        <h2 class="dashboard-panel-title">Grupe</h2>
     </header>
     <div style="display:flex;justify-content:center;">
         <table class="dashboard-table" aria-label="Parties table">
             <thead>
                 <tr>
-                    <th>Owner</th>
-                    <th>Date created</th>
-                    <th>Description</th>
-                    <th>Members</th>
-					<th>Action</th>
+                    <th>Vlasnik</th>
+                    <th>Datum</th>
+                    <th>Opis</th>
+                    <th>Članovi</th>
+					<th>Akcija</th>
                 </tr>
             </thead>
             <tbody id="partiesTable">

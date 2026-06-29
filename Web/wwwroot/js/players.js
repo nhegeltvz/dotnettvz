@@ -136,7 +136,7 @@ function injectHtmlToTable(players, tableBody) {
     injectedHtml += `
                     <tr>
                         <td>${player.username}</td>
-                        <td>${player.bio}</td>
+                        <td>${player.email ?? ''}</td>
                         <td>${player.preferredPosition}</td>
                         <td>
                             <button class="dashboard-row-button dashboard-row-button--danger dashboard-row-button-delete" onclick="deletePlayer('${player.id}')">Delete</button>
@@ -178,7 +178,7 @@ function submitForm() {
     success: function () {
       cancelForm();
       loadPlayers();
-      showToast(id ? "Updated!" : "Saved!");
+      showToast(id ? "Ažurirano!" : "Spremljeno!");
     },
     error: function (xhr) {
       showErrorModal(collectValidationMessages(xhr.responseJSON));
@@ -188,14 +188,14 @@ function submitForm() {
 
 //Delete
 function deletePlayer(id) {
-  if (!confirm("Are you sure?")) return;
+  if (!confirm("Jeste li sigurni?")) return;
 
   $.ajax({
     url: `/api/players/${id}`,
     method: "DELETE",
     success: function () {
       loadPlayers();
-      showToast("Deleted!");
+      showToast("Izbrisano!");
     },
     error: function (xhr) {
       console.log(xhr.responseJSON);

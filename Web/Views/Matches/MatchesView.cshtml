@@ -1,36 +1,57 @@
 @model List<Data.Models.MatchRecord>
 
 @{
-    ViewData["Title"] = "Matches";
+    ViewData["Title"] = "Utakmice";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Matches")
+        new("Početna", "/home"),
+        new("Utakmice")
     };
+
+    var selectedDate  = (DateOnly)ViewBag.SelectedDate;
+    var isToday       = (bool)ViewBag.IsToday;
+    var activePeriod  = ViewBag.ActivePeriod as string;
+    var dateLabel     = isToday ? "Danas" : selectedDate.ToString("dd.MM.yyyy.");
+    var prevDate      = selectedDate.AddDays(-1).ToString("yyyy-MM-dd");
+    var nextDate      = selectedDate.AddDays(1).ToString("yyyy-MM-dd");
+    int count7  = ViewBag.Count7  ?? 0;
+    int count14 = ViewBag.Count14 ?? 0;
+    int count30 = ViewBag.Count30 ?? 0;
 }
 
 <div class="matches-container">
     <div class="matches-filter-bar">
         <div class="filter-top-row">
-            <div class="filter-links status-links">
-                <a href="#" class="filter-link active">All</a>
-                <a href="#" class="filter-link">Finished</a>
-                <a href="#" class="filter-link">Upcoming</a>
-            </div>
             <div class="date-selector">
-                <button class="date-arrow">&lt;</button>
-                <span class="date-text">Today</span>
-                <button class="date-arrow">&gt;</button>
+                <a href="/matches?date=@prevDate" class="date-arrow" aria-label="Prethodni dan">&#8249;</a>
+                <span class="date-text">@dateLabel</span>
+                <a href="/matches?date=@nextDate" class="date-arrow" aria-label="Sljedeći dan">&#8250;</a>
+                @if (!isToday || activePeriod != null)
+                {
+                    <a href="/matches" class="date-reset" aria-label="Vrati na danas" title="Vrati na danas">&times;</a>
+                }
+            </div>
+            <div class="matches-period-filters">
+                <a href="/matches?period=7"  class="matches-period-btn @(activePeriod == "7"  ? "active" : "")">Zadnjih 7 dana (@count7)</a>
+                <a href="/matches?period=14" class="matches-period-btn @(activePeriod == "14" ? "active" : "")">Zadnjih 14 dana (@count14)</a>
+                <a href="/matches?period=30" class="matches-period-btn @(activePeriod == "30" ? "active" : "")">Proteklih mjesec dana (@count30)</a>
             </div>
         </div>
 
         <div class="filter-bottom-row match-cards-row">
-            <div class="matches-grid">
-                @foreach (var match in Model)
-                {
-                    <partial name="_MatchCard" model="match" />
-                }
-            </div>
+            @if (Model.Count == 0)
+            {
+                <p class="matches-empty-state">Nema utakmica za @dateLabel.</p>
+            }
+            else
+            {
+                <div class="matches-grid">
+                    @foreach (var match in Model)
+                    {
+                        <partial name="_MatchCard" model="match" />
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>

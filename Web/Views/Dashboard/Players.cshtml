@@ -3,8 +3,8 @@
     ViewData["Title"] = "Dashboard - Players";
     var autocompleteConfig = new AutocompleteConfig()
     {
-        Label = "Search Players",
-        Placeholder = "ex. Ronaldo Nazario",
+        Label = "Pretraži igrače",
+        Placeholder = "npr. Ronaldo Nazario",
         InputId = "playerSearch",
         SearchUrl = "/players/data",
         ListUrl = "/players/data",
@@ -16,19 +16,20 @@
     <div class="dashboard-search-wrapper">
         <partial name="_AutocompleteSearch" model="autocompleteConfig" />
     </div>
-    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Player</button>
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Dodaj igrača</button>
 </div>
 <section class="dashboard-panel">
     <header class="dashboard-panel-header">
-        <h2 class="dashboard-panel-title">Players</h2>
+        <h2 class="dashboard-panel-title">Igrači</h2>
     </header>
     <div style="display:flex;justify-content:center;">
         <table class="dashboard-table" aria-label="Players table">
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Ime</th>
                     <th>Email</th>
-                    <th>Action</th>
+                    <th>Pozicija</th>
+                    <th>Akcija</th>
                 </tr>
             </thead>
             <tbody id="playerTable">

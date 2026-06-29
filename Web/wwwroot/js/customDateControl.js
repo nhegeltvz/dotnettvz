@@ -10,6 +10,7 @@ window.initDatetimePickers = function (container) {
       altInput: true,
       altFormat: enableTime ? "j.m.Y H:i" : "j.m.Y",
       clickOpens: true,
+      disableMobile: true,
       defaultDate: hiddenInput.value || null,
       onChange: function (selectedDates, dateStr) {
         hiddenInput.value = dateStr;

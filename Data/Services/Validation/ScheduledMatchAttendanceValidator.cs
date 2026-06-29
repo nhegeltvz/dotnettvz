@@ -20,20 +20,20 @@ namespace Data.Services.Validation
 
             if (entity.ScheduledMatchId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Scheduled match is required."));
+                errors.Add(new Error(ErrorType.Validation, "Zakazani meč je obavezan."));
             }
             else if (!_dbContext.ScheduledMatches.Any(match => match.Id == entity.ScheduledMatchId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Scheduled match does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Zakazani meč ne postoji."));
             }
 
             if (entity.PlayerId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Player is required."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač je obavezan."));
             }
             else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Player does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač ne postoji."));
             }
 
             if (entity.ScheduledMatchId != Guid.Empty && entity.PlayerId != Guid.Empty)
@@ -44,7 +44,7 @@ namespace Data.Services.Validation
                     && attendance.PlayerId == entity.PlayerId);
                 if (duplicate)
                 {
-                    errors.Add(new Error(ErrorType.Validation, "Attendance already exists for this player."));
+                    errors.Add(new Error(ErrorType.Validation, "Dolazak za ovog igrača već postoji."));
                 }
             }
 

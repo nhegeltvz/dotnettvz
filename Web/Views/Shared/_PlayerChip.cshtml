@@ -1,0 +1,7 @@
+@model Web.Models.PlayerChipViewModel
+
+<a href="/players/details/@Model.PlayerId" class="player-chip">
+    <div class="player-chip__avatar">@Model.Initials</div>
+    <span class="player-chip__name">@Model.Username</span>
+    <span class="player-chip__rating @Model.RatingColorClass">@Model.RatingDisplay</span>
+</a>

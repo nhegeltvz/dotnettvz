@@ -3,8 +3,8 @@
 	ViewData["Title"] = "Dashboard - Playing Fields";
 	var autocompleteConfig = new AutocompleteConfig()
 	{
-		Label = "Search Playing Fields",
-		Placeholder = "ex. City Arena",
+		Label = "Pretraži terene",
+		Placeholder = "npr. City Arena",
 		InputId = "stadiumSearch",
 		SearchUrl = "/api/playing-fields",
 		ListUrl = "/api/playing-fields",
@@ -17,21 +17,21 @@
     <div class="dashboard-search-wrapper">
 	    <partial name="_AutocompleteSearch" model="autocompleteConfig" />
     </div>
-    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Playing Field</button>
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Dodaj teren</button>
 </div>
 
 <section class="dashboard-panel">
 	<header class="dashboard-panel-header">
-		<h2 class="dashboard-panel-title">Playing Fields</h2>
+		<h2 class="dashboard-panel-title">Tereni</h2>
 	</header>
 	<div style="display:flex;justify-content:center;">
 		<table class="dashboard-table" aria-label="Playing fields table">
 			<thead>
 				<tr>
-					<th>Name</th>
-					<th>Surface</th>
-					<th>Location</th>
-					<th>Action</th>
+					<th>Naziv</th>
+					<th>Podloga</th>
+					<th>Lokacija</th>
+					<th>Akcija</th>
 				</tr>
 			</thead>
 			<tbody id="playingFieldTable">

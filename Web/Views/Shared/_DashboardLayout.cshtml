@@ -7,41 +7,31 @@
     @RenderSection("Styles", required: false)
 }
 
-<div class="dashboard-layout">
-    <aside class="dashboard-aside">
-        <nav class="dashboard-nav" aria-label="Dashboard navigation">
-            <ul class="dashboard-nav-list">
-                <li class="dashboard-nav-item">
-                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "PlayingFields")" asp-controller="Dashboard" asp-action="PlayingFields">
-                        <i class="fa-solid fa-flag-checkered"></i>
-                        <span>Playing Fields</span>
-                    </a>
-                </li>
-                <li class="dashboard-nav-item">
-                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "Players")" asp-controller="Dashboard" asp-action="Players">
-                        <i class="fa-solid fa-users"></i>
-                        <span>Players</span>
-                    </a>
-                </li>
-                <li class="dashboard-nav-item">
-                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "Parties")" asp-controller="Dashboard" asp-action="Parties">
-                        <i class="fa-regular fa-comments"></i>
-                        <span>Parties</span>
-                    </a>
-                </li>
-                <li class="dashboard-nav-item">
-                    <a class="dashboard-nav-link @Html.IsActive("Dashboard", "MatchRecords")" asp-controller="Dashboard" asp-action="MatchRecords">
-                        <i class="fa-solid fa-square-poll-horizontal"></i>
-                        <span>Match Records</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        <partial name="_LoadingSpinner"></partial>
-    </aside>
-    <div class="dashboard-main-content">
-        @RenderBody()
-    </div>
+<nav class="dashboard-subnav" aria-label="Dashboard navigation">
+    <a class="dashboard-subnav-link @Html.IsActive("Dashboard", "PlayingFields")" asp-controller="Dashboard" asp-action="PlayingFields">
+        <i class="fa-solid fa-flag-checkered"></i>
+        <span>Playing Fields</span>
+    </a>
+    <a class="dashboard-subnav-link @Html.IsActive("Dashboard", "Players")" asp-controller="Dashboard" asp-action="Players">
+        <i class="fa-solid fa-users"></i>
+        <span>Players</span>
+    </a>
+    <a class="dashboard-subnav-link @Html.IsActive("Dashboard", "Parties")" asp-controller="Dashboard" asp-action="Parties">
+        <i class="fa-regular fa-comments"></i>
+        <span>Parties</span>
+    </a>
+    <a class="dashboard-subnav-link @Html.IsActive("Dashboard", "MatchRecords")" asp-controller="Dashboard" asp-action="MatchRecords">
+        <i class="fa-solid fa-square-poll-horizontal"></i>
+        <span>Match Records</span>
+    </a>
+    <a class="dashboard-subnav-link @Html.IsActive("Dashboard", "Logs")" asp-controller="Dashboard" asp-action="Logs">
+        <i class="fa-solid fa-scroll"></i>
+        <span>Logs</span>
+    </a>
+    <partial name="_LoadingSpinner"></partial>
+</nav>
+<div class="dashboard-main-content">
+    @RenderBody()
 </div>
 
 @section Scripts {

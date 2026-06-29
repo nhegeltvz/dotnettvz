@@ -5,8 +5,8 @@
     ViewData["Title"] = "Pronađi Meč";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Parties")
+        new("Početna", "/home"),
+        new("Grupe")
     };
     var isSignedIn = SignInManager.IsSignedIn(User);
 }
@@ -15,11 +15,11 @@
     <div class="parties-filter-bar">
         <div class="top-row">
             <div class="filter-container">
-                <button class="filter-button">
+                <button class="filter-button" id="filterToggle" aria-expanded="false">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
                     <span>Filter</span>
                 </button>
-                <input type="text" class="search-bar" placeholder="Upiši lokaciju, ime igrača..." />
+                <input type="text" id="partiesSearch" class="search-bar" placeholder="Upiši lokaciju, ime igrača..." />
             </div>
             <div class="create-party-container small"
                  data-signed-in="@isSignedIn.ToString().ToLower()"
@@ -28,14 +28,109 @@
             </div>
         </div>
 
+        <div class="parties-filter-accordion" id="filterAccordion" hidden>
+            <div class="filter-section">
+                <p class="filter-section-label">Termin</p>
+                <div class="filter-chips">
+                    <button class="filter-chip active" data-filter="time" data-value="all">Svi</button>
+                    <button class="filter-chip" data-filter="time" data-value="morning">🌅 Jutarnji (6–12h)</button>
+                    <button class="filter-chip" data-filter="time" data-value="afternoon">☀️ Poslijepodnevni (12–18h)</button>
+                    <button class="filter-chip" data-filter="time" data-value="evening">🌙 Večernji (18–24h)</button>
+                </div>
+            </div>
+            <div class="filter-section">
+                <p class="filter-section-label">Prosječni rating ekipe</p>
+                <div class="filter-chips">
+                    <button class="filter-chip active" data-filter="rating" data-value="all">Svi</button>
+                    <button class="filter-chip filter-chip--red"    data-filter="rating" data-value="party-rating--red">Ispod 6</button>
+                    <button class="filter-chip filter-chip--yellow" data-filter="rating" data-value="party-rating--yellow">6 – 7</button>
+                    <button class="filter-chip filter-chip--green"  data-filter="rating" data-value="party-rating--green">7 – 8</button>
+                    <button class="filter-chip filter-chip--blue"   data-filter="rating" data-value="party-rating--blue">8 – 10</button>
+                </div>
+            </div>
+            <div class="filter-section">
+                <p class="filter-section-label">Slobodna mjesta</p>
+                <div class="filter-chips">
+                    <button class="filter-chip active" data-filter="availability" data-value="all">Svi</button>
+                    <button class="filter-chip filter-chip--green" data-filter="availability" data-value="joinable">Slobodna mjesta</button>
+                    <button class="filter-chip filter-chip--red"   data-filter="availability" data-value="full">Popunjeno</button>
+                </div>
+            </div>
+            <div class="filter-section">
+                <p class="filter-section-label">Meč</p>
+                <div class="filter-chips">
+                    <button class="filter-chip active" data-filter="match" data-value="all">Svi</button>
+                    <button class="filter-chip filter-chip--green" data-filter="match" data-value="played">Meč već odigran</button>
+                    <button class="filter-chip filter-chip--yellow" data-filter="match" data-value="notplayed">Meč još nije odigran</button>
+                </div>
+            </div>
+        </div>
+
         <partial name="_PartyFormModal" />
 
-        <div class="parties-grid">
+        <div class="parties-grid" id="partiesGrid">
             @foreach (var party in Model)
             {
                 <partial name="_PartyCard" model="party" />
             }
         </div>
+
+        <p class="parties-empty-state" id="noResults" hidden>Nema rezultata za odabrane filtere.</p>
     </div>
 </div>
 
+@section Scripts {
+<script>
+    const filterToggle = document.getElementById('filterToggle');
+    const filterAccordion = document.getElementById('filterAccordion');
+    const searchInput = document.getElementById('partiesSearch');
+    const cards = () => document.querySelectorAll('#partiesGrid .party-card');
+    const noResults = document.getElementById('noResults');
+
+    let activeFilters = { time: 'all', rating: 'all', availability: 'all', match: 'all' };
+    let searchTerm = '';
+
+    filterToggle.addEventListener('click', () => {
+        const expanded = filterToggle.getAttribute('aria-expanded') === 'true';
+        filterToggle.setAttribute('aria-expanded', String(!expanded));
+        filterAccordion.hidden = expanded;
+    });
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function () {
+            const group = this.dataset.filter;
+            document.querySelectorAll(`.filter-chip[data-filter="${group}"]`).forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            activeFilters[group] = this.dataset.value;
+            applyFilters();
+        });
+    });
+
+    searchInput.addEventListener('input', function () {
+        searchTerm = this.value.trim().toLowerCase();
+        applyFilters();
+    });
+
+    function applyFilters() {
+        let visible = 0;
+        cards().forEach(card => {
+            const matchesTime = activeFilters.time === 'all' || card.dataset.time.split(' ').includes(activeFilters.time);
+            const matchesRating = activeFilters.rating === 'all' || card.dataset.rating === activeFilters.rating;
+            const matchesAvail = activeFilters.availability === 'all'
+                || (activeFilters.availability === 'full'     && card.dataset.full === 'true')
+                || (activeFilters.availability === 'joinable' && card.dataset.full === 'false');
+            const matchesMatch = activeFilters.match === 'all'
+                || (activeFilters.match === 'played'    && card.dataset.matchPlayed === 'true')
+                || (activeFilters.match === 'notplayed' && card.dataset.matchPlayed === 'false');
+            const matchesSearch = searchTerm === ''
+                || card.dataset.locations.includes(searchTerm)
+                || card.dataset.members.includes(searchTerm);
+
+            const show = matchesTime && matchesRating && matchesAvail && matchesMatch && matchesSearch;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        noResults.hidden = visible > 0;
+    }
+</script>
+}

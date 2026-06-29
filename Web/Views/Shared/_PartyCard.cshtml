@@ -1,4 +1,5 @@
 @model Data.Models.Party
+@using Web.Models
 @inject Microsoft.AspNetCore.Identity.UserManager<Data.Models.AppUser> UserManager
 
 @{
@@ -7,15 +8,53 @@
     var isOwner  = currentUserId != null && Model.PlayerCreated.UserId.ToString() == currentUserId;
     var isMember = !isOwner && currentUserId != null && Model.Members.Any(m => m.UserId.ToString() == currentUserId);
     var isFull   = Model.Members.Count >= Model.MaxMembers;
+
+    var creatorAvgRating = creator.RatingsReceived.Any()
+        ? creator.RatingsReceived.Average(r => r.Rating)
+        : (double?)null;
+
+    var memberAvgs = Model.Members
+        .Select(m => m.RatingsReceived.Any() ? m.RatingsReceived.Average(r => r.Rating) : (double?)null)
+        .Where(r => r.HasValue).Select(r => r!.Value).ToList();
+    var partyAvgRating = memberAvgs.Any() ? memberAvgs.Average() : (double?)null;
+
+    string partyRatingClass = partyAvgRating switch
+    {
+        null => "party-rating--none",
+        < 6  => "party-rating--red",
+        < 7  => "party-rating--yellow",
+        < 8  => "party-rating--green",
+        _    => "party-rating--blue"
+    };
+    string partyRatingLabel = partyAvgRating.HasValue ? partyAvgRating.Value.ToString("0.0") : "—";
+
+    // time slots from preferred playing dates
+    var times = Model.PreferredPlayingDates.Select(d => d.Date.Hour).ToList();
+    var timeSlots = new List<string>();
+    if (times.Any(h => h >= 6  && h < 12)) timeSlots.Add("morning");
+    if (times.Any(h => h >= 12 && h < 18)) timeSlots.Add("afternoon");
+    if (times.Any(h => h >= 18))           timeSlots.Add("evening");
+    if (!timeSlots.Any())                   timeSlots.Add("any");
+
+    var memberNames = string.Join(",", Model.Members.Select(m => m.User?.UserName ?? "").Where(n => n != ""));
+    var matchPlayed = (Model.ScheduledMatch?.MatchRecord != null).ToString().ToLower();
 }
 
 <div class="party-card @(Model.Id == Guid.Parse("00000000-0000-0000-0000-000000000001") ? "highlight" : "")"
-     data-party-id="@Model.Id">
+     data-party-id="@Model.Id"
+     data-full="@isFull.ToString().ToLower()"
+     data-time="@string.Join(" ", timeSlots)"
+     data-rating="@partyRatingClass"
+     data-locations="@Model.PreferredLocations.ToLower()"
+     data-members="@memberNames.ToLower()"
+     data-match-played="@matchPlayed">
+
     <div class="card-header">
-        <div class="creator-info">
-            <div class="avatar" aria-hidden="true">@DataUtility.GetInitials(creator.User?.UserName, "P")</div>
-            <span>@Model.PlayerCreated.User?.UserName</span>
-        </div>
+        <partial name="_PlayerChip" model="@(new PlayerChipViewModel {
+            PlayerId = creator.Id,
+            Username = creator.User?.UserName ?? "—",
+            AverageRating = creatorAvgRating
+        })" />
         @if (isOwner)
         {
             <a href="/user-dashboard/my-parties" class="owner-badge">
@@ -28,13 +67,20 @@
             <span class="member-badge">Član ste ove grupe</span>
         }
     </div>
+
     <div class="card-body">
         <p class="description">@Model.PartyDescription</p>
         <div class="members-progress">
             <div class="progress-bar" style="width: @((double)Model.Members.Count / Model.MaxMembers * 100)%;"></div>
         </div>
-        <p class="members-count">@Model.Members.Count / @Model.MaxMembers ČLANOVA</p>
+        <div class="members-count-row">
+            <p class="members-count">@Model.Members.Count / @Model.MaxMembers ČLANOVA</p>
+            <span class="party-rating-badge @partyRatingClass" title="Prosječni rating ekipe">
+                ★ @partyRatingLabel
+            </span>
+        </div>
     </div>
+
     <div class="card-footer">
         <div class="locations">
             @foreach (var loc in Model.PreferredLocations.Split(','))

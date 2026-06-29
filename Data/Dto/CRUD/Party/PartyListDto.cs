@@ -10,5 +10,8 @@
         public int NumberOfMembers { get; set; }
         public string PlayerCreatedUsername { get; set; }
         public string PreferredLocations { get; set; } = string.Empty;
+
+        public override string ToString() =>
+            $"Description={PartyDescription}, MaxMembers={MaxMembers}, Locations={PreferredLocations}, Created={DateCreated:yyyy-MM-dd}";
     }
 }

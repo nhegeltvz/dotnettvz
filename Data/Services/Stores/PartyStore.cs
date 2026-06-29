@@ -5,6 +5,7 @@ using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Data.Services.Stores
 {
@@ -12,17 +13,30 @@ namespace Data.Services.Stores
     {
         private readonly MatchTrackerDbContext _dbContext;
         private readonly IValidator<Party> _partyValidator;
+        private readonly ILogger<PartyStore> _logger;
+        private readonly CurrentUserService _currentUser;
 
-        public PartyStore(MatchTrackerDbContext dbContext, IValidator<Party> partyValidator)
+        public PartyStore(MatchTrackerDbContext dbContext, IValidator<Party> partyValidator, ILogger<PartyStore> logger, CurrentUserService currentUser)
         {
             _dbContext = dbContext;
             _partyValidator = partyValidator;
+            _logger = logger;
+            _currentUser = currentUser;
         }
 
         public async Task<List<Party>> GetAllPartiesAsync()
             => await _dbContext.Parties
                 .Include(party => party.PlayerCreated)
+                    .ThenInclude(p => p.User)
+                .Include(party => party.PlayerCreated)
+                    .ThenInclude(p => p.RatingsReceived)
                 .Include(party => party.Members)
+                    .ThenInclude(m => m.User)
+                .Include(party => party.Members)
+                    .ThenInclude(m => m.RatingsReceived)
+                .Include(party => party.PreferredPlayingDates)
+                .Include(party => party.ScheduledMatch)
+                    .ThenInclude(sm => sm.MatchRecord)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -38,6 +52,10 @@ namespace Data.Services.Stores
                 .Include(party => party.ScheduledMatch)
                     .ThenInclude(match => match.ScheduledMatchAttendances)
                         .ThenInclude(attendance => attendance.Player)
+                            .ThenInclude(p => p.User)
+                .Include(party => party.ScheduledMatch)
+                    .ThenInclude(match => match.MatchRecord)
+                        .ThenInclude(mr => mr.MatchPlayers)
                 .AsNoTracking();
 
         public async Task<List<PartyListDto>> GetPartiesForTableAsync()
@@ -86,11 +104,17 @@ namespace Data.Services.Stores
             UpdateParty(model, party);
             var validationResult = _partyValidator.Validate(party);
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Party creation failed by {UserId}, validation errors: {Errors}",
+                    _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return Result<Guid>.FromResult(validationResult);
+            }
 
             _dbContext.Parties.Add(party);
             await _dbContext.SaveChangesAsync();
 
+            _logger.LogInformation("Party created: {PartyId} by {UserId}, Data: {Model}",
+                party.Id, _currentUser.Id, model);
             return Result<Guid>.Success(party.Id);
         }
 
@@ -106,9 +130,15 @@ namespace Data.Services.Stores
             var validationResult = _partyValidator.Validate(party);
 
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Party update failed for {PartyId} by {UserId}, validation errors: {Errors}",
+                    model.Id, _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return validationResult;
+            }
 
-            var rowsAffected = await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Party updated: {PartyId} by {UserId}, Data: {Model}",
+                model.Id, _currentUser.Id, model);
             return Result.Success();
         }
 
@@ -148,6 +178,8 @@ namespace Data.Services.Stores
             if (entity is null) return Result.Failure(PartyErrors.PartyNotDeleted);
             _dbContext.Parties.Remove(entity);
             await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Party deleted: {PartyId} by {UserId}", id, _currentUser.Id);
             return Result.Success();
         }
     }

@@ -34,9 +34,43 @@ public class MatchesController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index([FromQuery] string? date, [FromQuery] string? period)
     {
-        var matches = await _store.GetAllMatchRecordsAsync();
+        DateOnly selectedDate;
+        bool isToday;
+
+        if (string.IsNullOrWhiteSpace(date) ||
+            !DateOnly.TryParseExact(date, "yyyy-MM-dd", out selectedDate))
+        {
+            selectedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            isToday = true;
+        }
+        else
+        {
+            isToday = selectedDate == DateOnly.FromDateTime(DateTime.UtcNow);
+        }
+
+        List<MatchRecord> matches;
+        if (period is "7" or "14" or "30")
+        {
+            int days = int.Parse(period);
+            var from = DateTime.UtcNow.AddDays(-days);
+            var to   = DateTime.UtcNow;
+            matches = await _store.GetMatchRecordsByRangeAsync(from, to);
+            isToday = false;
+        }
+        else
+        {
+            matches = await _store.GetMatchRecordsByDateAsync(selectedDate);
+        }
+
+        var counts = await _store.GetPeriodMatchCountsAsync();
+        ViewBag.SelectedDate  = selectedDate;
+        ViewBag.IsToday       = isToday;
+        ViewBag.ActivePeriod  = period;
+        ViewBag.Count7        = counts.Last7;
+        ViewBag.Count14       = counts.Last14;
+        ViewBag.Count30       = counts.Last30;
         return View("MatchesView", matches);
     }
 

@@ -1,0 +1,47 @@
+@page
+@model ResetAuthenticatorModel
+@{
+    ViewData["Title"] = "Resetiraj aplikaciju za autentifikaciju";
+}
+
+<div class="manage-page">
+    <nav>
+        <partial name="_ManageNav" />
+    </nav>
+
+    <div class="manage-content">
+        <div class="manage-heading">
+            <h1 class="manage-heading__title">Resetiraj aplikaciju za autentifikaciju</h1>
+            <p class="manage-heading__sub">Ova radnja će onemogućiti 2FA dok ne postaviš novu aplikaciju</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="manage-alert manage-alert--info">
+                <i class="fa-solid fa-circle-check"></i> @Model.StatusMessage
+            </div>
+        }
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-triangle-exclamation" style="color:#f4b942;"></i> Upozorenje</h2>
+
+            <div class="manage-alert" style="background: rgba(244,185,66,0.1); border: 1px solid rgba(244,185,66,0.4); color: #f4e4a1; margin-bottom: 1.25rem;">
+                <strong>Ako resetiraš ključ autentifikatora, tvoja aplikacija za autentifikaciju neće raditi dok je ne postaviš iznova.</strong>
+                <p style="margin: 0.5rem 0 0; font-size: 0.88rem; opacity: 0.85;">
+                    Ovaj postupak onemogućuje 2FA dok ne verificiraš novu aplikaciju. Ako ne dovršiš postavljanje, možeš izgubiti pristup svom računu.
+                </p>
+            </div>
+
+            <div class="manage-btn-row">
+                <form method="post">
+                    <button type="submit" class="manage-btn manage-btn--danger">
+                        <i class="fa-solid fa-rotate"></i> Resetiraj ključ autentifikatora
+                    </button>
+                </form>
+                <a asp-page="./TwoFactorAuthentication" class="manage-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Odustani
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

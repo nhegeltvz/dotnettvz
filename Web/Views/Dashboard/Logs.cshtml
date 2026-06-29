@@ -1,0 +1,128 @@
+@model List<Web.Models.LogEntryViewModel>
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Logs";
+}
+
+<div class="dashboard-section-header">
+    <h1 class="dashboard-title">Aplikacijski logovi</h1>
+    <p class="dashboard-subtitle">Zadnjih 500 unosa iz dviju najnovijih log datoteka</p>
+</div>
+
+<div class="dashboard-panel">
+    <div class="dashboard-panel-header">
+        <span class="dashboard-panel-title">
+            <i class="fa-solid fa-scroll"></i> Unosi
+        </span>
+        <span class="log-count">@Model.Count unosa</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p class="dashboard-empty">Nema log unosa. Unosi će se prikazati ovdje kada aplikacija počne ih generirati.</p>
+    }
+    else
+    {
+        <div class="log-filter-bar">
+            <button class="log-filter-btn active" data-level="all"><i class="fa-solid fa-list"></i> <span class="log-filter-text">Sve</span></button>
+            <button class="log-filter-btn" data-level="info"><i class="fa-solid fa-circle-check"></i> <span class="log-filter-text">Info</span></button>
+            <button class="log-filter-btn" data-level="warning"><i class="fa-solid fa-circle-exclamation"></i> <span class="log-filter-text">Warning</span></button>
+            <button class="log-filter-btn" data-level="error"><i class="fa-solid fa-circle-xmark"></i> <span class="log-filter-text">Error</span></button>
+            <button class="log-filter-btn" data-level="debug"><i class="fa-solid fa-bug"></i> <span class="log-filter-text">Debug</span></button>
+        </div>
+
+        <div class="accordion log-accordion" id="logAccordion">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var entry = Model[i];
+                var collapseId = $"logEntry{i}";
+                var headingId = $"logHeading{i}";
+                var levelData = entry.Level switch
+                {
+                    "Error" or "Fatal" => "error",
+                    "Warning" => "warning",
+                    "Debug" or "Verbose" => "debug",
+                    _ => "info"
+                };
+
+                <div class="accordion-item log-accordion-item @entry.LevelCssClass" data-log-level="@levelData">
+                    <h2 class="accordion-header" id="@headingId">
+                        <button class="accordion-button collapsed log-accordion-btn"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#@collapseId"
+                                aria-expanded="false"
+                                aria-controls="@collapseId">
+                            <span class="log-level-badge">
+                                <i class="fa-solid @entry.LevelIcon"></i>
+                                @entry.Level
+                            </span>
+                            <span class="log-timestamp">@entry.FormattedTimestamp</span>
+                            <span class="log-message-preview">@{var _words = entry.Message.Split(' '); }<text>@(string.Join(" ", _words.Take(5)))@(_words.Length > 5 ? "…" : "")</text></span>
+                            @if (!string.IsNullOrEmpty(entry.Exception))
+                            {
+                                <span class="log-has-exception" title="Has exception details">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </span>
+                            }
+                        </button>
+                    </h2>
+                    <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId">
+                        <div class="accordion-body log-accordion-body">
+                            <div class="log-detail-row">
+                                <span class="log-detail-label">Timestamp</span>
+                                <span class="log-detail-value">@entry.Timestamp</span>
+                            </div>
+                            <div class="log-detail-row">
+                                <span class="log-detail-label">Level</span>
+                                <span class="log-detail-value">@entry.Level</span>
+                            </div>
+                            <div class="log-detail-row">
+                                <span class="log-detail-label">Message</span>
+                                <span class="log-detail-value">@entry.Message</span>
+                            </div>
+                            @if (entry.Properties.Any())
+                            {
+                                <div class="log-detail-row">
+                                    <span class="log-detail-label">Properties</span>
+                                    <div class="log-props">
+                                        @foreach (var prop in entry.Properties)
+                                        {
+                                            <div class="log-prop-item">
+                                                <span class="log-prop-key">@prop.Key</span>
+                                                <span class="log-prop-val">@prop.Value</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(entry.Exception))
+                            {
+                                <div class="log-detail-row">
+                                    <span class="log-detail-label">Exception</span>
+                                    <pre class="log-exception">@entry.Exception</pre>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.log-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const level = this.dataset.level;
+            document.querySelectorAll('.log-accordion-item').forEach(item => {
+                item.style.display = (level === 'all' || item.dataset.logLevel === level) ? '' : 'none';
+            });
+        });
+    });
+</script>
+}

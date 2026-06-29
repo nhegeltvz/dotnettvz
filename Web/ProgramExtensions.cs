@@ -23,12 +23,13 @@ namespace Web
 
             return services;
         }
-        public static IServiceCollection AddAiSupport(this IServiceCollection services)
+
+        public static IServiceCollection AddCurrentUserServices(this IServiceCollection services)
         {
-            services.AddHttpClient<AiMatchParserService>();
+            services.AddHttpContextAccessor();
+            services.AddScoped<CurrentUserService>();
             return services;
         }
-
         public static IServiceCollection AddGoogleAuth(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAuthentication().AddGoogle(options =>

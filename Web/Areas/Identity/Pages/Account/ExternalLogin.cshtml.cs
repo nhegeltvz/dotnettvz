@@ -73,12 +73,12 @@ namespace Web.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "Email je obavezan.")]
+            [EmailAddress(ErrorMessage = "Neispravan format email adrese.")]
             public string Email { get; set; }
 
-            [Required]
-            [StringLength(20, MinimumLength = 4)]
+            [Required(ErrorMessage = "Korisničko ime je obavezno.")]
+            [StringLength(20, MinimumLength = 4, ErrorMessage = "Korisničko ime mora imati između 4 i 20 znakova.")]
             public string Username { get; set; }
 
         }
@@ -98,13 +98,13 @@ namespace Web.Areas.Identity.Pages.Account
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
             {
-                ErrorMessage = $"Error from external provider: {remoteError}";
+                ErrorMessage = $"Greška vanjskog pružatelja: {remoteError}";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                ErrorMessage = "Error loading external login information.";
+                ErrorMessage = "Greška pri učitavanju podataka za prijavu.";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
@@ -142,7 +142,7 @@ namespace Web.Areas.Identity.Pages.Account
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                ErrorMessage = "Error loading external login information during confirmation.";
+                ErrorMessage = "Greška pri učitavanju podataka za prijavu tijekom potvrde.";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 

@@ -1,13 +1,14 @@
 @model List<Data.Models.Player>
 @using Data.Data
+@using Data.Services
 @using Data.Models
 
 @{
     ViewData["Title"] = "Players";
     ViewData["Breadcrumbs"] = new List<Web.Helpers.BreadcrumbItem>
     {
-        new("Home", "/home"),
-        new("Players")
+        new("Početna", "/home"),
+        new("Igrači")
     };
 
     List<Player> GetPositionedPlayers(Position preferredPosition)
@@ -31,8 +32,8 @@
 }
 
 <header class="players-stars-header" aria-label="Featured players section">
-    <p class="players-stars-kicker">Monthly Spotlight</p>
-    <h1 class="players-stars-title">Stars of the month</h1>
+    <p class="players-stars-kicker">Igrači mjeseca</p>
+    <h1 class="players-stars-title">Zvijezde ovog mjeseca</h1>
 </header>
 
 <div class="player-positions-grid">
@@ -50,7 +51,7 @@
                 }
             </div>
         </div>
-        <h2 class="position-title">Strikers</h2>
+        <h2 class="position-title">Napadači</h2>
     </div>
     <div class="position-container midfielders-container" data-jump-position="midfielder" role="button" tabindex="0" aria-label="Show midfielders in player list">
         <img class="hero-image hero-portrait hero-midfielders" src="~/images/baturinaHero.png" alt="" />
@@ -63,7 +64,7 @@
                 }
             </div>
         </div>
-        <h2 class="position-title">Midfielders</h2>
+        <h2 class="position-title">Vezni igrači</h2>
     </div>
     <div class="position-container defenders-container" data-jump-position="defender" role="button" tabindex="0" aria-label="Show defenders in player list">
         <img class="hero-image hero-square hero-defenders" src="~/images/vuskovicHero.png" alt="" />
@@ -76,7 +77,7 @@
                 }
             </div>
         </div>
-        <h2 class="position-title">Centrebacks</h2>
+        <h2 class="position-title">Braniči</h2>
     </div>
     <div class="position-container goalkeepers-container" data-jump-position="goalkeeper" role="button" tabindex="0" aria-label="Show goalkeepers in player list">
         <img class="hero-image hero-square hero-goalkeepers" src="~/images/livakovicHero.png" alt="" />
@@ -134,7 +135,7 @@
                         <div class="player-row-avatar" aria-hidden="true">@DataUtility.GetInitials(username, "P")</div>
                         <div class="player-row-identity">
                             <span class="player-row-username">@username</span>
-                            <span class="player-row-meta">@player.PreferredPosition • @age god</span>
+                            <span class="player-row-meta">@Localization.Localize(player.PreferredPosition) • @age god</span>
                         </div>
                     </div>
                     <div class="player-row-stats" aria-label="Player stats">

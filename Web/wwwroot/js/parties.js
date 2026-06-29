@@ -167,6 +167,13 @@ function submitForm() {
 
   if (!$("#party-form").valid()) return;
 
+  const hasField = !!$("#Form_ScheduledMatchPlayingFieldId").val();
+  const hasDate  = !!$("#Form_ScheduledMatchDate").val();
+  if (hasField !== hasDate) {
+    showErrorModal(["Teren i datum zakazanog meča moraju biti uneseni zajedno — ili oba ili nijedno."]);
+    return;
+  }
+
   $.ajax({
     url: url,
     method: method,
@@ -192,7 +199,7 @@ function submitForm() {
     success: function () {
       cancelForm();
       loadParties();
-      showToast(id ? "Updated!" : "Saved!");
+      showToast(id ? "Ažurirano!" : "Spremljeno!");
     },
     error: function (xhr) {
       showErrorModal(collectValidationMessages(xhr.responseJSON));
@@ -205,7 +212,7 @@ function submitForm() {
 
 //Delete
 function deleteParty(id) {
-  if (!confirm("Are you sure?")) return;
+  if (!confirm("Jeste li sigurni?")) return;
 
   $.ajax({
     url: `/api/parties/${id}`,
@@ -215,7 +222,7 @@ function deleteParty(id) {
     },
     success: function () {
       loadParties();
-      showToast("Deleted!");
+      showToast("Izbrisano!");
     },
     error: function (xhr) {
       console.log(xhr.responseJSON);

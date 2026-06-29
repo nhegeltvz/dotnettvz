@@ -54,6 +54,7 @@ namespace Web.Areas.Identity.Pages.Account
 
             [Required(ErrorMessage = "Email je obavezan.")]
             [EmailAddress(ErrorMessage = "Neispravan format email adrese.")]
+            [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Neispravan format email adrese.")]
             [Display(Name = "Email")]
             public string Email { get; set; }
 

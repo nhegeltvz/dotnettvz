@@ -1,0 +1,94 @@
+@page
+@model EnableAuthenticatorModel
+@{
+    ViewData["Title"] = "Postavi aplikaciju za autentifikaciju";
+}
+
+<div class="manage-page">
+    <nav>
+        <partial name="_ManageNav" />
+    </nav>
+
+    <div class="manage-content">
+        <div class="manage-heading">
+            <h1 class="manage-heading__title">Postavi aplikaciju za autentifikaciju</h1>
+            <p class="manage-heading__sub">Poveži svoju 2FA aplikaciju sa računom</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="manage-alert manage-alert--info">
+                <i class="fa-solid fa-circle-check"></i> @Model.StatusMessage
+            </div>
+        }
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-mobile-screen-button"></i> Korak 1 — Preuzmi aplikaciju</h2>
+            <p class="manage-auth-step-text">
+                Preuzmi aplikaciju za dvofaktorsku autentifikaciju kao što je
+                <strong>Microsoft Authenticator</strong> za
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825072" class="manage-link">Android</a> i
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825073" class="manage-link">iOS</a>,
+                ili <strong>Google Authenticator</strong> za
+                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" class="manage-link">Android</a> i
+                <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605" class="manage-link">iOS</a>.
+            </p>
+        </div>
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-qrcode"></i> Korak 2 — Skeniraj QR kod</h2>
+            <p class="manage-auth-step-text">
+                Skeniraj QR kod ili unesi ovaj ključ ručno u svoju aplikaciju:
+            </p>
+            <div class="manage-auth-key-box">
+                <code class="manage-auth-key">@Model.SharedKey</code>
+                <span class="manage-auth-key-hint">Razmaci i velika/mala slova nisu važni.</span>
+            </div>
+
+            <div id="qrCode" class="manage-auth-qr"></div>
+            <div id="qrCodeData" data-url="@Html.Raw(Model.AuthenticatorUri)"></div>
+
+            <p class="manage-auth-step-text" style="margin-top:0.75rem; color: var(--mt-text-muted); font-size:0.85rem;">
+                QR skeniranje ne radi? Uvjerite se da ste omogućili generiranje QR kodova u projektu.
+            </p>
+        </div>
+
+        <div class="manage-card">
+            <h2 class="manage-card__title"><i class="fa-solid fa-key"></i> Korak 3 — Unesi verifikacijski kod</h2>
+            <p class="manage-auth-step-text">
+                Nakon što skenirate QR kod ili unesete ključ, vaša aplikacija će generirati jednokratni kod. Unesite ga ispod.
+            </p>
+
+            <form id="send-code" method="post">
+                <div asp-validation-summary="ModelOnly" class="manage-alert manage-alert--danger" style="margin-bottom:1rem;"></div>
+
+                <div class="manage-field">
+                    <label asp-for="Input.Code">Verifikacijski kod</label>
+                    <input asp-for="Input.Code"
+                           autocomplete="one-time-code"
+                           placeholder="npr. 123456"
+                           inputmode="numeric" />
+                    <span asp-validation-for="Input.Code" class="text-danger"></span>
+                </div>
+
+                <div class="manage-btn-row">
+                    <button type="submit" class="manage-btn manage-btn--primary">
+                        <i class="fa-solid fa-shield-check"></i> Potvrdi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript" src="~/lib/qrcode.js/qrcode.min.js" asp-append-version="true"></script>
+    <script type="text/javascript">
+        new QRCode(document.getElementById("qrCode"), {
+            text: document.getElementById("qrCodeData").dataset.url,
+            width: 180,
+            height: 180
+        });
+    </script>
+}

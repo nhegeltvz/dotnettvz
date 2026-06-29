@@ -120,6 +120,7 @@ public class PartiesController : Controller
                 vm.Form.ScheduledMatchId = party.ScheduledMatch.Id;
                 vm.Form.ScheduledMatchPlayingFieldId = party.ScheduledMatch.PlayingFieldId;
                 vm.Form.ScheduledMatchDate = party.ScheduledMatch.MatchDate;
+                vm.HasMatchRecord = party.ScheduledMatch.MatchRecord != null;
 
                 var attendanceByPlayerId = party.ScheduledMatch.ScheduledMatchAttendances
                     .ToDictionary(attendance => attendance.PlayerId, attendance => attendance);

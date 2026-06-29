@@ -6,9 +6,9 @@ public class PreferredPlayingDateFormDto
 {
     public Guid? Id { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Grupa je obavezna.")]
     public Guid PartyId { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Datum je obavezan.")]
     public DateTime Date { get; set; }
 }

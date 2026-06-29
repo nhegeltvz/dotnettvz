@@ -33,12 +33,12 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
             .HasForeignKey<Player>(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Party → PlayerCreated (Player)
+        // Party → PlayerCreated (Player) — delete the party when its creator is deleted
         modelBuilder.Entity<Party>()
             .HasOne(party => party.PlayerCreated)
             .WithMany(player => player.CreatedParties)
             .HasForeignKey(party => party.PlayerCreatedId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Party ↔ Members (many-to-many Player)
         modelBuilder.Entity<Party>()
@@ -67,12 +67,12 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
             .HasForeignKey(matchPlayer => matchPlayer.MatchRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // MatchPlayer → Player
+        // MatchPlayer → Player — remove player entry from match records on delete
         modelBuilder.Entity<MatchPlayer>()
             .HasOne(matchPlayer => matchPlayer.Player)
             .WithMany(player => player.MatchPlayers)
             .HasForeignKey(matchPlayer => matchPlayer.PlayerId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // MatchVote → MatchRecord
         modelBuilder.Entity<MatchVote>()
@@ -81,12 +81,12 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
             .HasForeignKey(matchVote => matchVote.MatchRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // MatchVote → Player
+        // MatchVote → Player — remove votes on player delete
         modelBuilder.Entity<MatchVote>()
             .HasOne(matchVote => matchVote.Player)
             .WithMany(player => player.MatchVotes)
             .HasForeignKey(matchVote => matchVote.PlayerId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // PlayerRating → MatchPlayer
         modelBuilder.Entity<PlayerRating>()
@@ -100,14 +100,14 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
             .HasOne(rating => rating.PlayerGivingRating)
             .WithMany(player => player.RatingsGiven)
             .HasForeignKey(rating => rating.PlayerGivingRatingId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // PlayerRating → PlayerReceivingRating (Player)
         modelBuilder.Entity<PlayerRating>()
             .HasOne(rating => rating.PlayerReceivingRating)
             .WithMany(player => player.RatingsReceived)
             .HasForeignKey(rating => rating.PlayerReceivingRatingId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // PreferredPlayingDate → Party
         modelBuilder.Entity<PreferredPlayingDate>()
@@ -137,12 +137,12 @@ public class MatchTrackerDbContext : IdentityDbContext<AppUser, IdentityRole<Gui
             .HasForeignKey(attendance => attendance.ScheduledMatchId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ScheduledMatchAttendance → Player
+        // ScheduledMatchAttendance → Player — remove attendance on player delete
         modelBuilder.Entity<ScheduledMatchAttendance>()
             .HasOne(attendance => attendance.Player)
             .WithMany(player => player.ScheduledMatchAttendances)
             .HasForeignKey(attendance => attendance.PlayerId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // ImageResource → PlayingField
         modelBuilder.Entity<ImageResource>()

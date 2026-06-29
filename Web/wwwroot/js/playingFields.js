@@ -185,7 +185,7 @@ function submitForm() {
     success: function () {
       cancelForm();
       loadStadiums();
-      showToast(id ? "Updated!" : "Saved!");
+      showToast(id ? "Ažurirano!" : "Spremljeno!");
     },
     error: function (xhr) {
       showErrorModal(collectValidationMessages(xhr.responseJSON));
@@ -198,7 +198,7 @@ function submitForm() {
 
 //Delete
 function deleteStadium(id) {
-  if (!confirm("Are you sure?")) return;
+  if (!confirm("Jeste li sigurni?")) return;
 
   $.ajax({
     url: `/api/playing-fields/${id}`,
@@ -208,7 +208,7 @@ function deleteStadium(id) {
     },
     success: function () {
       loadStadiums();
-      showToast("Deleted!");
+      showToast("Izbrisano!");
     },
     error: function (xhr) {
       console.log(xhr.responseJSON);

@@ -20,16 +20,16 @@ namespace Data.Services.Validation
 
             if (string.IsNullOrWhiteSpace(entity.Bio))
             {
-                errors.Add(new Error(ErrorType.Validation, "Bio is required."));
+                errors.Add(new Error(ErrorType.Validation, "Biografija je obavezna."));
             }
             else if (entity.Bio.Trim().Length < 10)
             {
-                errors.Add(new Error(ErrorType.Validation, "Bio must be at least 10 characters."));
+                errors.Add(new Error(ErrorType.Validation, "Biografija mora imati najmanje 10 znakova."));
             }
 
             if (entity.DateOfBirth == default)
             {
-                errors.Add(new Error(ErrorType.Validation, "Date of birth is required."));
+                errors.Add(new Error(ErrorType.Validation, "Datum rođenja je obavezan."));
             }
             else
             {
@@ -38,7 +38,7 @@ namespace Data.Services.Validation
                 if (entity.DateOfBirth > today.AddYears(-age)) age--;
 
                 if (age < 18 || age > 100)
-                    errors.Add(new Error(ErrorType.Validation, "Player must be between 18 and 100 years old."));
+                    errors.Add(new Error(ErrorType.Validation, "Igrač mora imati između 18 i 100 godina."));
             }
 
             return errors.Count == 0 ? Result.Success() : Result.Failure(errors);

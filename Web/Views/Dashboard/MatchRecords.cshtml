@@ -3,8 +3,8 @@
     ViewData["Title"] = "Dashboard - Match Records";
     var autocompleteConfig = new AutocompleteConfig()
     {
-        Label = "Search Match Records",
-        Placeholder = "ex. Maksimir",
+        Label = "Pretraži utakmice",
+        Placeholder = "npr. Maksimir",
         InputId = "matchRecordSearch",
         SearchUrl = "/matches/data",
         ListUrl = "/matches/data",
@@ -17,23 +17,21 @@
     <div class="dashboard-search-wrapper">
         <partial name="_AutocompleteSearch" model="autocompleteConfig" />
     </div>
-    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Add Match Record</button>
+    <button type="button" class="dashboard-add-button" onclick="openCreate()">+ Dodaj utakmicu</button>
 </div>
 
 <section class="dashboard-panel">
     <header class="dashboard-panel-header">
-        <h2 class="dashboard-panel-title">Match Records</h2>
+        <h2 class="dashboard-panel-title">Utakmice</h2>
     </header>
     <div style="display:flex;justify-content:center;">
         <table class="dashboard-table" aria-label="Match records table">
             <thead>
                 <tr>
-                    <th>Score Team A</th>
-                    <th>Score Team B</th>
-                    <th>Stadium</th>
-                    <th>Date Played</th>
-                    <th>Was Match Held</th>
-                    <th>Action</th>
+                    <th>A vs B</th>
+                    <th>Datum</th>
+                    <th>Odigrana</th>
+                    <th>Akcija</th>
                 </tr>
             </thead>
             <tbody id="matchRecordsTable">

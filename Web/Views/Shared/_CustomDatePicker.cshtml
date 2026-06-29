@@ -1,16 +1,18 @@
 ﻿@model CustomDatePickerModel
 
-<div class="date-picker-wrapper">
+<div class="date-picker-wrapper @(Model.Disabled ? "date-picker-wrapper--disabled" : "")">
      <input type="text"
          class="date-picker-input"
          data-custom-date-picker
          data-field-name="@Model.FieldName"
          data-enable-time="@Model.EnableTime.ToString().ToLower()"
          placeholder=""
-         readonly />
+         readonly
+         @(Model.Disabled ? "disabled" : "") />
     <i class="fa-regular fa-calendar date-picker-icon" aria-hidden="true"></i>
     <input type="hidden"
         id="@Model.FieldName"
         name="@Model.FieldName"
-        value="@Model.Value" />
+        value="@Model.Value"
+        @(Model.Disabled ? "disabled" : "") />
 </div>

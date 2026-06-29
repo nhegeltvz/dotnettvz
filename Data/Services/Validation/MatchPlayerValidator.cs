@@ -20,30 +20,30 @@ namespace Data.Services.Validation
 
             if (entity.PlayerId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Player is required."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač je obavezan."));
             }
             else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Player does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač ne postoji."));
             }
 
             if (entity.MatchRecordId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Match record is required."));
+                errors.Add(new Error(ErrorType.Validation, "Utakmica je obavezna."));
             }
             else if (!_dbContext.MatchRecords.Any(record => record.Id == entity.MatchRecordId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Match record does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Utakmica ne postoji."));
             }
 
             if (!Enum.IsDefined(typeof(Team), entity.Team))
             {
-                errors.Add(new Error(ErrorType.Validation, "Team selection is invalid."));
+                errors.Add(new Error(ErrorType.Validation, "Odabir ekipe nije ispravan."));
             }
 
             if (entity.Goals < 0 || entity.Assists < 0)
             {
-                errors.Add(new Error(ErrorType.Validation, "Goals and assists cannot be negative."));
+                errors.Add(new Error(ErrorType.Validation, "Golovi i asistencije ne mogu biti negativni."));
             }
 
             if (entity.PlayerId != Guid.Empty && entity.MatchRecordId != Guid.Empty)
@@ -54,7 +54,7 @@ namespace Data.Services.Validation
                     && matchPlayer.MatchRecordId == entity.MatchRecordId);
                 if (duplicate)
                 {
-                    errors.Add(new Error(ErrorType.Validation, "Player is already assigned to this match."));
+                    errors.Add(new Error(ErrorType.Validation, "Igrač je već dodijeljen ovoj utakmici."));
                 }
             }
 

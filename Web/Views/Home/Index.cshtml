@@ -2,6 +2,10 @@
     ViewData["Title"] = "Home Page";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/globalSearch.css" asp-append-version="true" />
+}
+
 <div class="hero-container">
     <div class="hero-column hero-left">
         <h1 class="hero-text">Pronađi <span class="underlined">svoj meč</span> u roku par minuta..</h1>
@@ -12,10 +16,13 @@
         </div>
     </div>
     <div class="hero-column hero-right">
-        <div class="placeholder-container">
-            <div class="placeholder-image"></div>
+        <div class="hero-search-card">
+            <p class="hero-search-label">Pretraži bilo što</p>
+            <partial name="_GlobalSearch" />
         </div>
     </div>
 </div>
 
-
+@section Scripts {
+    <script src="~/js/globalSearch.js" asp-append-version="true"></script>
+}

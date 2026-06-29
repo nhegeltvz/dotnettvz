@@ -1,4 +1,5 @@
 @model Data.Models.PlayingField
+@using Data.Services
 
 <div class="stadium-card">
     <div class="stadium-image-container">
@@ -8,12 +9,6 @@
         @if (firstImage != null)
         {
             <img src="@firstImage.Path" alt="@Model.Name" class="stadium-image" />
-        }
-        else if (Model.Image != null && Model.Image.Length > 0)
-        {
-            var base64 = Convert.ToBase64String(Model.Image);
-            var imgSrc = $"data:image/jpeg;base64,{base64}";
-            <img src="@imgSrc" alt="@Model.Name" class="stadium-image" />
         }
         else
         {
@@ -26,16 +21,16 @@
             <span class="stadium-detail-item">
                 @if (Model.IsOutdoor)
                 {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> <span>Outdoor</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> <span>Na otvorenom</span>
                 }
                 else
                 {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> <span>Indoor</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> <span>Zatvoreno</span>
                 }
             </span>
             <span class="stadium-detail-item">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-                <span>@Model.SurfaceType</span>
+                <span>@Localization.Localize(Model.SurfaceType)</span>
             </span>
         </div>
         <a asp-controller="Stadiums"

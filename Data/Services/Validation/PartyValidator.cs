@@ -20,31 +20,31 @@ namespace Data.Services.Validation
 
             if (entity.PlayerCreatedId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Party owner is required."));
+                errors.Add(new Error(ErrorType.Validation, "Vlasnik grupe je obavezan."));
             }
             else if (!_dbContext.Players.Any(p => p.Id == entity.PlayerCreatedId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Party owner does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Vlasnik grupe ne postoji."));
             }
 
             if (entity.DateCreated > DateTime.UtcNow)
             {
-                errors.Add(new Error(ErrorType.Validation, "Date created cannot be in the future."));
+                errors.Add(new Error(ErrorType.Validation, "Datum kreiranja ne može biti u budućnosti."));
             }
 
             if (entity.MaxMembers <= 0)
             {
-                errors.Add(new Error(ErrorType.Validation, "Max members must be greater than zero."));
+                errors.Add(new Error(ErrorType.Validation, "Maksimalan broj članova mora biti veći od nule."));
             }
 
             if (string.IsNullOrWhiteSpace(entity.PartyDescription))
             {
-                errors.Add(new Error(ErrorType.Validation, "Party description is required."));
+                errors.Add(new Error(ErrorType.Validation, "Opis grupe je obavezan."));
             }
 
             if (string.IsNullOrWhiteSpace(entity.PreferredLocations))
             {
-                errors.Add(new Error(ErrorType.Validation, "Preferred locations are required."));
+                errors.Add(new Error(ErrorType.Validation, "Preferirane lokacije su obavezne."));
             }
 
             return errors.Count == 0 ? Result.Success() : Result.Failure(errors);

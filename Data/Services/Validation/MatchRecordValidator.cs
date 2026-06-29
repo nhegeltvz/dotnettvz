@@ -20,31 +20,31 @@ namespace Data.Services.Validation
 
             if (entity.PlayingFieldId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Playing field is required."));
+                errors.Add(new Error(ErrorType.Validation, "Teren je obavezan."));
             }
             else if (!_dbContext.PlayingFields.Any(field => field.Id == entity.PlayingFieldId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Playing field does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Teren ne postoji."));
             }
 
             if (entity.GoalsTeamA < 0 || entity.GoalsTeamB < 0)
             {
-                errors.Add(new Error(ErrorType.Validation, "Goals cannot be negative."));
+                errors.Add(new Error(ErrorType.Validation, "Golovi ne mogu biti negativni."));
             }
 
             if (!entity.WasMatchHeld && (entity.GoalsTeamA > 0 || entity.GoalsTeamB > 0))
             {
-                errors.Add(new Error(ErrorType.Validation, "Goals must be zero if the match was not held."));
+                errors.Add(new Error(ErrorType.Validation, "Golovi moraju biti nula ako meč nije odigran."));
             }
 
             if (entity.WasMatchHeld && entity.MatchHeld > DateTime.UtcNow)
             {
-                errors.Add(new Error(ErrorType.Validation, "Match date cannot be in the future."));
+                errors.Add(new Error(ErrorType.Validation, "Datum meča ne može biti u budućnosti."));
             }
 
             if (entity.MatchHeld == default)
             {
-                errors.Add(new Error(ErrorType.Validation, "Match date is required."));
+                errors.Add(new Error(ErrorType.Validation, "Datum meča je obavezan."));
             }
 
             return errors.Count == 0 ? Result.Success() : Result.Failure(errors);

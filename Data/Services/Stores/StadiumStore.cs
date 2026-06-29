@@ -1,9 +1,10 @@
-﻿using Data.Data;
+using Data.Data;
 using Data.Data.Common;
 using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Data.Services.Stores
 {
@@ -11,11 +12,15 @@ namespace Data.Services.Stores
     {
         private readonly MatchTrackerDbContext _dbContext;
         private readonly IValidator<PlayingField> _playingFieldValidator;
+        private readonly ILogger<StadiumStore> _logger;
+        private readonly CurrentUserService _currentUser;
 
-        public StadiumStore(MatchTrackerDbContext dbContext, IValidator<PlayingField> playingFieldValidator)
+        public StadiumStore(MatchTrackerDbContext dbContext, IValidator<PlayingField> playingFieldValidator, ILogger<StadiumStore> logger, CurrentUserService currentUser)
         {
             _dbContext = dbContext;
             _playingFieldValidator = playingFieldValidator;
+            _logger = logger;
+            _currentUser = currentUser;
         }
 
         public async Task<List<PlayingField>> GetAllStadiumsAsync()
@@ -41,19 +46,23 @@ namespace Data.Services.Stores
 
         public async Task<Result<Guid>> CreatePlayingField(IPlayingField model)
         {
-
             var playingField = new PlayingField();
             UpdatePlayingField(model, playingField);
             var validationResult = _playingFieldValidator.Validate(playingField);
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Playing field creation failed by {UserId}, validation errors: {Errors}",
+                    _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return Result<Guid>.FromResult(validationResult);
+            }
 
             _dbContext.PlayingFields.Add(playingField);
             await _dbContext.SaveChangesAsync();
 
+            _logger.LogInformation("Playing field created: {FieldId} by {UserId}, Data: {Model}",
+                playingField.Id, _currentUser.Id, model);
             return Result<Guid>.Success(playingField.Id);
         }
-
 
         public async Task<Result> UpdatePlayingField(IPlayingField model)
         {
@@ -67,20 +76,24 @@ namespace Data.Services.Stores
             var validationResult = _playingFieldValidator.Validate(playingField);
 
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Playing field update failed for {FieldId} by {UserId}, validation errors: {Errors}",
+                    model.Id, _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return validationResult;
+            }
 
             await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Playing field updated: {FieldId} by {UserId}, Data: {Model}",
+                model.Id, _currentUser.Id, model);
             return Result.Success();
         }
 
         private PlayingField UpdatePlayingField(IPlayingField model, PlayingField playingField)
         {
-
             playingField.Name = model.Name;
             playingField.Description = model.Description;
             playingField.Longitude = model.Longitude;
             playingField.Latitude = model.Latitude;
-            playingField.Image = model.Image;
             playingField.ContactNumber = model.ContactNumber;
             playingField.Status = model.Status;
             playingField.IsOutdoor = model.IsOutdoor;
@@ -94,6 +107,8 @@ namespace Data.Services.Stores
             if (entity is null) return Result.Failure(PlayingFieldErrors.PlayingFieldNotDeleted);
             _dbContext.PlayingFields.Remove(entity);
             await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Playing field deleted: {FieldId} by {UserId}", id, _currentUser.Id);
             return Result.Success();
         }
 

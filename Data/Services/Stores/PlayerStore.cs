@@ -4,6 +4,7 @@ using Data.Models;
 using Data.Models.Interfaces;
 using Data.Services.Validation.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Data.Services.Stores
 {
@@ -11,16 +12,22 @@ namespace Data.Services.Stores
     {
         private readonly MatchTrackerDbContext _dbContext;
         private readonly IValidator<Player> _playerValidator;
+        private readonly ILogger<PlayerStore> _logger;
+        private readonly CurrentUserService _currentUser;
 
-        public PlayerStore(MatchTrackerDbContext dbContext, IValidator<Player> playerValidator)
+        public PlayerStore(MatchTrackerDbContext dbContext, IValidator<Player> playerValidator, ILogger<PlayerStore> logger, CurrentUserService currentUser)
         {
             _dbContext = dbContext;
             _playerValidator = playerValidator;
+            _logger = logger;
+            _currentUser = currentUser;
         }
 
         public async Task<List<Player>> GetAllPlayersAsync()
             => await _dbContext.Players
                 .Include(p => p.User)
+                .Include(p => p.MatchPlayers)
+                .Include(p => p.RatingsReceived)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -64,10 +71,16 @@ namespace Data.Services.Stores
         {
             var validationResult = _playerValidator.Validate(player);
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Player creation failed by {UserId}, validation errors: {Errors}", 
+                    _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return Result<Guid>.FromResult(validationResult);
+            }
 
             _dbContext.Players.Add(player);
             await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Player created: {PlayerId} by {UserId}", player.Id, _currentUser.Id);
 
             return Result<Guid>.Success(player.Id);
         }
@@ -76,9 +89,14 @@ namespace Data.Services.Stores
         {
             var validationResult = _playerValidator.Validate(player);
             if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Player update failed by {UserId}, validation errors: {Errors}",
+                    _currentUser.Id, string.Join(", ", validationResult.Errors));
                 return validationResult;
+            }
 
-            var rowsAffected = await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Player updated: {PlayerId} by {UserId}", player.Id, _currentUser.Id);
             return Result.Success();
         }
 
@@ -89,7 +107,10 @@ namespace Data.Services.Stores
                 .ExecuteDeleteAsync()
                 .ConfigureAwait(false);
 
-            return rowsAffected == 0 ? Result.Failure(PlayerErrors.PlayerNotDeleted) : Result.Success();
+            if (rowsAffected == 0) return Result.Failure(PlayerErrors.PlayerNotDeleted);
+
+            _logger.LogInformation("Player deleted: {PlayerId} by {UserId}", id, _currentUser.Id);
+            return Result.Success();
         }
 
         public async Task<List<Player>> SearchByUsernameAsync(string term)

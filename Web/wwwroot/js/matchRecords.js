@@ -133,9 +133,7 @@ function loadMatchRecords(search = "") {
       records.forEach((record) => {
         injectedHtml += `
                         <tr>
-                            <td>${record.goalsTeamA}</td>
-                            <td>${record.goalsTeamB}</td>
-                            <td>${record.playingField.name}</td>
+                            <td>${record.goalsTeamA} - ${record.goalsTeamB}</td>
                             <td>${record.matchHeld}</td>
                             <td>${record.wasMatchHeld}</td>
                             <td>
@@ -194,7 +192,7 @@ function submitForm() {
     success: function () {
       cancelForm();
       loadMatchRecords();
-      showToast(id ? "Updated!" : "Saved!");
+      showToast(id ? "Ažurirano!" : "Spremljeno!");
     },
     error: function (xhr) {
       showErrorModal(collectValidationMessages(xhr.responseJSON));
@@ -207,7 +205,7 @@ function submitForm() {
 
 //Delete
 function deleteRecord(id) {
-  if (!confirm("Are you sure?")) return;
+  if (!confirm("Jeste li sigurni?")) return;
 
   $.ajax({
     url: `/api/match-records/${id}`,
@@ -217,7 +215,7 @@ function deleteRecord(id) {
     },
     success: function () {
       loadMatchRecords();
-      showToast("Deleted!");
+      showToast("Izbrisano!");
     },
     error: function (xhr) {
       console.log(xhr.responseJSON);

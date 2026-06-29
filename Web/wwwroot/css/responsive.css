@@ -1,0 +1,557 @@
+/* =============================================
+   RESPONSIVE.CSS — media-query overrides only
+   Breakpoints:
+     lg  < 1200px
+     md  <  900px
+     sm  <  600px
+   ============================================= */
+
+/* Hamburger hidden by default — only shown via media query below */
+.nav-toggle {
+  display: none;
+}
+
+/* ---- Large screens: tighten header a bit ---- */
+@media (max-width: 1200px) {
+  .top-header {
+    padding: 0 0.75rem;
+    min-height: 64px;
+  }
+
+  .header-center {
+    gap: 0.25rem;
+  }
+
+  .header-link {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  .brand-link {
+    font-size: 1.2rem;
+  }
+}
+
+/* ---- Tablet / medium: collapse nav into hamburger ---- */
+@media (max-width: 900px) {
+
+  /* Remove the old stacked-column fallback from site.css */
+  .top-header {
+    flex-direction: row;
+    gap: 0;
+    min-height: 56px;
+    padding: 0 1rem;
+    position: relative;       /* anchor for the dropdown */
+  }
+
+  /* Hide the link row by default */
+  .header-center {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--mt-bg-medium);
+    border-top: 1px solid var(--mt-border-strong);
+    border-bottom: 2px solid var(--mt-gold);
+    padding: 0.5rem 0;
+    gap: 0;
+    z-index: 999;
+  }
+
+  /* Show when toggled */
+  .header-center.nav-open {
+    display: flex;
+  }
+
+  .header-center .header-link {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--mt-border);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    display: block;
+    width: 100%;
+  }
+
+  .header-center .header-link:last-child {
+    border-bottom: none;
+  }
+
+  .header-center .header-link.active {
+    background-color: var(--mt-surface-soft);
+    border-left: 3px solid var(--mt-gold);
+    padding-left: calc(1.25rem - 3px);
+  }
+
+  /* Hamburger button */
+  .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 26px;
+    height: 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .nav-toggle span {
+    display: block;
+    height: 2px;
+    background-color: var(--mt-text);
+    border-radius: 2px;
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+
+  /* Animate to X when open */
+  .nav-toggle.open span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .nav-toggle.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-toggle.open span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  /* Keep right side compact */
+  .header-right .user-menu-username {
+    display: none;
+  }
+
+  .header-right .user-logout-btn span {
+    display: none;
+  }
+}
+
+/* ---- User dashboard ---- */
+@media (max-width: 768px) {
+  .user-dashboard-header {
+    position: static;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .user-dashboard-header .page-title {
+    white-space: nowrap;
+    font-size: 1.6rem;
+  }
+
+  .dashboard-fab-stack {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .my-parties-fab {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* position: relative already set in the 900px block above — keeps it as
+   the dropdown anchor while removing the sticky scroll behaviour */
+
+/* ---- Admin dashboard ---- */
+@media (max-width: 768px) {
+  .dashboard-main-content {
+    padding: 1rem 0.75rem;
+  }
+
+  /* Toolbar: stack search full-width, add button below */
+  .dashboard-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .dashboard-search-wrapper {
+    width: 100%;
+  }
+
+  .dashboard-search {
+    max-width: 100%;
+  }
+
+  .dashboard-add-button {
+    width: 100%;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  /* Subnav: shrink text on small screens */
+  .dashboard-subnav-link span {
+    display: none;
+  }
+
+  .dashboard-subnav-link {
+    padding: 0.5rem 0.85rem;
+    font-size: 1.1rem;
+  }
+
+  /* Tables: hide specified columns */
+
+  /* Playing Fields — hide Surface */
+  #playingFieldTable td:nth-child(2),
+  .dashboard-table[aria-label="Playing fields table"] thead th:nth-child(2) {
+    display: none;
+  }
+
+  /* Players — hide Name */
+  #playerTable td:nth-child(1),
+  .dashboard-table[aria-label="Players table"] thead th:nth-child(1) {
+    display: none;
+  }
+
+  /* Parties — hide Description */
+  #partiesTable td:nth-child(3),
+  .dashboard-table[aria-label="Parties table"] thead th:nth-child(3) {
+    display: none;
+  }
+
+  /* Match Records already reduced to 4 cols in markup — no hiding needed */
+
+  /* Make tables scroll horizontally if still overflow */
+  .dashboard-panel > div {
+    overflow-x: auto;
+  }
+}
+
+/* ---- Auth pages (register / login) ---- */
+@media (max-width: 768px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .auth-hero {
+    align-items: center;
+  }
+
+  .auth-fields-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-card {
+    text-align: left;
+  }
+
+  .auth-validation-summary {
+    text-align: left;
+  }
+}
+
+/* ---- My-parties layout ---- */
+@media (max-width: 768px) {
+  .my-party-row {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.75rem;
+  }
+
+  .my-party-number {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 2.5rem;
+    align-self: center;
+  }
+
+  .my-party-schedule {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    min-width: unset;
+    padding-top: 0;
+  }
+
+  .schedule-match-btn {
+    width: 110px;
+    height: 110px;
+    font-size: 0.7rem;
+    gap: 0.4rem;
+    border-radius: 14px;
+  }
+
+  .schedule-match-btn__icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .my-party-details {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* ---- Parties page ---- */
+@media (max-width: 768px) {
+  .create-party-container.small {
+    width: 100%;
+  }
+}
+
+/* ---- Modals / forms with date pickers ---- */
+@media (max-width: 768px) {
+  /* More breathing room on inputs */
+  .mt-modal-input,
+  .date-picker-input,
+  .flatpickr-input {
+    padding: 0.65rem 0.9rem;
+    font-size: 1rem;
+  }
+
+  /* Date row: shrink the picker, compact Dodaj button */
+  .mt-date-chip-row {
+    align-items: center;
+  }
+
+  .mt-date-chip-row .date-picker-wrapper {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .mt-date-chip-row .mt-modal-btn {
+    flex-shrink: 0;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  /* Center Odustani / Otvori meč */
+  .mt-modal-actions {
+    justify-content: center;
+  }
+}
+
+/* ---- Home hero ---- */
+@media (max-width: 900px) {
+  .hero-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+    min-height: unset;
+  }
+
+  .hero-text {
+    font-size: 3.2rem;
+    line-height: 1.15;
+    max-width: 100%;
+  }
+
+  /* Text first, image second, placeholder last */
+  .hero-left   { order: 1; }
+  .hero-center { order: 2; }
+  .hero-right  { order: 3; }
+
+  /* Give the image a sensible fixed height instead of stretching to 80vh */
+  .hero-image-container {
+    height: 220px;
+  }
+}
+
+/* ---- Mobile / small ---- */
+@media (max-width: 600px) {
+  .hero-text {
+    font-size: 2.6rem;
+  }
+
+  .top-header {
+    min-height: 50px;
+    padding: 0 0.75rem;
+  }
+
+  .brand-link {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Prijava / Registracija header buttons */
+  .mt--btn-ghost,
+  .mt--btn-primary {
+    font-size: 0.75rem;
+    padding: 0.28rem 0.55rem;
+  }
+}
+
+/* ---- Stadium floating badge — inline row on mobile ---- */
+@media (max-width: 768px) {
+  .stadium-floating-badge {
+    position: static;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    padding: 0.5rem 1.25rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  .stadium-floating-badge__count {
+    font-size: 1.2rem;
+  }
+
+  .stadium-floating-badge__label {
+    margin-top: 0;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---- Players page — stack position panels vertically ---- */
+@media (max-width: 768px) {
+  .player-positions-grid {
+    grid-template-areas:
+      "strikers"
+      "midfielders"
+      "defenders"
+      "goalkeepers";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .hero-image {
+    display: none;
+  }
+
+  .featured-panel {
+    position: static;
+    width: 100%;
+    max-width: 100%;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto;
+    padding: 0.75rem;
+  }
+
+  .position-container {
+    overflow: visible;
+    padding-bottom: 0.75rem;
+  }
+
+  .position-title {
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+  }
+}
+
+/* ---- My Parties — better mobile layout ---- */
+@media (max-width: 768px) {
+  .my-party-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .my-party-number {
+    font-size: 1.8rem;
+    padding: 0;
+  }
+
+  .my-party-schedule {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding-top: 0;
+    min-width: unset;
+  }
+
+  .schedule-match-btn {
+    width: 100%;
+    height: auto;
+    padding: 0.75rem 1rem;
+    flex-direction: row;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    gap: 0.6rem;
+  }
+
+  .schedule-match-btn__icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .my-party-edit-schedule-btn {
+    width: 100%;
+  }
+
+  .my-party-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .my-party-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ---- Admin dashboard — Parties table overflow & date column ---- */
+@media (max-width: 768px) {
+  .dashboard-panel > div {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Date column smaller font */
+  #partiesTable td:nth-child(2),
+  .dashboard-table[aria-label="Parties table"] thead th:nth-child(2) {
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+/* ---- Logs page ---- */
+@media (max-width: 768px) {
+  .log-filter-bar {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .log-filter-btn {
+    flex: 1 1 auto;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.55rem;
+  }
+
+  /* Show only icon, hide label text */
+  .log-filter-btn .log-filter-text {
+    display: none;
+  }
+
+  .log-accordion-btn {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: flex-start;
+  }
+
+  .log-message-preview {
+    width: 100%;
+    font-size: 0.8rem;
+    word-break: break-word;
+  }
+
+  .log-accordion-body {
+    overflow-x: auto;
+  }
+
+  .log-exception {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}

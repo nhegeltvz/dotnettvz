@@ -20,40 +20,40 @@ namespace Data.Services.Validation
 
             if (entity.MatchPlayerId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Match player is required."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač utakmice je obavezan."));
             }
             else if (!_dbContext.MatchPlayers.Any(matchPlayer => matchPlayer.Id == entity.MatchPlayerId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Match player does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač utakmice ne postoji."));
             }
 
             if (entity.PlayerGivingRatingId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Player giving rating is required."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač koji daje ocjenu je obavezan."));
             }
             else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerGivingRatingId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Player giving rating does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač koji daje ocjenu ne postoji."));
             }
 
             if (entity.PlayerReceivingRatingId == Guid.Empty)
             {
-                errors.Add(new Error(ErrorType.Validation, "Player receiving rating is required."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač koji prima ocjenu je obavezan."));
             }
             else if (!_dbContext.Players.Any(player => player.Id == entity.PlayerReceivingRatingId))
             {
-                errors.Add(new Error(ErrorType.Validation, "Player receiving rating does not exist."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač koji prima ocjenu ne postoji."));
             }
 
             if (entity.PlayerGivingRatingId != Guid.Empty
                 && entity.PlayerGivingRatingId == entity.PlayerReceivingRatingId)
             {
-                errors.Add(new Error(ErrorType.Validation, "Player cannot rate themselves."));
+                errors.Add(new Error(ErrorType.Validation, "Igrač ne može ocjenjivati samog sebe."));
             }
 
             if (entity.Rating < 1 || entity.Rating > 10)
             {
-                errors.Add(new Error(ErrorType.Validation, "Rating must be between 1 and 5."));
+                errors.Add(new Error(ErrorType.Validation, "Ocjena mora biti između 1 i 10."));
             }
 
             if (entity.MatchPlayerId != Guid.Empty)
@@ -63,7 +63,7 @@ namespace Data.Services.Validation
                     && rating.MatchPlayerId == entity.MatchPlayerId);
                 if (duplicate)
                 {
-                    errors.Add(new Error(ErrorType.Validation, "Rating already exists for this match player."));
+                    errors.Add(new Error(ErrorType.Validation, "Ocjena za ovog igrača već postoji."));
                 }
             }
 
